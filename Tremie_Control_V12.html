@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tremie Control System V12 - โครงการจตุโชติ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        
+        .pile-gradient { background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%); }
+        .row-pending { background-color: #f8fafc; border-left: 4px solid #cbd5e1; opacity: 0.8; }
+        .row-completed { background-color: #ffffff; border-left: 4px solid #10b981; }
+        .row-cut { background-color: #fffbeb; border-left: 4px solid #f59e0b; }
+        
+        .dark .pile-gradient { background: linear-gradient(180deg, #1e293b 0%, #334155 100%); }
+        .dark .row-pending { background-color: #1e293b; border-left: 4px solid #475569; opacity: 0.8; color: #cbd5e1; }
+        .dark .row-completed { background-color: #0f172a; border-left: 4px solid #059669; color: #f1f5f9; }
+        .dark .row-cut { background-color: #422006; border-left: 4px solid #d97706; color: #fde68a; }
+        .dark input, .dark select, .dark textarea { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
+        
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.5); cursor: pointer;
+        }
+        .dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen pb-10 text-slate-800 dark:text-slate-200">
+
+    <header class="bg-slate-900 dark:bg-slate-950 text-white p-4 shadow-lg mb-6 transition-colors border-b dark:border-slate-800">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-400">
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V12
+                </h1>
+                <p class="text-slate-400 text-sm">ระบบแจ้งเตือนอายุคอนกรีต พร้อมล็อกเวลาเทปูน</p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+                <div class="bg-slate-800 px-4 py-2 rounded-lg text-emerald-400 font-bold border border-slate-700 mr-2">
+                    ID: <span id="display-pile-name" class="text-white">ยังไม่ระบุ</span>
+                </div>
+                
+                <button onclick="toggleDarkMode()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-amber-300 font-bold shadow transition border border-slate-600">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+
+                <input type="file" id="file-input" accept=".json" class="hidden" onchange="importData(event)">
+                <button onclick="document.getElementById('file-input').click()" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                    <i class="fas fa-folder-open mr-1"></i> โหลด
+                </button>
+                <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                    <i class="fas fa-save mr-1"></i> เซฟ
+                </button>
+                <button onclick="resetApp()" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition ml-2">
+                    <i class="fas fa-undo mr-1"></i> เริ่มใหม่
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-8 space-y-6">
+            
+            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 grid grid-cols-1 md:grid-cols-4 gap-4 transition-colors">
+                <div class="md:col-span-4 border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">
+                    <h2 class="font-bold text-slate-700 dark:text-slate-200"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะ</h2>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
+                    <input type="text" id="pile-name" placeholder="P1-01" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase">เส้นผ่านศูนย์กลาง (m)</label>
+                    <input type="number" id="diameter" value="1.2" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ความลึกหลุม (m)</label>
+                    <input type="number" id="depth" value="62.0" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อเริ่มต้น (m)</label>
+                    <input type="number" id="init-tremie" value="61.5" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-50 dark:bg-emerald-900/10 rounded-bl-full z-0"></div>
+                    <h2 class="font-bold text-emerald-700 dark:text-emerald-400 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 relative z-10"><i class="fas fa-truck-loading mr-2"></i>2. ต่อคิวรถปูน</h2>
+                    <div class="space-y-4 relative z-10">
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-1">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">หมายเลขรถ</label>
+                                <input type="text" id="truck-no" placeholder="ทบ. 123" class="w-full p-2 border rounded-lg focus:ring-2 outline-none">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">ปริมาตร (m³)</label>
+                                <input type="number" id="vol-input" value="5.0" step="0.5" class="w-full p-2 border rounded-lg font-bold text-emerald-700 dark:text-emerald-400 focus:ring-2 outline-none">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-[10px] font-bold text-amber-500 uppercase">เวลาผลิต</label>
+                                <input type="time" id="batch-time" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-amber-200 dark:border-amber-700">
+                            </div>
+                        </div>
+                        <button onclick="addPour()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold shadow transition">
+                            + เพิ่มคิวรถปูน
+                        </button>
+                    </div>
+                </section>
+
+                <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+                    <h2 class="font-bold text-amber-700 dark:text-amber-500 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2"><i class="fas fa-ruler-combined mr-2"></i>3. วัดระดับ & ตัดท่อ</h2>
+                    <div class="space-y-3">
+                        <select id="insert-index" class="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-700 text-sm outline-none">
+                            <option value="-1">-- ตัดท่อล่าสุด (ต่อท้าย Timeline) --</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">หย่อนเทป (m)</label>
+                                <input type="number" id="sounding-input" placeholder="วัดจริง" step="0.1" class="w-full p-2 border rounded-lg text-blue-600 dark:text-blue-400 font-bold outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">ตัดออก (m)</label>
+                                <input type="number" id="pipe-input" placeholder="ตัดจริง" step="0.5" class="w-full p-2 border rounded-lg text-amber-700 dark:text-amber-500 font-bold outline-none">
+                            </div>
+                        </div>
+                        <button onclick="submitRemove()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-bold shadow transition mt-2">
+                            + บันทึกตัดท่อ
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+                <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
+                    <span><i class="fas fa-list-ul mr-2"></i>Timeline & Concrete Age Plan</span>
+                    <span class="text-[10px] bg-slate-700 dark:bg-slate-800 px-2 py-1 rounded border border-slate-600 dark:border-slate-700">ข้อมูลอัปเดตแบบ Real-time</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="px-3 py-3 text-center">#</th>
+                                <th class="px-3 py-3">กิจกรรม (และอายุคอนกรีต)</th>
+                                <th class="px-3 py-3 text-center">ระดับปูน</th>
+                                <th class="px-3 py-3 text-center">ปลายท่อ</th>
+                                <th class="px-3 py-3 text-center">Embed</th>
+                                <th class="px-3 py-3 text-center w-24">สถานะ</th>
+                                <th class="px-3 py-3 text-center w-20">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="lg:col-span-4 space-y-4">
+            
+            <div class="bg-blue-600 dark:bg-blue-700 text-white text-center py-2 rounded-xl font-bold shadow-md uppercase tracking-wider text-sm transition-colors">
+                หน้าปัดสถานะจริง (Actual)
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors">
+                    <p class="text-[10px] font-bold text-slate-400">ปูนที่เทจริงแล้ว</p>
+                    <p id="actual-vol" class="text-xl font-bold text-slate-800 dark:text-white">0.0 <span class="text-xs">m³</span></p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors">
+                    <p class="text-[10px] font-bold text-slate-400">ท่อเหลือยาว</p>
+                    <p id="actual-pipe" class="text-xl font-bold text-slate-800 dark:text-white">0.0 <span class="text-xs">m</span></p>
+                </div>
+                <div id="embed-card" class="bg-white dark:bg-slate-800 p-4 rounded-xl border-2 shadow-md text-center col-span-2 transition-colors">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">ระยะฝังท่อ ณ ปัจจุบัน (Actual)</p>
+                    <p id="actual-embed" class="text-5xl font-bold dark:text-white">0.00 <span class="text-lg opacity-50">m</span></p>
+                    <p id="actual-status" class="text-xs font-bold mt-2 uppercase"></p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-[320px] flex flex-col items-center transition-colors">
+                <h3 class="text-xs font-bold text-slate-400 mb-2 uppercase">Real-time Visualization</h3>
+                <div class="relative w-24 h-full border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg">
+                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-500 uppercase">GL(0.00)</div>
+                    <svg id="viz-svg" viewBox="0 0 100 500" class="w-full h-full preserve-aspect-ratio-none">
+                        <rect id="viz-concrete" x="0" y="500" width="100" height="0" fill="#64748b" class="transition-all duration-500 dark:fill-slate-500" />
+                        <rect id="viz-tremie" x="40" y="0" width="20" height="0" fill="#94a3b8" stroke="#1e293b" stroke-width="2" class="transition-all duration-500 dark:fill-slate-400" />
+                        <line id="viz-tremie-tip" x1="20" y1="0" x2="80" y2="0" stroke="#000" stroke-width="4" class="dark:stroke-white" />
+                    </svg>
+                    <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-500 uppercase w-full text-center" id="viz-depth-label"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 dark:bg-slate-900 text-white p-5 rounded-xl border border-slate-700 shadow-lg relative overflow-hidden transition-colors">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500 opacity-10 rounded-bl-full z-0"></div>
+                <h3 class="font-bold text-blue-300 mb-3 text-sm uppercase tracking-wide relative z-10">
+                    <i class="fas fa-calculator mr-2"></i> ประมาณการยอดสั่งปูนรวม
+                </h3>
+                
+                <div class="flex gap-2 mb-4 relative z-10">
+                    <div class="flex-1">
+                        <label class="block text-[10px] text-slate-400 uppercase">ระยะหย่อนเทป (m)</label>
+                        <input type="number" id="predict-sounding" placeholder="วัดล่าสุด" step="0.1" oninput="updatePrediction()" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white font-bold outline-none focus:border-blue-400">
+                    </div>
+                </div>
+
+                <div class="space-y-2 relative z-10">
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-1">
+                        <span class="text-slate-300">เทไปแล้วจริง:</span>
+                        <span class="font-bold text-slate-100"><span id="pred-poured">0.0</span> m³</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-1">
+                        <span class="text-slate-300">ยอดรวมพอดีหลุม:</span>
+                        <span class="font-bold text-blue-200"><span id="pred-exact">-</span> m³</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span class="text-xs font-bold text-emerald-400">สั่งรวมเผื่อปิดหลุม (+15%):</span>
+                        <span class="font-bold text-2xl text-emerald-400"><span id="pred-padded">-</span> <span class="text-sm">m³</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors mt-4">
+                <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase">
+                    <i class="fas fa-sticky-note mr-1 text-amber-500"></i> โน้ตปัญหา / หมายเหตุหน้างาน
+                </h3>
+                <textarea id="work-notes" oninput="saveNotes()" rows="4" class="w-full p-3 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-amber-400 outline-none transition-colors" placeholder="พิมพ์บันทึกเหตุการณ์ รถปูนมาช้า ปัญหาดินพัง ฯลฯ..."></textarea>
+            </div>
+            
+        </div>
+    </main>
+
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transition-colors">
+            <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700">
+                <span id="edit-title"><i class="fas fa-edit mr-2"></i>แก้ไขข้อมูล</span>
+                <button onclick="closeEditModal()" class="text-slate-300 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="edit-index">
+                <div id="edit-pour-group" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">หมายเลขรถ</label>
+                        <input type="text" id="edit-truck" class="w-full p-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">ปริมาตร (m³)</label>
+                            <input type="number" id="edit-vol" step="0.5" class="w-full p-2 border rounded-lg font-bold text-emerald-600 dark:text-emerald-400 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">เวลาผลิต</label>
+                            <input type="time" id="edit-batch" class="w-full p-2 border rounded-lg font-bold text-amber-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
+                        </div>
+                    </div>
+                    <div id="edit-pour-time-div" class="hidden">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">เวลาเทเสร็จ</label>
+                        <input type="time" id="edit-pour-time" class="w-full p-2 border rounded-lg font-bold text-emerald-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
+                    </div>
+                </div>
+                
+                <div id="edit-remove-group" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ระยะหย่อนเทป (m)</label>
+                        <input type="number" id="edit-sounding" step="0.1" class="w-full p-2 border rounded-lg font-bold text-blue-600 dark:text-blue-400 focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ระยะตัดท่อออก (m)</label>
+                        <input type="number" id="edit-cut" step="0.5" class="w-full p-2 border rounded-lg font-bold text-amber-600 dark:text-amber-500 focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 mt-4">
+                    <button onclick="saveEdit()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg">บันทึก</button>
+                    <button onclick="closeEditModal()" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold py-2 rounded-lg transition-colors">ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Dark Mode Logic ---
+        function applyTheme(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                icon.className = 'fas fa-sun';
+            } else {
+                document.documentElement.classList.remove('dark');
+                icon.className = 'fas fa-moon';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = !document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            applyTheme(true);
+        } else {
+            applyTheme(false);
+        }
+
+        // --- Concrete Age Functions ---
+        function calculateAgeMinutes(batchTimeStr, pourTimeStr) {
+            if (!batchTimeStr) return null;
+            const [bH, bM] = batchTimeStr.split(':').map(Number);
+            let endTarget = new Date(); // now
+            if (pourTimeStr) {
+                const [pH, pM] = pourTimeStr.split(':').map(Number);
+                endTarget.setHours(pH, pM, 0, 0);
+            }
+            
+            let batchTarget = new Date(endTarget);
+            batchTarget.setHours(bH, bM, 0, 0);
+
+            if (batchTarget > endTarget) batchTarget.setDate(batchTarget.getDate() - 1);
+            
+            return Math.floor((endTarget - batchTarget) / 60000);
+        }
+
+        function formatAgeString(mins) {
+            if (mins === null || isNaN(mins)) return '-';
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return h > 0 ? `${h}h ${m}m` : `${m}m`;
+        }
+
+        function getAgeColor(mins) {
+            if (mins === null || isNaN(mins)) return "text-slate-400";
+            if (mins >= 120) return "text-red-600 dark:text-red-400 font-bold animate-pulse";
+            if (mins >= 90) return "text-amber-500 dark:text-amber-400 font-bold";
+            return "text-emerald-600 dark:text-emerald-400 font-bold";
+        }
+
+        // --- Application State ---
+        let state = {
+            settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5 },
+            notes: '',
+            events: [] 
+        };
+
+        function init() {
+            const saved = localStorage.getItem('tremie_v12');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state.settings = { ...state.settings, ...parsed.settings };
+                    state.events = parsed.events || [];
+                    state.notes = parsed.notes || '';
+                } catch(e) {}
+            }
+            populateSettingsUI();
+            render();
+            setInterval(render, 60000); 
+        }
+
+        function populateSettingsUI() {
+            document.getElementById('pile-name').value = state.settings.pileName || '';
+            document.getElementById('diameter').value = state.settings.diameter;
+            document.getElementById('depth').value = state.settings.depth;
+            document.getElementById('init-tremie').value = state.settings.initTremie;
+            document.getElementById('work-notes').value = state.notes || '';
+            
+            const now = new Date();
+            document.getElementById('batch-time').value = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        }
+
+        function updateSettings() {
+            state.settings.pileName = document.getElementById('pile-name').value || '';
+            state.settings.diameter = parseFloat(document.getElementById('diameter').value) || 0;
+            state.settings.depth = parseFloat(document.getElementById('depth').value) || 0;
+            state.settings.initTremie = parseFloat(document.getElementById('init-tremie').value) || 0;
+            saveAndRender();
+        }
+
+        function saveNotes() {
+            state.notes = document.getElementById('work-notes').value;
+            localStorage.setItem('tremie_v12', JSON.stringify(state));
+        }
+
+        function exportData() {
+            saveNotes(); 
+            const dataStr = JSON.stringify(state, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const pName = state.settings.pileName ? state.settings.pileName : 'UnknownPile';
+            const d = new Date();
+            const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+            
+            a.href = url;
+            a.download = `Tremie_${pName}_${dateStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.settings && Array.isArray(parsed.events)) {
+                        state = parsed;
+                        populateSettingsUI();
+                        saveAndRender();
+                        alert(`โหลดข้อมูลหลุม ${state.settings.pileName || 'ไม่ระบุชื่อ'} สำเร็จ!`);
+                    } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); }
+                } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์ .json'); }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        }
+
+        function updatePrediction() {
+            const soundingVal = parseFloat(document.getElementById('predict-sounding').value);
+            let actualPouredVol = 0;
+            state.events.forEach(ev => {
+                if (ev.type === 'pour' && ev.isCompleted) { actualPouredVol += ev.val; }
+            });
+            document.getElementById('pred-poured').innerText = actualPouredVol.toFixed(1);
+
+            if (isNaN(soundingVal) || soundingVal <= 0) {
+                document.getElementById('pred-exact').innerText = '-';
+                document.getElementById('pred-padded').innerText = '-';
+                return;
+            }
+            const area = Math.PI * Math.pow(state.settings.diameter / 2, 2);
+            const exactRemaining = soundingVal * area;
+            const paddedRemaining = exactRemaining * 1.15; 
+            const totalExact = actualPouredVol + exactRemaining;
+            const totalPadded = actualPouredVol + paddedRemaining;
+
+            document.getElementById('pred-exact').innerText = totalExact.toFixed(1);
+            document.getElementById('pred-padded').innerText = totalPadded.toFixed(1);
+        }
+
+        function addPour() {
+            const truck = document.getElementById('truck-no').value || '-';
+            const val = parseFloat(document.getElementById('vol-input').value) || 0;
+            const batchTime = document.getElementById('batch-time').value || '';
+            
+            state.events.push({ type: 'pour', truck, val, isCompleted: false, batchTime: batchTime, pourTime: null });
+            document.getElementById('truck-no').value = '';
+            const now = new Date();
+            document.getElementById('batch-time').value = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+            saveAndRender();
+        }
+
+        function submitRemove() {
+            const idx = parseInt(document.getElementById('insert-index').value);
+            const sounding = parseFloat(document.getElementById('sounding-input').value) || 0;
+            const cutVal = parseFloat(document.getElementById('pipe-input').value) || 0;
+
+            const newEvent = { type: 'remove', val: cutVal, sounding: sounding };
+            if (idx === -1) state.events.push(newEvent);
+            else state.events.splice(idx + 1, 0, newEvent);
+
+            if (sounding > 0) document.getElementById('predict-sounding').value = sounding;
+
+            document.getElementById('sounding-input').value = "";
+            document.getElementById('pipe-input').value = "";
+            document.getElementById('insert-index').value = "-1";
+            saveAndRender();
+        }
+
+        function togglePourStatus(index) {
+            const ev = state.events[index];
+            if (ev.type === 'pour') {
+                ev.isCompleted = !ev.isCompleted;
+                // Time-Lock Persistence Logic (เหมือน V12)
+                if (ev.isCompleted && !ev.pourTime) {
+                    const now = new Date();
+                    ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                }
+                saveAndRender();
+            }
+        }
+
+        function deleteEvent(i) {
+            if(confirm('ยืนยันการลบ? ข้อมูลทั้งหมดในลำดับถัดไปจะถูกคำนวณใหม่')) {
+                state.events.splice(i, 1);
+                saveAndRender();
+            }
+        }
+
+        function openEditModal(i) {
+            const ev = state.events[i];
+            document.getElementById('edit-index').value = i;
+            if (ev.type === 'pour') {
+                document.getElementById('edit-title').innerHTML = '<i class="fas fa-truck mr-2"></i>แก้ไขรถปูน';
+                document.getElementById('edit-pour-group').classList.remove('hidden');
+                document.getElementById('edit-remove-group').classList.add('hidden');
+                document.getElementById('edit-truck').value = ev.truck;
+                document.getElementById('edit-vol').value = ev.val;
+                document.getElementById('edit-batch').value = ev.batchTime || '';
+                
+                if (ev.isCompleted) {
+                    document.getElementById('edit-pour-time-div').classList.remove('hidden');
+                    document.getElementById('edit-pour-time').value = ev.pourTime || '';
+                } else {
+                    document.getElementById('edit-pour-time-div').classList.add('hidden');
+                }
+            } else {
+                document.getElementById('edit-title').innerHTML = '<i class="fas fa-cut mr-2"></i>แก้ไขตัดท่อ';
+                document.getElementById('edit-pour-group').classList.add('hidden');
+                document.getElementById('edit-remove-group').classList.remove('hidden');
+                document.getElementById('edit-sounding').value = ev.sounding > 0 ? ev.sounding : '';
+                document.getElementById('edit-cut').value = ev.val;
+            }
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function saveEdit() {
+            const i = parseInt(document.getElementById('edit-index').value);
+            const ev = state.events[i];
+            if (ev.type === 'pour') {
+                ev.truck = document.getElementById('edit-truck').value;
+                ev.val = parseFloat(document.getElementById('edit-vol').value);
+                ev.batchTime = document.getElementById('edit-batch').value;
+                if (ev.isCompleted) {
+                    ev.pourTime = document.getElementById('edit-pour-time').value;
+                }
+            } else {
+                ev.sounding = parseFloat(document.getElementById('edit-sounding').value) || 0;
+                ev.val = parseFloat(document.getElementById('edit-cut').value);
+                if (ev.sounding > 0) document.getElementById('predict-sounding').value = ev.sounding;
+            }
+            closeEditModal();
+            saveAndRender();
+        }
+
+        function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+        function resetApp() {
+            if(confirm('ต้องการเริ่มหลุมใหม่ ข้อมูลการเทจะหายทั้งหมด?')) {
+                state.events = [];
+                state.notes = ''; 
+                document.getElementById('pile-name').value = '';
+                document.getElementById('predict-sounding').value = '';
+                populateSettingsUI(); 
+                updateSettings();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('tremie_v12', JSON.stringify(state));
+            render();
+            updatePrediction(); 
+        }
+
+        function render() {
+            const { pileName, diameter, depth, initTremie } = state.settings;
+            const area = Math.PI * Math.pow(diameter / 2, 2);
+            document.getElementById('display-pile-name').innerText = pileName ? pileName : 'ยังไม่ระบุ';
+
+            const logBody = document.getElementById('log-body');
+            const insertSelect = document.getElementById('insert-index');
+            logBody.innerHTML = '';
+            insertSelect.innerHTML = '<option value="-1">-- ตัดท่อล่าสุด (ต่อท้าย Timeline) --</option>';
+
+            let predVol = 0; let predPipeLen = initTremie; let predConcLevelFromBottom = 0;
+            let actualVol = 0; let actualPipeLen = initTremie; let actualConcLevelFromBottom = 0;
+
+            state.events.forEach((ev, i) => {
+                const row = document.createElement('tr');
+                let rowHtml = "";
+
+                if (ev.type === 'pour') {
+                    predVol += ev.val;
+                    predConcLevelFromBottom = predVol / area;
+                    let predDepthTop = depth - predConcLevelFromBottom;
+                    let predTipTop = depth - predPipeLen;
+                    let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
+
+                    let ageMins = calculateAgeMinutes(ev.batchTime, ev.isCompleted ? ev.pourTime : null);
+                    let colorClass = getAgeColor(ageMins);
+                    let ageStr = formatAgeString(ageMins);
+                    
+                    let ageHTML = "";
+                    if (ev.batchTime) {
+                        if (ev.isCompleted) {
+                            ageHTML = `เทเสร็จ: ${ev.pourTime || '?'} <span class="${colorClass} ml-1">(อายุ ${ageStr})</span>`;
+                        } else {
+                            ageHTML = `ผลิต: <span class="font-bold">${ev.batchTime}</span> <i class="fas fa-clock mx-1"></i><span class="${colorClass}">ผ่านไป ${ageStr}</span>`;
+                        }
+                    } else {
+                        ageHTML = `<span class="text-slate-400">ไม่ระบุเวลา</span>`;
+                    }
+
+                    if (ev.isCompleted) {
+                        actualVol += ev.val;
+                        actualConcLevelFromBottom = actualVol / area;
+                    }
+
+                    if (!ev.isCompleted) {
+                        row.className = "row-pending";
+                        rowHtml = `
+                            <td class="px-3 py-3 text-center text-slate-400 dark:text-slate-500 text-xs">${i+1}</td>
+                            <td class="px-3 py-3">
+                                <div class="font-medium">รถเบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 dark:text-blue-400 ml-1">+${ev.val.toFixed(1)} m³</span></div>
+                                <div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 inline-block text-slate-600 dark:text-slate-300 shadow-sm">${ageHTML}</div>
+                            </td>
+                            <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-mono opacity-60">${predTipTop.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 dark:hover:bg-emerald-600 hover:text-white text-slate-500 dark:text-slate-300 text-[10px] py-2 rounded border border-slate-300 dark:border-slate-600 font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
+                        `;
+                    } else {
+                        row.className = "row-completed";
+                        rowHtml = `
+                            <td class="px-3 py-3 text-center text-slate-400 dark:text-slate-500 text-xs">${i+1}</td>
+                            <td class="px-3 py-3">
+                                <div class="font-bold">รถเบอร์ ${ev.truck} <span class="text-xs text-emerald-500 dark:text-emerald-400 ml-1">+${ev.val.toFixed(1)} m³</span></div>
+                                <div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-emerald-100 dark:border-slate-700 inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div>
+                            </td>
+                            <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predTipTop.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-[10px] py-2 rounded font-bold shadow-sm transition">✔️ เทแล้ว</button></td>
+                        `;
+                    }
+                    insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: รถเบอร์ ${ev.truck}</option>`;
+                } else {
+                    if (ev.sounding > 0) {
+                        predConcLevelFromBottom = depth - ev.sounding;
+                        predVol = predConcLevelFromBottom * area; 
+                    }
+                    predPipeLen -= ev.val;
+                    let predDepthTop = depth - predConcLevelFromBottom;
+                    let predTipTop = depth - predPipeLen;
+                    let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
+
+                    if (ev.sounding > 0) {
+                        actualConcLevelFromBottom = depth - ev.sounding;
+                        actualVol = actualConcLevelFromBottom * area;
+                    }
+                    actualPipeLen -= ev.val;
+
+                    row.className = "row-cut";
+                    let soundingText = ev.sounding > 0 ? `หย่อนเทป ${ev.sounding}m` : 'ไม่ได้วัด';
+                    
+                    rowHtml = `
+                        <td class="px-3 py-3 text-center opacity-60 text-xs">${i+1}</td>
+                        <td class="px-3 py-3 font-bold"><i class="fas fa-cut mr-1"></i>ตัดท่อ ${ev.val}m<br><span class="text-xs opacity-80 font-normal">${soundingText}</span></td>
+                        <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predTipTop.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center text-[10px] font-bold opacity-80">-- ตัดท่อ --</td>
+                    `;
+                    insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: ตัดท่อ ${ev.val}m</option>`;
+                }
+
+                rowHtml += `
+                    <td class="px-3 py-3 text-center">
+                        <button onclick="openEditModal(${i})" class="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mr-2" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEvent(${i})" class="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400" title="ลบ"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                row.innerHTML = rowHtml;
+                logBody.appendChild(row);
+            });
+
+            let actualEmbed = actualConcLevelFromBottom - (depth - actualPipeLen);
+
+            document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs font-normal">m³</span>`;
+            document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs font-normal">m</span>`;
+            document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg font-normal opacity-50">m</span>`;
+            
+            const card = document.getElementById('embed-card');
+            const status = document.getElementById('actual-status');
+            
+            if (state.events.length === 0) {
+                card.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-md text-center col-span-2 transition-colors";
+                status.innerText = "ยังไม่มีการเทปูน";
+                status.className = "text-xs font-bold mt-2 uppercase text-slate-400 dark:text-slate-500";
+            } else if (actualEmbed < 2.0) {
+                card.className = "bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-md text-center col-span-2 transition-colors";
+                status.innerText = "อันตราย: ท่ออาจหลุดชั้นคอนกรีต!";
+                status.className = "text-xs font-bold mt-2 uppercase text-red-600 dark:text-red-400 animate-pulse";
+            } else if (actualEmbed > 6.0) {
+                card.className = "bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border-2 border-orange-400 dark:border-orange-600 shadow-md text-center col-span-2 transition-colors";
+                status.innerText = "ระวัง: ท่อฝังลึกเกินไป";
+                status.className = "text-xs font-bold mt-2 uppercase text-orange-600 dark:text-orange-400";
+            } else {
+                card.className = "bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-md text-center col-span-2 transition-colors";
+                status.innerText = "ปลอดภัย: ระยะฝังเหมาะสม";
+                status.className = "text-xs font-bold mt-2 uppercase text-emerald-600 dark:text-emerald-400";
+            }
+
+            document.getElementById('viz-depth-label').innerText = `ก้นหลุม (${depth.toFixed(1)}m)`;
+            const scale = 500 / depth;
+            
+            const concH = actualConcLevelFromBottom * scale;
+            document.getElementById('viz-concrete').setAttribute('height', concH);
+            document.getElementById('viz-concrete').setAttribute('y', 500 - concH);
+            
+            const tremieH = actualPipeLen * scale;
+            document.getElementById('viz-tremie').setAttribute('height', tremieH);
+            
+            const tipPos = 500 - ((depth - actualPipeLen) * scale);
+            document.getElementById('viz-tremie-tip').setAttribute('y1', tipPos);
+            document.getElementById('viz-tremie-tip').setAttribute('y2', tipPos);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
