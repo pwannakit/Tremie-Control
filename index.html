@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V23 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V24 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', }
@@ -34,13 +34,15 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V23
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V24
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-2">
-                <div class="bg-slate-800 px-4 py-2 rounded-lg text-emerald-400 font-bold border border-slate-700 mr-2">
-                    ID: <span id="display-pile-name" class="text-white">ยังไม่ระบุ</span>
+                <!-- V24: ปรับปรุง Header ให้แสดงข้อมูลผู้ผลิตปูนด้วย -->
+                <div class="bg-slate-800 px-4 py-1.5 rounded-lg text-emerald-400 font-bold border border-slate-700 mr-2 flex flex-col items-center justify-center min-w-[120px]">
+                    <span class="text-sm">ID: <span id="display-pile-name" class="text-white">ยังไม่ระบุ</span></span>
+                    <span id="display-supplier" class="text-[10px] text-slate-400 font-normal mt-0.5 hidden"></span>
                 </div>
                 
                 <button onclick="toggleDarkMode()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-amber-300 font-bold shadow transition border border-slate-600">
@@ -70,39 +72,56 @@
         <!-- Left Side: Inputs & Logs -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- Setup Section (V23: Collapsible) -->
+            <!-- Setup Section (V24: Added Supplier Info) -->
             <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
                 <!-- Header with Toggle Action -->
                 <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="toggleSetup()">
-                    <h2 class="font-bold text-slate-700 dark:text-slate-200 select-none"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะ</h2>
+                    <h2 class="font-bold text-slate-700 dark:text-slate-200 select-none"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะและคอนกรีต</h2>
                     <i id="setup-toggle-icon" class="fas fa-chevron-up text-slate-400 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-full px-2"></i>
                 </div>
                 
                 <!-- Setup Content -->
                 <div id="setup-content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4 transition-all duration-300">
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
                         <input type="text" id="pile-name" placeholder="P1-01" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase">เส้นผ่านศูนย์กลาง (m)</label>
                         <input type="number" id="diameter" value="1.2" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase">ความลึกหลุม (m)</label>
                         <input type="number" id="depth" value="62.0" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อ Tremie (m)</label>
                         <input type="number" id="init-tremie" value="61.5" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase text-blue-500">ท่อนมาตรฐาน (m)</label>
                         <input type="number" id="sec-len" value="3.0" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-purple-500">ท่อนบนสุด / ท่อนเศษ (m)</label>
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-purple-500">ท่อนบนสุด/เศษ (m)</label>
                         <input type="number" id="top-len" value="1.5" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-slate-800 text-purple-700 dark:text-purple-400 font-bold">
+                    </div>
+
+                    <!-- V24: ข้อมูลคอนกรีต -->
+                    <div class="col-span-2 md:col-span-1 lg:col-span-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                        <label class="block text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-500">ผู้ผลิตคอนกรีต</label>
+                        <select id="supplier" onchange="updateSupplier()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold">
+                            <option value="">-- เลือกแพลนท์ --</option>
+                            <option value="CPAC">CPAC</option>
+                            <option value="M Concrete">M Concrete</option>
+                            <option value="TPI">TPI</option>
+                            <option value="Qmix">Qmix</option>
+                            <option value="INSEE">INSEE</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-2 lg:col-span-4 pt-2 border-t border-slate-100 dark:border-slate-700">
+                        <label class="block text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-500">รหัสสินค้า & Slump</label>
+                        <input type="text" id="product-code" onchange="updateSettings()" placeholder="ระบบจะดึงข้อมูลอัตโนมัติเมื่อเลือกผู้ผลิต..." class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
                     </div>
                 </div>
             </section>
@@ -294,20 +313,16 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-blue-600 dark:text-blue-400 w-16 shrink-0">V23:</span> 
-                    <span>เพิ่มฟังก์ชันพับเก็บ (Collapse) เมนูตั้งค่าหลุมเจาะ เพื่อประหยัดพื้นที่แสดงผลหน้าจอระหว่างการทำงาน (UI/UX Optimization)</span>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400 w-16 shrink-0">V24:</span> 
+                    <span>เพิ่มเมนูเลือกผู้ผลิตคอนกรีต (CPAC, M Concrete, TPI, ฯลฯ) พร้อมระบบ Auto-fill รหัสสินค้าและ Slump อัตโนมัติ</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V23:</span> 
+                    <span>เพิ่มฟังก์ชันพับเก็บ (Collapse) เมนูตั้งค่าหลุมเจาะ เพื่อประหยัดพื้นที่แสดงผลหน้าจอระหว่างการทำงาน</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-slate-500 w-16 shrink-0">V22:</span> 
-                    <span>ปรับปรุงเงื่อนไข AI แนะนำการตัดท่อ โดยบังคับให้ระยะฝังหลังตัดต้องไม่น้อยกว่าความยาวท่อนมาตรฐาน (หรือขั้นต่ำ 3 เมตร) เพื่อความปลอดภัยสูงสุด</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-slate-500 w-16 shrink-0">V21:</span> 
-                    <span>ปรับรูปแบบการแสดงผล "เวลารอคันถัดไป" เป็นภาษาไทยให้อ่านง่ายขึ้น (แสดงเป็น x ชั่วโมง x นาที)</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-slate-500 w-16 shrink-0">V20:</span> 
-                    <span>แก้ไขบั๊กเมนูเลือกลำดับรีเซ็ตตัวเองตอนกรอกตัวเลข และอัปเกรดระบบ AI ให้คำนวณท่อนตัดอ้างอิงตามลำดับที่เลือกไว้จริงๆ</span>
+                    <span>ปรับปรุงเงื่อนไข AI แนะนำการตัดท่อ โดยบังคับให้ระยะฝังหลังตัดต้องไม่น้อยกว่าความยาวท่อนมาตรฐาน (หรือขั้นต่ำ 3 เมตร)</span>
                 </li>
             </ul>
         </div>
@@ -419,7 +434,7 @@
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { applyTheme(true); } 
         else { applyTheme(false); }
 
-        // --- Toggle Sections Logic (V23) ---
+        // --- Toggle Sections Logic ---
         function toggleSetup() {
             const content = document.getElementById('setup-content');
             const icon = document.getElementById('setup-toggle-icon');
@@ -442,6 +457,26 @@
                 content.classList.add('hidden');
                 icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
             }
+        }
+
+        // --- V24: Supplier Auto-Fill Logic ---
+        function updateSupplier() {
+            const supp = document.getElementById('supplier').value;
+            const codeInput = document.getElementById('product-code');
+            const data = {
+                'CPAC': '35BAA4AB32 Slump 15-20 cm.',
+                'M Concrete': 'TP3520BBF100 Slump 18-23 cm.',
+                'TPI': '836313 Slump 18-23 cm.',
+                'Qmix': 'ZBDQ1K017P Slump 15-20 cm.',
+                'INSEE': '84369401 Slump 18-23 cm.'
+            };
+            
+            if(data[supp]) {
+                codeInput.value = data[supp];
+            } else {
+                codeInput.value = '';
+            }
+            updateSettings();
         }
 
         // --- Concrete Age & Time Functions ---
@@ -485,18 +520,16 @@
 
         // --- Application State ---
         let state = {
-            settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5 },
+            settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' },
             notes: '', events: [], isFinished: false, finishTime: null
         };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v23'); // V23 Load order
+            let saved = localStorage.getItem('tremie_v24');
+            if (!saved) saved = localStorage.getItem('tremie_v23');
             if (!saved) saved = localStorage.getItem('tremie_v22');
             if (!saved) saved = localStorage.getItem('tremie_v21');
             if (!saved) saved = localStorage.getItem('tremie_v20');
-            if (!saved) saved = localStorage.getItem('tremie_v19');
-            if (!saved) saved = localStorage.getItem('tremie_v18');
-            if (!saved) saved = localStorage.getItem('tremie_v17'); 
             
             if (saved) {
                 try {
@@ -508,6 +541,8 @@
                     state.finishTime = parsed.finishTime || null;
                     if (!state.settings.secLen) state.settings.secLen = 3.0; 
                     if (!state.settings.topLen) state.settings.topLen = 1.5;
+                    if (!state.settings.supplier) state.settings.supplier = '';
+                    if (!state.settings.productCode) state.settings.productCode = '';
                 } catch(e) {}
             }
             populateSettingsUI(); render(); setInterval(render, 60000); 
@@ -520,6 +555,8 @@
             document.getElementById('init-tremie').value = state.settings.initTremie;
             document.getElementById('sec-len').value = state.settings.secLen || 3.0;
             document.getElementById('top-len').value = state.settings.topLen || 1.5;
+            document.getElementById('supplier').value = state.settings.supplier || '';
+            document.getElementById('product-code').value = state.settings.productCode || '';
             document.getElementById('work-notes').value = state.notes || '';
             const now = new Date(); document.getElementById('batch-time').value = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
         }
@@ -531,6 +568,8 @@
             state.settings.initTremie = parseFloat(document.getElementById('init-tremie').value) || 0;
             state.settings.secLen = parseFloat(document.getElementById('sec-len').value) || 3.0;
             state.settings.topLen = parseFloat(document.getElementById('top-len').value) || 1.5;
+            state.settings.supplier = document.getElementById('supplier').value || '';
+            state.settings.productCode = document.getElementById('product-code').value || '';
             saveAndRender();
         }
 
@@ -632,7 +671,7 @@
             }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v23', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v24', JSON.stringify(state)); }
         function exportData() {
             saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -649,6 +688,8 @@
                         state = parsed;
                         if (!state.settings.secLen) state.settings.secLen = 3.0;
                         if (!state.settings.topLen) state.settings.topLen = 1.5;
+                        if (!state.settings.supplier) state.settings.supplier = '';
+                        if (!state.settings.productCode) state.settings.productCode = '';
                         populateSettingsUI(); saveAndRender(); alert(`โหลดข้อมูลหลุม ${state.settings.pileName || 'ไม่ระบุชื่อ'} สำเร็จ!`);
                     } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); }
                 } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์ .json'); }
@@ -763,16 +804,26 @@
                 state.events = []; state.notes = ''; state.isFinished = false; state.finishTime = null;
                 document.getElementById('pile-name').value = ''; document.getElementById('predict-sounding').value = '';
                 document.getElementById('cut-suggestion').classList.add('hidden');
+                document.getElementById('supplier').value = ''; document.getElementById('product-code').value = '';
                 populateSettingsUI(); updateSettings();
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v23', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v24', JSON.stringify(state)); render(); updatePrediction(); }
 
         function render() {
-            const { pileName, diameter, depth, initTremie, secLen, topLen } = state.settings;
+            const { pileName, diameter, depth, initTremie, secLen, topLen, supplier, productCode } = state.settings;
             const area = Math.PI * Math.pow(diameter / 2, 2);
             document.getElementById('display-pile-name').innerText = pileName ? pileName : 'ยังไม่ระบุ';
+            
+            // V24: อัปเดตแถบ Status Header ด้านบน
+            const suppDisplay = document.getElementById('display-supplier');
+            if (supplier && productCode) {
+                suppDisplay.innerText = `${supplier} | ${productCode.split(' ')[0]}`;
+                suppDisplay.classList.remove('hidden');
+            } else {
+                suppDisplay.classList.add('hidden');
+            }
 
             const logBody = document.getElementById('log-body');
             const insertSelect = document.getElementById('insert-index');
