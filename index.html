@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V12 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V15 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', }
@@ -24,9 +24,7 @@
         .dark .row-cut { background-color: #422006; border-left: 4px solid #d97706; color: #fde68a; }
         .dark input, .dark select, .dark textarea { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
         
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.5); cursor: pointer;
-        }
+        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
         .dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
     </style>
 </head>
@@ -36,9 +34,9 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V12
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V15
                 </h1>
-                <p class="text-slate-400 text-sm">ระบบแจ้งเตือนอายุคอนกรีต พร้อมล็อกเวลาเทปูน</p>
+                <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-2">
                 <div class="bg-slate-800 px-4 py-2 rounded-lg text-emerald-400 font-bold border border-slate-700 mr-2">
@@ -47,6 +45,10 @@
                 
                 <button onclick="toggleDarkMode()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-amber-300 font-bold shadow transition border border-slate-600">
                     <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+
+                <button onclick="openManualModal()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                    <i class="fas fa-info-circle mr-1"></i> คู่มือ
                 </button>
 
                 <input type="file" id="file-input" accept=".json" class="hidden" onchange="importData(event)">
@@ -65,8 +67,10 @@
 
     <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
+        <!-- Left Side: Inputs & Logs -->
         <div class="lg:col-span-8 space-y-6">
             
+            <!-- Setup Section -->
             <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 grid grid-cols-1 md:grid-cols-4 gap-4 transition-colors">
                 <div class="md:col-span-4 border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">
                     <h2 class="font-bold text-slate-700 dark:text-slate-200"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะ</h2>
@@ -89,7 +93,9 @@
                 </div>
             </section>
 
+            <!-- Action Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Add Concrete -->
                 <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-50 dark:bg-emerald-900/10 rounded-bl-full z-0"></div>
                     <h2 class="font-bold text-emerald-700 dark:text-emerald-400 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 relative z-10"><i class="fas fa-truck-loading mr-2"></i>2. ต่อคิวรถปูน</h2>
@@ -114,6 +120,7 @@
                     </div>
                 </section>
 
+                <!-- Remove Pipe -->
                 <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
                     <h2 class="font-bold text-amber-700 dark:text-amber-500 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2"><i class="fas fa-ruler-combined mr-2"></i>3. วัดระดับ & ตัดท่อ</h2>
                     <div class="space-y-3">
@@ -137,6 +144,7 @@
                 </section>
             </div>
 
+            <!-- Timeline Log -->
             <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
                 <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
                     <span><i class="fas fa-list-ul mr-2"></i>Timeline & Concrete Age Plan</span>
@@ -161,10 +169,27 @@
             </section>
         </div>
 
+        <!-- Right Side: Actual Dashboard & Predictions -->
         <div class="lg:col-span-4 space-y-4">
             
             <div class="bg-blue-600 dark:bg-blue-700 text-white text-center py-2 rounded-xl font-bold shadow-md uppercase tracking-wider text-sm transition-colors">
                 หน้าปัดสถานะจริง (Actual)
+            </div>
+
+            <!-- Idle Time Tracker Card -->
+            <div id="idle-tracker-card" class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors">
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    <i class="fas fa-stopwatch text-slate-400"></i>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">เวลารอคันถัดไป (Idle Time)</p>
+                </div>
+                <p id="idle-time-display" class="text-3xl font-bold text-slate-700 dark:text-slate-200">- นาที</p>
+                <p id="idle-status" class="text-xs font-bold mt-2 uppercase"></p>
+                <!-- ปุมจบงาน (ซ่อนไว้ก่อนถ้ายังไม่เท) -->
+                <div id="finish-job-container" class="mt-2 hidden">
+                    <button onclick="toggleFinishJob()" id="finish-job-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg shadow transition mt-1">
+                        <i class="fas fa-flag-checkered mr-1"></i> จบงานเทคอนกรีต
+                    </button>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -179,10 +204,11 @@
                 <div id="embed-card" class="bg-white dark:bg-slate-800 p-4 rounded-xl border-2 shadow-md text-center col-span-2 transition-colors">
                     <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">ระยะฝังท่อ ณ ปัจจุบัน (Actual)</p>
                     <p id="actual-embed" class="text-5xl font-bold dark:text-white">0.00 <span class="text-lg opacity-50">m</span></p>
-                    <p id="actual-status" class="text-xs font-bold mt-2 uppercase"></p>
+                    <p id="embed-status" class="text-xs font-bold mt-2 uppercase"></p>
                 </div>
             </div>
 
+            <!-- Visualization -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-[320px] flex flex-col items-center transition-colors">
                 <h3 class="text-xs font-bold text-slate-400 mb-2 uppercase">Real-time Visualization</h3>
                 <div class="relative w-24 h-full border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg">
@@ -196,6 +222,7 @@
                 </div>
             </div>
 
+            <!-- PERMANENT PREDICTION CARD -->
             <div class="bg-slate-800 dark:bg-slate-900 text-white p-5 rounded-xl border border-slate-700 shadow-lg relative overflow-hidden transition-colors">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500 opacity-10 rounded-bl-full z-0"></div>
                 <h3 class="font-bold text-blue-300 mb-3 text-sm uppercase tracking-wide relative z-10">
@@ -225,6 +252,7 @@
                 </div>
             </div>
 
+            <!-- SITE NOTES AREA -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors mt-4">
                 <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase">
                     <i class="fas fa-sticky-note mr-1 text-amber-500"></i> โน้ตปัญหา / หมายเหตุหน้างาน
@@ -235,6 +263,7 @@
         </div>
     </main>
 
+    <!-- Modal for Editing -->
     <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transition-colors">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700">
@@ -282,6 +311,49 @@
         </div>
     </div>
 
+    <!-- Manual Modal -->
+    <div id="manual-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-colors flex flex-col max-h-[90vh]">
+            <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
+                <span><i class="fas fa-book mr-2"></i>เกณฑ์และเงื่อนไขการทำงาน</span>
+                <button onclick="closeManualModal()" class="text-slate-300 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-5 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-ruler-vertical text-blue-500 mr-2"></i>1. ระยะฝังท่อทรีมี่ (Embedment Depth)</h4>
+                    <ul class="space-y-1 mt-2">
+                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">2.0 - 6.0 m</span> ปลอดภัย (ระยะมาตรฐาน)</li>
+                        <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">> 6.0 m</span> ระวัง! (ฝังลึกเกินไป เสี่ยงท่อติด)</li>
+                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< 2.0 m</span> อันตราย! (เสี่ยงท่อหลุดชั้นคอนกรีต)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-clock text-amber-500 mr-2"></i>2. อายุคอนกรีตจากแพลนท์ (Batch Age)</h4>
+                    <ul class="space-y-1 mt-2">
+                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">< 1.5 ชม.</span> ปกติ (ไหลตัวได้ดี)</li>
+                        <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">1.5 - 2.0 ชม.</span> ระวัง! (ควรเร่งเท / เช็คหน้างาน)</li>
+                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">> 2.0 ชม.</span> อันตราย! (เสี่ยงเกิด Cold Joint)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-stopwatch text-indigo-500 mr-2"></i>3. เวลารอรถปูน (Idle Time)</h4>
+                    <ul class="space-y-1 mt-2">
+                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">< 30 นาที</span> ปกติ (เทต่อเนื่อง)</li>
+                        <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">30 - 45 นาที</span> ระวัง! (พิจารณาขยับท่อ Tremie)</li>
+                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">> 45 นาที</span> อันตราย! (รีบขยับท่อด่วน ป้องกันปูนติด)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-calculator text-emerald-500 mr-2"></i>4. ประมาณการสั่งปูน (Yield)</h4>
+                    <p class="mt-2 text-xs leading-relaxed">แอปจะบวกเผื่อ <strong class="text-emerald-600 dark:text-emerald-400">+15%</strong> (Yield 1.15) เฉพาะจากปริมาตรช่องว่างที่เหลืออยู่เท่านั้น เพื่อความแม่นยำและลดเศษปูนทิ้งท้ายหลุม</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-700 shrink-0 bg-slate-50 dark:bg-slate-900">
+                <button onclick="closeManualModal()" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 rounded-lg transition-colors">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Dark Mode Logic ---
         function applyTheme(isDark) {
@@ -307,11 +379,11 @@
             applyTheme(false);
         }
 
-        // --- Concrete Age Functions ---
+        // --- Concrete Age & Time Functions ---
         function calculateAgeMinutes(batchTimeStr, pourTimeStr) {
             if (!batchTimeStr) return null;
             const [bH, bM] = batchTimeStr.split(':').map(Number);
-            let endTarget = new Date(); // now
+            let endTarget = new Date(); 
             if (pourTimeStr) {
                 const [pH, pM] = pourTimeStr.split(':').map(Number);
                 endTarget.setHours(pH, pM, 0, 0);
@@ -319,7 +391,6 @@
             
             let batchTarget = new Date(endTarget);
             batchTarget.setHours(bH, bM, 0, 0);
-
             if (batchTarget > endTarget) batchTarget.setDate(batchTarget.getDate() - 1);
             
             return Math.floor((endTarget - batchTarget) / 60000);
@@ -343,17 +414,21 @@
         let state = {
             settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5 },
             notes: '',
-            events: [] 
+            events: [],
+            isFinished: false,
+            finishTime: null
         };
 
         function init() {
-            const saved = localStorage.getItem('tremie_v12');
+            const saved = localStorage.getItem('tremie_v15');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
                     state.settings = { ...state.settings, ...parsed.settings };
                     state.events = parsed.events || [];
                     state.notes = parsed.notes || '';
+                    state.isFinished = parsed.isFinished || false;
+                    state.finishTime = parsed.finishTime || null;
                 } catch(e) {}
             }
             populateSettingsUI();
@@ -382,7 +457,7 @@
 
         function saveNotes() {
             state.notes = document.getElementById('work-notes').value;
-            localStorage.setItem('tremie_v12', JSON.stringify(state));
+            localStorage.setItem('tremie_v15', JSON.stringify(state));
         }
 
         function exportData() {
@@ -476,7 +551,6 @@
             const ev = state.events[index];
             if (ev.type === 'pour') {
                 ev.isCompleted = !ev.isCompleted;
-                // Time-Lock Persistence Logic (เหมือน V12)
                 if (ev.isCompleted && !ev.pourTime) {
                     const now = new Date();
                     ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
@@ -540,10 +614,34 @@
 
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
 
+        // --- Manual Modal ---
+        function openManualModal() { document.getElementById('manual-modal').classList.remove('hidden'); }
+        function closeManualModal() { document.getElementById('manual-modal').classList.add('hidden'); }
+
+        // --- Job Finished Logic (NEW) ---
+        function toggleFinishJob() {
+            if (state.isFinished) {
+                if (confirm('ยืนยันการ "ยกเลิกการจบงาน"?\n(ระบบจะกลับมาจับเวลาการรอคอนกรีตคันถัดไปตามปกติ)')) {
+                    state.isFinished = false;
+                    state.finishTime = null;
+                    saveAndRender();
+                }
+            } else {
+                if (confirm('ยืนยันการ "จบงานเทคอนกรีตหลุมนี้"?\n(ระบบจะหยุดการจับเวลาและล็อกสถานะให้ทันที)')) {
+                    state.isFinished = true;
+                    const now = new Date();
+                    state.finishTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                    saveAndRender();
+                }
+            }
+        }
+
         function resetApp() {
             if(confirm('ต้องการเริ่มหลุมใหม่ ข้อมูลการเทจะหายทั้งหมด?')) {
                 state.events = [];
                 state.notes = ''; 
+                state.isFinished = false;
+                state.finishTime = null;
                 document.getElementById('pile-name').value = '';
                 document.getElementById('predict-sounding').value = '';
                 populateSettingsUI(); 
@@ -552,7 +650,7 @@
         }
 
         function saveAndRender() {
-            localStorage.setItem('tremie_v12', JSON.stringify(state));
+            localStorage.setItem('tremie_v15', JSON.stringify(state));
             render();
             updatePrediction(); 
         }
@@ -569,6 +667,9 @@
 
             let predVol = 0; let predPipeLen = initTremie; let predConcLevelFromBottom = 0;
             let actualVol = 0; let actualPipeLen = initTremie; let actualConcLevelFromBottom = 0;
+
+            let lastPourTimeStr = null;
+            let hasCompletedPour = false;
 
             state.events.forEach((ev, i) => {
                 const row = document.createElement('tr');
@@ -588,7 +689,7 @@
                     let ageHTML = "";
                     if (ev.batchTime) {
                         if (ev.isCompleted) {
-                            ageHTML = `เทเสร็จ: ${ev.pourTime || '?'} <span class="${colorClass} ml-1">(อายุ ${ageStr})</span>`;
+                            ageHTML = `เทเสร็จ: <span class="font-bold">${ev.pourTime || '?'}</span> <span class="${colorClass} ml-1">(อายุ ${ageStr})</span>`;
                         } else {
                             ageHTML = `ผลิต: <span class="font-bold">${ev.batchTime}</span> <i class="fas fa-clock mx-1"></i><span class="${colorClass}">ผ่านไป ${ageStr}</span>`;
                         }
@@ -599,6 +700,8 @@
                     if (ev.isCompleted) {
                         actualVol += ev.val;
                         actualConcLevelFromBottom = actualVol / area;
+                        lastPourTimeStr = ev.pourTime; 
+                        hasCompletedPour = true;
                     }
 
                     if (!ev.isCompleted) {
@@ -669,6 +772,70 @@
                 logBody.appendChild(row);
             });
 
+            // --- Idle Time & Finish Job Logic ---
+            const idleCard = document.getElementById('idle-tracker-card');
+            const idleDisplay = document.getElementById('idle-time-display');
+            const idleStatus = document.getElementById('idle-status');
+            const finishBtnContainer = document.getElementById('finish-job-container');
+            const finishBtn = document.getElementById('finish-job-btn');
+
+            if (state.isFinished) {
+                // ถ้ากดจบงานแล้ว
+                idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 dark:border-blue-600 shadow-md text-center transition-colors";
+                idleDisplay.className = "text-3xl font-bold text-blue-600 dark:text-blue-400";
+                idleDisplay.innerText = "จบงาน";
+                idleStatus.innerText = `เทคอนกรีตเสร็จสิ้นเมื่อเวลา ${state.finishTime}`;
+                idleStatus.className = "text-xs font-bold mt-2 text-blue-600 dark:text-blue-400";
+                
+                finishBtnContainer.classList.remove('hidden');
+                finishBtn.className = "w-full bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600 text-[10px] font-bold py-1.5 rounded-lg transition mt-2";
+                finishBtn.innerHTML = '<i class="fas fa-undo mr-1"></i> ยกเลิกการจบงาน';
+
+            } else if (hasCompletedPour && lastPourTimeStr) {
+                // กรณียังไม่จบงาน และมีการเทไปแล้ว ให้คำนวณเวลาปกติ
+                const now = new Date();
+                const [lH, lM] = lastPourTimeStr.split(':').map(Number);
+                let lastPDate = new Date();
+                lastPDate.setHours(lH, lM, 0, 0);
+                if (lastPDate > now) lastPDate.setDate(lastPDate.getDate() - 1);
+                
+                let idleMins = Math.floor((now - lastPDate) / 60000);
+                if (idleMins < 0) idleMins = 0;
+
+                idleDisplay.innerText = formatAgeString(idleMins);
+
+                if (idleMins >= 45) {
+                    idleCard.className = "bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-400 dark:border-red-600 shadow-md text-center transition-colors animate-pulse";
+                    idleDisplay.className = "text-3xl font-bold text-red-600 dark:text-red-400";
+                    idleStatus.innerText = "อันตราย! ปูนขาดช่วงนาน ให้รีบขยับท่อ Tremie ด่วน";
+                    idleStatus.className = "text-xs font-bold mt-2 text-red-600 dark:text-red-400";
+                } else if (idleMins >= 30) {
+                    idleCard.className = "bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-400 dark:border-orange-600 shadow-md text-center transition-colors";
+                    idleDisplay.className = "text-3xl font-bold text-orange-600 dark:text-orange-400";
+                    idleStatus.innerText = "รถปูนขาดช่วง ควรพิจารณาขยับท่อ Tremie เล็กน้อย";
+                    idleStatus.className = "text-xs font-bold mt-2 text-orange-600 dark:text-orange-400";
+                } else {
+                    idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors";
+                    idleDisplay.className = "text-3xl font-bold text-emerald-600 dark:text-emerald-400";
+                    idleStatus.innerText = "เวลาเทต่อเนื่องปกติ";
+                    idleStatus.className = "text-xs font-bold mt-2 text-slate-500 dark:text-slate-400";
+                }
+
+                // แสดงปุ่มจบงาน
+                finishBtnContainer.classList.remove('hidden');
+                finishBtn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg shadow transition mt-2";
+                finishBtn.innerHTML = '<i class="fas fa-flag-checkered mr-1"></i> จบงานเทคอนกรีต';
+
+            } else {
+                // ยังไม่ได้เริ่มเท
+                idleDisplay.innerText = "- นาที";
+                idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors opacity-50";
+                idleDisplay.className = "text-3xl font-bold text-slate-400 dark:text-slate-500";
+                idleStatus.innerText = "ยังไม่มีการเทปูนคันแรก";
+                idleStatus.className = "text-xs font-bold mt-2 text-slate-400";
+                finishBtnContainer.classList.add('hidden'); // ซ่อนปุ่มถ้ายังไม่เริ่ม
+            }
+
             let actualEmbed = actualConcLevelFromBottom - (depth - actualPipeLen);
 
             document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs font-normal">m³</span>`;
@@ -676,7 +843,7 @@
             document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg font-normal opacity-50">m</span>`;
             
             const card = document.getElementById('embed-card');
-            const status = document.getElementById('actual-status');
+            const status = document.getElementById('embed-status');
             
             if (state.events.length === 0) {
                 card.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-md text-center col-span-2 transition-colors";
