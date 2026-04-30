@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V22 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V23 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', }
@@ -34,7 +34,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V22
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V23
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -70,34 +70,40 @@
         <!-- Left Side: Inputs & Logs -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- Setup Section -->
-            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 transition-colors">
-                <div class="col-span-2 md:col-span-3 lg:col-span-6 border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">
-                    <h2 class="font-bold text-slate-700 dark:text-slate-200"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะ</h2>
+            <!-- Setup Section (V23: Collapsible) -->
+            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+                <!-- Header with Toggle Action -->
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="toggleSetup()">
+                    <h2 class="font-bold text-slate-700 dark:text-slate-200 select-none"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะ</h2>
+                    <i id="setup-toggle-icon" class="fas fa-chevron-up text-slate-400 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-full px-2"></i>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">หลุมเจาะ (Pile ID)</label>
-                    <input type="text" id="pile-name" placeholder="P1-01" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">เส้นผ่านศูนย์กลาง (m)</label>
-                    <input type="number" id="diameter" value="1.2" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ความลึกหลุม (m)</label>
-                    <input type="number" id="depth" value="62.0" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อ Tremie (m)</label>
-                    <input type="number" id="init-tremie" value="61.5" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase text-blue-500">ท่อนมาตรฐาน (m)</label>
-                    <input type="number" id="sec-len" value="3.0" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase text-purple-500">ท่อนบนสุด (m)</label>
-                    <input type="number" id="top-len" value="1.5" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-slate-800 text-purple-700 dark:text-purple-400 font-bold">
+                
+                <!-- Setup Content -->
+                <div id="setup-content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4 transition-all duration-300">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
+                        <input type="text" id="pile-name" placeholder="P1-01" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">เส้นผ่านศูนย์กลาง (m)</label>
+                        <input type="number" id="diameter" value="1.2" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">ความลึกหลุม (m)</label>
+                        <input type="number" id="depth" value="62.0" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อ Tremie (m)</label>
+                        <input type="number" id="init-tremie" value="61.5" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-blue-500">ท่อนมาตรฐาน (m)</label>
+                        <input type="number" id="sec-len" value="3.0" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-purple-500">ท่อนบนสุด / ท่อนเศษ (m)</label>
+                        <input type="number" id="top-len" value="1.5" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-slate-800 text-purple-700 dark:text-purple-400 font-bold">
+                    </div>
                 </div>
             </section>
 
@@ -288,20 +294,20 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-blue-600 dark:text-blue-400 w-16 shrink-0">V22:</span> 
+                    <span class="font-bold text-blue-600 dark:text-blue-400 w-16 shrink-0">V23:</span> 
+                    <span>เพิ่มฟังก์ชันพับเก็บ (Collapse) เมนูตั้งค่าหลุมเจาะ เพื่อประหยัดพื้นที่แสดงผลหน้าจอระหว่างการทำงาน (UI/UX Optimization)</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V22:</span> 
                     <span>ปรับปรุงเงื่อนไข AI แนะนำการตัดท่อ โดยบังคับให้ระยะฝังหลังตัดต้องไม่น้อยกว่าความยาวท่อนมาตรฐาน (หรือขั้นต่ำ 3 เมตร) เพื่อความปลอดภัยสูงสุด</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-slate-500 w-16 shrink-0">V21:</span> 
-                    <span>ปรับรูปแบบการแสดงผล "เวลารอคันถัดไป" เป็นภาษาไทยให้อ่านง่ายขึ้น (แสดงเป็น x ชั่วโมง x นาที) (UX Improvement)</span>
+                    <span>ปรับรูปแบบการแสดงผล "เวลารอคันถัดไป" เป็นภาษาไทยให้อ่านง่ายขึ้น (แสดงเป็น x ชั่วโมง x นาที)</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-slate-500 w-16 shrink-0">V20:</span> 
                     <span>แก้ไขบั๊กเมนูเลือกลำดับรีเซ็ตตัวเองตอนกรอกตัวเลข และอัปเกรดระบบ AI ให้คำนวณท่อนตัดอ้างอิงตามลำดับที่เลือกไว้จริงๆ</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-slate-500 w-16 shrink-0">V19:</span> 
-                    <span>เพิ่มระบบสมองกลแนะนำจำนวนท่อนที่ควรตัดอัตโนมัติ (Smart Suggestion) และปรับหน้าต่าง Changelog ให้ซ่อนได้</span>
                 </li>
             </ul>
         </div>
@@ -413,7 +419,19 @@
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { applyTheme(true); } 
         else { applyTheme(false); }
 
-        // --- Changelog Toggle Logic ---
+        // --- Toggle Sections Logic (V23) ---
+        function toggleSetup() {
+            const content = document.getElementById('setup-content');
+            const icon = document.getElementById('setup-toggle-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        }
+
         function toggleChangelog() {
             const content = document.getElementById('changelog-content');
             const icon = document.getElementById('changelog-icon');
@@ -472,7 +490,8 @@
         };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v22');
+            let saved = localStorage.getItem('tremie_v23'); // V23 Load order
+            if (!saved) saved = localStorage.getItem('tremie_v22');
             if (!saved) saved = localStorage.getItem('tremie_v21');
             if (!saved) saved = localStorage.getItem('tremie_v20');
             if (!saved) saved = localStorage.getItem('tremie_v19');
@@ -515,7 +534,7 @@
             saveAndRender();
         }
 
-        // --- Smart Suggest Cut Logic (V22 Upgrade) ---
+        // --- Smart Suggest Cut Logic ---
         function suggestCut() {
             const soundingStr = document.getElementById('sounding-input').value;
             const sugDiv = document.getElementById('cut-suggestion');
@@ -536,7 +555,6 @@
             const secLen = state.settings.secLen || 3.0;
             const topLen = state.settings.topLen || 1.5;
             
-            // V22: กำหนดระยะฝังขั้นต่ำให้ไม่น้อยกว่าท่อนมาตรฐาน หรือไม่น้อยกว่า 3 เมตร
             const minEmbed = Math.max(secLen, 3.0); 
 
             const limit = insertIdx === -1 ? state.events.length : insertIdx + 1;
@@ -550,7 +568,6 @@
             
             let currentEmbed = actualPipeLen - sounding;
 
-            // ตรวจสอบว่าท่อจะหลุดระยะปลอดภัยที่กำหนดไว้ใหม่แล้วหรือไม่
             if (currentEmbed < minEmbed) {
                 let txt = currentEmbed < 0 ? `ท่อหลุดคอนกรีต! ระยะฝังติดลบ (${currentEmbed.toFixed(2)}m)` : `ระยะฝังปัจจุบัน (${currentEmbed.toFixed(2)}m) น้อยกว่าเกณฑ์ความปลอดภัย (${minEmbed.toFixed(1)}m)`;
                 sugDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-1 text-sm"></i><span class="font-bold">อันตราย:</span> ${txt} ไม่สามารถตัดท่อได้แล้ว`;
@@ -562,7 +579,6 @@
             let testCut = 0;
             let piecesToCut = 0;
             
-            // ลูปจำลองการตัด จนกว่าถัดไปจะทำให้ระยะฝังน้อยกว่าเกณฑ์ใหม่
             while (true) {
                 let nextPieceLen = (!isTopPieceRemoved && piecesToCut === 0) ? topLen : secLen;
                 if (currentEmbed - (testCut + nextPieceLen) >= minEmbed) { 
@@ -616,7 +632,7 @@
             }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v22', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v23', JSON.stringify(state)); }
         function exportData() {
             saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -751,7 +767,7 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v22', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v23', JSON.stringify(state)); render(); updatePrediction(); }
 
         function render() {
             const { pileName, diameter, depth, initTremie, secLen, topLen } = state.settings;
@@ -955,7 +971,6 @@
             document.getElementById('actual-pipe-pcs').innerText = `เหลือ ≈ ${remainingPcs} ท่อน`;
             document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg font-normal opacity-50">m</span>`;
 
-            // V22: อัปเดตเงื่อนไขเตือนอันตรายในหน้าปัด
             const card = document.getElementById('embed-card');
             const status = document.getElementById('embed-status');
             const safeEmbedLimit = Math.max(secLen, 3.0);
