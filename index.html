@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V17.1 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V22 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', }
@@ -34,9 +34,9 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V17.1
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V22
                 </h1>
-                <p class="text-slate-400 text-sm">แก้ไขบั๊กตัวเลขระยะฝังท่อ (Actual Embed) ไม่แสดงผล</p>
+                <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-2">
                 <div class="bg-slate-800 px-4 py-2 rounded-lg text-emerald-400 font-bold border border-slate-700 mr-2">
@@ -88,7 +88,7 @@
                     <input type="number" id="depth" value="62.0" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อเริ่มต้น (m)</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อ Tremie (m)</label>
                     <input type="number" id="init-tremie" value="61.5" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                 </div>
                 <div>
@@ -129,25 +129,28 @@
                 </section>
 
                 <!-- Remove Pipe -->
-                <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+                <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors relative">
                     <h2 class="font-bold text-amber-700 dark:text-amber-500 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2"><i class="fas fa-ruler-combined mr-2"></i>3. วัดระดับ & ตัดท่อ</h2>
                     <div class="space-y-3">
-                        <select id="insert-index" class="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-700 text-sm outline-none">
+                        <select id="insert-index" class="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-700 text-sm outline-none" onchange="suggestCut(); autoCalcPipeM();">
                             <option value="-1">-- ตัดท่อล่าสุด (ต่อท้าย Timeline) --</option>
                         </select>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-3 gap-2 relative">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">หย่อนเทป (m)</label>
-                                <input type="number" id="sounding-input" placeholder="วัดจริง" step="0.1" class="w-full p-2 border rounded-lg text-blue-600 dark:text-blue-400 font-bold outline-none">
+                                <input type="number" id="sounding-input" placeholder="วัดจริง" step="0.1" oninput="suggestCut()" class="w-full p-2 border rounded-lg text-blue-600 dark:text-blue-400 font-bold outline-none focus:ring-2 focus:ring-blue-400 transition-shadow">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-amber-500 uppercase">ตัดออก (ท่อน)</label>
-                                <input type="number" id="pipe-pcs" placeholder="เช่น 2" step="0.5" oninput="autoCalcPipeM()" class="w-full p-2 border rounded-lg text-amber-600 dark:text-amber-400 font-bold outline-none bg-amber-50 dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+                                <input type="number" id="pipe-pcs" placeholder="เช่น 2" step="0.5" oninput="autoCalcPipeM()" class="w-full p-2 border rounded-lg text-amber-600 dark:text-amber-400 font-bold outline-none bg-amber-50 dark:bg-slate-800 border-amber-200 dark:border-amber-800 focus:ring-2 focus:ring-amber-400 transition-shadow">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">ตัดออก (m)</label>
-                                <input type="number" id="pipe-input" placeholder="คำนวณอัตโนมัติ" step="0.5" class="w-full p-2 border rounded-lg text-amber-700 dark:text-amber-500 font-bold outline-none">
+                                <input type="number" id="pipe-input" placeholder="อัตโนมัติ" step="0.5" class="w-full p-2 border rounded-lg text-amber-700 dark:text-amber-500 font-bold outline-none bg-slate-50 dark:bg-slate-700 cursor-not-allowed" readonly>
                             </div>
+                            
+                            <!-- กล่องแสดงคำแนะนำอัจฉริยะ (Smart Cut Suggestion) -->
+                            <div id="cut-suggestion" class="col-span-3 hidden"></div>
                         </div>
                         <button onclick="submitRemove()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-bold shadow transition mt-2">
                             + บันทึกตัดท่อ
@@ -194,7 +197,7 @@
                     <i class="fas fa-stopwatch text-slate-400"></i>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">เวลารอคันถัดไป (Idle Time)</p>
                 </div>
-                <p id="idle-time-display" class="text-3xl font-bold text-slate-700 dark:text-slate-200">- นาที</p>
+                <p id="idle-time-display" class="text-2xl md:text-3xl font-bold text-slate-700 dark:text-slate-200">- นาที</p>
                 <p id="idle-status" class="text-xs font-bold mt-2 uppercase"></p>
                 <!-- ปุมจบงาน -->
                 <div id="finish-job-container" class="mt-2 hidden">
@@ -209,7 +212,6 @@
                     <p class="text-[10px] font-bold text-slate-400">ปูนที่เทจริงแล้ว</p>
                     <p id="actual-vol" class="text-xl font-bold text-slate-800 dark:text-white">0.0 <span class="text-xs">m³</span></p>
                 </div>
-                <!-- ช่องโชว์ท่อน -->
                 <div class="bg-blue-50 dark:bg-slate-800 p-3 rounded-xl border border-blue-200 dark:border-slate-700 shadow-sm text-center transition-colors flex flex-col justify-center">
                     <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400">ท่อเหลือยาวทั้งหมด</p>
                     <p id="actual-pipe" class="text-xl font-bold text-blue-700 dark:text-blue-400">0.0 <span class="text-xs">m</span></p>
@@ -246,7 +248,7 @@
                 <div class="flex gap-2 mb-4 relative z-10">
                     <div class="flex-1">
                         <label class="block text-[10px] text-slate-400 uppercase">ระยะหย่อนเทป (m)</label>
-                        <input type="number" id="predict-sounding" placeholder="วัดล่าสุด" step="0.1" oninput="updatePrediction()" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white font-bold outline-none focus:border-blue-400">
+                        <input type="number" id="predict-sounding" placeholder="วัดล่าสุด" step="0.1" oninput="updatePrediction()" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white font-bold outline-none focus:border-blue-400 transition-shadow">
                     </div>
                 </div>
 
@@ -271,11 +273,39 @@
                 <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase">
                     <i class="fas fa-sticky-note mr-1 text-amber-500"></i> โน้ตปัญหา / หมายเหตุหน้างาน
                 </h3>
-                <textarea id="work-notes" oninput="saveNotes()" rows="4" class="w-full p-3 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-amber-400 outline-none transition-colors" placeholder="พิมพ์บันทึกเหตุการณ์ รถปูนมาช้า ปัญหาดินพัง ฯลฯ..."></textarea>
+                <textarea id="work-notes" oninput="saveNotes()" rows="4" class="w-full p-3 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-amber-400 outline-none transition-all" placeholder="พิมพ์บันทึกเหตุการณ์ รถปูนมาช้า ปัญหาดินพัง ฯลฯ..."></textarea>
             </div>
             
         </div>
     </main>
+
+    <!-- Changelog Section (Collapsible) -->
+    <div class="max-w-7xl mx-auto px-4 mt-2 mb-10">
+        <button onclick="toggleChangelog()" class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 text-left font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex justify-between items-center outline-none">
+            <span><i class="fas fa-history mr-2"></i>บันทึกการแก้ไขเวอร์ชัน (Changelog)</span>
+            <i id="changelog-icon" class="fas fa-chevron-down text-slate-400"></i>
+        </button>
+        <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                <li class="flex items-start">
+                    <span class="font-bold text-blue-600 dark:text-blue-400 w-16 shrink-0">V22:</span> 
+                    <span>ปรับปรุงเงื่อนไข AI แนะนำการตัดท่อ โดยบังคับให้ระยะฝังหลังตัดต้องไม่น้อยกว่าความยาวท่อนมาตรฐาน (หรือขั้นต่ำ 3 เมตร) เพื่อความปลอดภัยสูงสุด</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V21:</span> 
+                    <span>ปรับรูปแบบการแสดงผล "เวลารอคันถัดไป" เป็นภาษาไทยให้อ่านง่ายขึ้น (แสดงเป็น x ชั่วโมง x นาที) (UX Improvement)</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V20:</span> 
+                    <span>แก้ไขบั๊กเมนูเลือกลำดับรีเซ็ตตัวเองตอนกรอกตัวเลข และอัปเกรดระบบ AI ให้คำนวณท่อนตัดอ้างอิงตามลำดับที่เลือกไว้จริงๆ</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V19:</span> 
+                    <span>เพิ่มระบบสมองกลแนะนำจำนวนท่อนที่ควรตัดอัตโนมัติ (Smart Suggestion) และปรับหน้าต่าง Changelog ให้ซ่อนได้</span>
+                </li>
+            </ul>
+        </div>
+    </div>
 
     <!-- Modal for Editing -->
     <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
@@ -336,9 +366,9 @@
                 <div>
                     <h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-ruler-vertical text-blue-500 mr-2"></i>1. ระยะฝังท่อทรีมี่ (Embedment Depth)</h4>
                     <ul class="space-y-1 mt-2">
-                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">2.0 - 6.0 m</span> ปลอดภัย (ระยะมาตรฐาน)</li>
+                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">≥ 3.0 m</span> ปลอดภัย (ระยะมาตรฐานใหม่)</li>
                         <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">> 6.0 m</span> ระวัง! (ฝังลึกเกินไป เสี่ยงท่อติด)</li>
-                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< 2.0 m</span> อันตราย! (เสี่ยงท่อหลุดชั้นคอนกรีต)</li>
+                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< 3.0 m</span> อันตราย! (เสี่ยงท่อหลุด หรือน้อยกว่า 1 ท่อน)</li>
                     </ul>
                 </div>
                 <div>
@@ -383,6 +413,19 @@
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { applyTheme(true); } 
         else { applyTheme(false); }
 
+        // --- Changelog Toggle Logic ---
+        function toggleChangelog() {
+            const content = document.getElementById('changelog-content');
+            const icon = document.getElementById('changelog-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        }
+
         // --- Concrete Age & Time Functions ---
         function calculateAgeMinutes(batchTimeStr, pourTimeStr) {
             if (!batchTimeStr) return null;
@@ -405,6 +448,16 @@
             return h > 0 ? `${h}h ${m}m` : `${m}m`;
         }
 
+        function formatThaiDuration(mins) {
+            if (mins === null || isNaN(mins)) return '- นาที';
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            if (h > 0) {
+                return m > 0 ? `${h} ชั่วโมง ${m} นาที` : `${h} ชั่วโมง`;
+            }
+            return `${m} นาที`;
+        }
+
         function getAgeColor(mins) {
             if (mins === null || isNaN(mins)) return "text-slate-400";
             if (mins >= 120) return "text-red-600 dark:text-red-400 font-bold animate-pulse";
@@ -419,7 +472,13 @@
         };
 
         function init() {
-            const saved = localStorage.getItem('tremie_v17');
+            let saved = localStorage.getItem('tremie_v22');
+            if (!saved) saved = localStorage.getItem('tremie_v21');
+            if (!saved) saved = localStorage.getItem('tremie_v20');
+            if (!saved) saved = localStorage.getItem('tremie_v19');
+            if (!saved) saved = localStorage.getItem('tremie_v18');
+            if (!saved) saved = localStorage.getItem('tremie_v17'); 
+            
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -456,7 +515,76 @@
             saveAndRender();
         }
 
-        // --- Auto Calculate Pipe Meters (Smart Logic) ---
+        // --- Smart Suggest Cut Logic (V22 Upgrade) ---
+        function suggestCut() {
+            const soundingStr = document.getElementById('sounding-input').value;
+            const sugDiv = document.getElementById('cut-suggestion');
+            const insertIdx = parseInt(document.getElementById('insert-index').value);
+            
+            if (!soundingStr) {
+                sugDiv.classList.add('hidden');
+                return;
+            }
+
+            const sounding = parseFloat(soundingStr);
+            if (isNaN(sounding) || sounding <= 0) {
+                sugDiv.classList.add('hidden');
+                return;
+            }
+
+            let actualPipeLen = state.settings.initTremie;
+            const secLen = state.settings.secLen || 3.0;
+            const topLen = state.settings.topLen || 1.5;
+            
+            // V22: กำหนดระยะฝังขั้นต่ำให้ไม่น้อยกว่าท่อนมาตรฐาน หรือไม่น้อยกว่า 3 เมตร
+            const minEmbed = Math.max(secLen, 3.0); 
+
+            const limit = insertIdx === -1 ? state.events.length : insertIdx + 1;
+            let isTopPieceRemoved = false;
+            for (let i = 0; i < limit; i++) {
+                if (state.events[i].type === 'remove') {
+                    actualPipeLen -= state.events[i].val;
+                    isTopPieceRemoved = true;
+                }
+            }
+            
+            let currentEmbed = actualPipeLen - sounding;
+
+            // ตรวจสอบว่าท่อจะหลุดระยะปลอดภัยที่กำหนดไว้ใหม่แล้วหรือไม่
+            if (currentEmbed < minEmbed) {
+                let txt = currentEmbed < 0 ? `ท่อหลุดคอนกรีต! ระยะฝังติดลบ (${currentEmbed.toFixed(2)}m)` : `ระยะฝังปัจจุบัน (${currentEmbed.toFixed(2)}m) น้อยกว่าเกณฑ์ความปลอดภัย (${minEmbed.toFixed(1)}m)`;
+                sugDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-1 text-sm"></i><span class="font-bold">อันตราย:</span> ${txt} ไม่สามารถตัดท่อได้แล้ว`;
+                sugDiv.className = "col-span-3 text-xs bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-2.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm mt-1 transition-all";
+                sugDiv.classList.remove('hidden');
+                return;
+            }
+
+            let testCut = 0;
+            let piecesToCut = 0;
+            
+            // ลูปจำลองการตัด จนกว่าถัดไปจะทำให้ระยะฝังน้อยกว่าเกณฑ์ใหม่
+            while (true) {
+                let nextPieceLen = (!isTopPieceRemoved && piecesToCut === 0) ? topLen : secLen;
+                if (currentEmbed - (testCut + nextPieceLen) >= minEmbed) { 
+                    testCut += nextPieceLen;
+                    piecesToCut++;
+                } else {
+                    break;
+                }
+            }
+
+            if (piecesToCut > 0) {
+                sugDiv.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center"><i class="fas fa-magic text-emerald-500 mr-2 text-sm"></i><span><span class="font-bold uppercase tracking-wider">แนะนำให้ตัด:</span> <b>${piecesToCut} ท่อน</b> (${testCut.toFixed(1)}m)</span></div><div class="bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded font-bold text-emerald-800 dark:text-emerald-300">ฝังจะเหลือ ${(currentEmbed - testCut).toFixed(2)}m</div></div>`;
+                sugDiv.className = "col-span-3 text-xs bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-700 shadow-sm mt-1 transition-all";
+            } else {
+                sugDiv.innerHTML = `<div class="flex items-center"><i class="fas fa-info-circle text-blue-500 mr-2 text-sm"></i><span><span class="font-bold uppercase tracking-wider">ยังไม่ควรตัด:</span> ระยะฝังปัจจุบัน <b>${currentEmbed.toFixed(2)}m</b> (หากตัดท่อจะเหลือน้อยกว่า ${minEmbed.toFixed(1)}m)</span></div>`;
+                sugDiv.className = "col-span-3 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 p-2.5 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm mt-1 transition-all";
+            }
+            sugDiv.classList.remove('hidden');
+            
+            updatePrediction();
+        }
+
         function autoCalcPipeM() {
             const pcs = parseFloat(document.getElementById('pipe-pcs').value);
             const secLen = parseFloat(document.getElementById('sec-len').value) || 3.0;
@@ -465,7 +593,6 @@
             const insertIdx = parseInt(document.getElementById('insert-index').value);
 
             if (!isNaN(pcs) && pcs > 0) {
-                // Check if top piece is already removed
                 let topPieceAlreadyRemoved = false;
                 const limit = insertIdx === -1 ? state.events.length : insertIdx + 1;
                 for (let i = 0; i < limit; i++) {
@@ -489,7 +616,7 @@
             }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v17', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v22', JSON.stringify(state)); }
         function exportData() {
             saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -549,8 +676,12 @@
             if (idx === -1) state.events.push(newEvent); else state.events.splice(idx + 1, 0, newEvent);
             if (sounding > 0) document.getElementById('predict-sounding').value = sounding;
 
-            document.getElementById('sounding-input').value = ""; document.getElementById('pipe-input').value = ""; document.getElementById('pipe-pcs').value = "";
-            document.getElementById('insert-index').value = "-1"; saveAndRender();
+            document.getElementById('sounding-input').value = ""; 
+            document.getElementById('pipe-input').value = ""; 
+            document.getElementById('pipe-pcs').value = "";
+            document.getElementById('insert-index').value = "-1"; 
+            document.getElementById('cut-suggestion').classList.add('hidden');
+            saveAndRender();
         }
 
         function togglePourStatus(index) {
@@ -615,11 +746,12 @@
             if(confirm('ต้องการเริ่มหลุมใหม่ ข้อมูลการเทจะหายทั้งหมด?')) {
                 state.events = []; state.notes = ''; state.isFinished = false; state.finishTime = null;
                 document.getElementById('pile-name').value = ''; document.getElementById('predict-sounding').value = '';
+                document.getElementById('cut-suggestion').classList.add('hidden');
                 populateSettingsUI(); updateSettings();
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v17', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v22', JSON.stringify(state)); render(); updatePrediction(); }
 
         function render() {
             const { pileName, diameter, depth, initTremie, secLen, topLen } = state.settings;
@@ -628,6 +760,9 @@
 
             const logBody = document.getElementById('log-body');
             const insertSelect = document.getElementById('insert-index');
+            
+            const currentInsertVal = insertSelect.value;
+            
             logBody.innerHTML = '';
             insertSelect.innerHTML = '<option value="-1">-- ตัดท่อล่าสุด (ต่อท้าย Timeline) --</option>';
 
@@ -636,7 +771,7 @@
 
             let lastPourTimeStr = null;
             let hasCompletedPour = false;
-            let isTopPieceRemoved = false; // Smart Tracker
+            let isTopPieceRemoved = false; 
 
             state.events.forEach((ev, i) => {
                 const row = document.createElement('tr');
@@ -708,7 +843,6 @@
                     }
                     actualPipeLen -= ev.val;
 
-                    // --- Smart Cut Calculation (V17) ---
                     let pcsCut = 0;
                     if (!isTopPieceRemoved) {
                         pcsCut = 1 + (ev.val - topLen) / secLen;
@@ -716,7 +850,7 @@
                     } else {
                         pcsCut = ev.val / secLen;
                     }
-                    let displayPcs = parseFloat(pcsCut.toFixed(1)); // Make it neat
+                    let displayPcs = parseFloat(pcsCut.toFixed(1)); 
 
                     row.className = "row-cut";
                     let soundingText = ev.sounding > 0 ? `เทป ${ev.sounding}m` : 'ไม่วัด';
@@ -745,6 +879,9 @@
                 row.innerHTML = rowHtml;
                 logBody.appendChild(row);
             });
+            
+            insertSelect.value = currentInsertVal;
+            if (insertSelect.selectedIndex === -1) insertSelect.value = "-1"; 
 
             const idleCard = document.getElementById('idle-tracker-card');
             const idleDisplay = document.getElementById('idle-time-display');
@@ -754,7 +891,7 @@
 
             if (state.isFinished) {
                 idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 dark:border-blue-600 shadow-md text-center transition-colors";
-                idleDisplay.className = "text-3xl font-bold text-blue-600 dark:text-blue-400";
+                idleDisplay.className = "text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400";
                 idleDisplay.innerText = "จบงาน";
                 idleStatus.innerText = `เทคอนกรีตเสร็จสิ้นเมื่อเวลา ${state.finishTime}`;
                 idleStatus.className = "text-xs font-bold mt-2 text-blue-600 dark:text-blue-400";
@@ -769,21 +906,22 @@
                 
                 let idleMins = Math.floor((now - lastPDate) / 60000);
                 if (idleMins < 0) idleMins = 0;
-                idleDisplay.innerText = formatAgeString(idleMins);
+                
+                idleDisplay.innerText = formatThaiDuration(idleMins);
 
                 if (idleMins >= 45) {
                     idleCard.className = "bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-400 dark:border-red-600 shadow-md text-center transition-colors animate-pulse";
-                    idleDisplay.className = "text-3xl font-bold text-red-600 dark:text-red-400";
+                    idleDisplay.className = "text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400";
                     idleStatus.innerText = "อันตราย! ปูนขาดช่วงนาน ให้รีบขยับท่อ Tremie ด่วน";
                     idleStatus.className = "text-xs font-bold mt-2 text-red-600 dark:text-red-400";
                 } else if (idleMins >= 30) {
                     idleCard.className = "bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-400 dark:border-orange-600 shadow-md text-center transition-colors";
-                    idleDisplay.className = "text-3xl font-bold text-orange-600 dark:text-orange-400";
+                    idleDisplay.className = "text-2xl md:text-3xl font-bold text-orange-600 dark:text-orange-400";
                     idleStatus.innerText = "รถปูนขาดช่วง ควรพิจารณาขยับท่อ Tremie เล็กน้อย";
                     idleStatus.className = "text-xs font-bold mt-2 text-orange-600 dark:text-orange-400";
                 } else {
                     idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors";
-                    idleDisplay.className = "text-3xl font-bold text-emerald-600 dark:text-emerald-400";
+                    idleDisplay.className = "text-2xl md:text-3xl font-bold text-emerald-600 dark:text-emerald-400";
                     idleStatus.innerText = "เวลาเทต่อเนื่องปกติ";
                     idleStatus.className = "text-xs font-bold mt-2 text-slate-500 dark:text-slate-400";
                 }
@@ -794,21 +932,18 @@
             } else {
                 idleDisplay.innerText = "- นาที";
                 idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors opacity-50";
-                idleDisplay.className = "text-3xl font-bold text-slate-400 dark:text-slate-500";
+                idleDisplay.className = "text-2xl md:text-3xl font-bold text-slate-400 dark:text-slate-500";
                 idleStatus.innerText = "ยังไม่มีการเทปูนคันแรก";
                 idleStatus.className = "text-xs font-bold mt-2 text-slate-400";
                 finishBtnContainer.classList.add('hidden'); 
             }
 
-            // --- Smart Remaining Pieces Display (V17) ---
             let remainingPcs = 0;
             if (actualPipeLen > 0) {
                 const threshold = initTremie - topLen + 0.01;
                 if (actualPipeLen > threshold) {
-                    // ถ้าความยาวท่อเหลือมากกว่า (ความยาวเต็ม - ท่อนบนสุด) แปลว่าท่อนบนสุดยังอยู่
                     remainingPcs = 1 + Math.ceil((actualPipeLen - topLen) / secLen);
                 } else {
-                    // ท่อนบนสุดถูกเอาออกไปแล้ว
                     remainingPcs = Math.ceil(actualPipeLen / secLen);
                 }
             }
@@ -818,21 +953,20 @@
             document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs font-normal">m³</span>`;
             document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs font-normal">m</span>`;
             document.getElementById('actual-pipe-pcs').innerText = `เหลือ ≈ ${remainingPcs} ท่อน`;
-
-            // ----- บรรทัดที่ถูกเพิ่มกลับเข้ามา (Bug Fix) -----
             document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg font-normal opacity-50">m</span>`;
-            // ------------------------------------------
 
+            // V22: อัปเดตเงื่อนไขเตือนอันตรายในหน้าปัด
             const card = document.getElementById('embed-card');
             const status = document.getElementById('embed-status');
+            const safeEmbedLimit = Math.max(secLen, 3.0);
             
             if (state.events.length === 0) {
                 card.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-md text-center col-span-2 transition-colors";
                 status.innerText = "ยังไม่มีการเทปูน";
                 status.className = "text-xs font-bold mt-2 uppercase text-slate-400 dark:text-slate-500";
-            } else if (actualEmbed < 2.0) {
+            } else if (actualEmbed < safeEmbedLimit) {
                 card.className = "bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-md text-center col-span-2 transition-colors";
-                status.innerText = "อันตราย: ท่ออาจหลุดชั้นคอนกรีต!";
+                status.innerText = `อันตราย: ระยะฝังน้อยกว่าเกณฑ์ (${safeEmbedLimit.toFixed(1)}m)!`;
                 status.className = "text-xs font-bold mt-2 uppercase text-red-600 dark:text-red-400 animate-pulse";
             } else if (actualEmbed > 6.0) {
                 card.className = "bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border-2 border-orange-400 dark:border-orange-600 shadow-md text-center col-span-2 transition-colors";
