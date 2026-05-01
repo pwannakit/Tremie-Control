@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V24 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V25 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', }
@@ -34,12 +34,11 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V24
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V25
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-2">
-                <!-- V24: ปรับปรุง Header ให้แสดงข้อมูลผู้ผลิตปูนด้วย -->
                 <div class="bg-slate-800 px-4 py-1.5 rounded-lg text-emerald-400 font-bold border border-slate-700 mr-2 flex flex-col items-center justify-center min-w-[120px]">
                     <span class="text-sm">ID: <span id="display-pile-name" class="text-white">ยังไม่ระบุ</span></span>
                     <span id="display-supplier" class="text-[10px] text-slate-400 font-normal mt-0.5 hidden"></span>
@@ -72,15 +71,13 @@
         <!-- Left Side: Inputs & Logs -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- Setup Section (V24: Added Supplier Info) -->
+            <!-- Setup Section -->
             <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
-                <!-- Header with Toggle Action -->
                 <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="toggleSetup()">
                     <h2 class="font-bold text-slate-700 dark:text-slate-200 select-none"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะและคอนกรีต</h2>
                     <i id="setup-toggle-icon" class="fas fa-chevron-up text-slate-400 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-full px-2"></i>
                 </div>
                 
-                <!-- Setup Content -->
                 <div id="setup-content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4 transition-all duration-300">
                     <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
@@ -107,7 +104,6 @@
                         <input type="number" id="top-len" value="1.5" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-slate-800 text-purple-700 dark:text-purple-400 font-bold">
                     </div>
 
-                    <!-- V24: ข้อมูลคอนกรีต -->
                     <div class="col-span-2 md:col-span-1 lg:col-span-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                         <label class="block text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-500">ผู้ผลิตคอนกรีต</label>
                         <select id="supplier" onchange="updateSupplier()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold">
@@ -174,7 +170,7 @@
                                 <input type="number" id="pipe-input" placeholder="อัตโนมัติ" step="0.5" class="w-full p-2 border rounded-lg text-amber-700 dark:text-amber-500 font-bold outline-none bg-slate-50 dark:bg-slate-700 cursor-not-allowed" readonly>
                             </div>
                             
-                            <!-- กล่องแสดงคำแนะนำอัจฉริยะ (Smart Cut Suggestion) -->
+                            <!-- กล่องแสดงคำแนะนำอัจฉริยะ -->
                             <div id="cut-suggestion" class="col-span-3 hidden"></div>
                         </div>
                         <button onclick="submitRemove()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-bold shadow transition mt-2">
@@ -224,7 +220,6 @@
                 </div>
                 <p id="idle-time-display" class="text-2xl md:text-3xl font-bold text-slate-700 dark:text-slate-200">- นาที</p>
                 <p id="idle-status" class="text-xs font-bold mt-2 uppercase"></p>
-                <!-- ปุมจบงาน -->
                 <div id="finish-job-container" class="mt-2 hidden">
                     <button onclick="toggleFinishJob()" id="finish-job-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg shadow transition mt-1">
                         <i class="fas fa-flag-checkered mr-1"></i> จบงานเทคอนกรีต
@@ -249,17 +244,18 @@
                 </div>
             </div>
 
-            <!-- Visualization -->
-            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-[320px] flex flex-col items-center transition-colors">
-                <h3 class="text-xs font-bold text-slate-400 mb-2 uppercase">Real-time Visualization</h3>
-                <div class="relative w-24 h-full border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg">
-                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-500 uppercase">GL(0.00)</div>
-                    <svg id="viz-svg" viewBox="0 0 100 500" class="w-full h-full preserve-aspect-ratio-none">
+            <!-- Visualization (V25: Bug Fixed Layout) -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[350px] flex flex-col items-center justify-center transition-colors">
+                <h3 class="text-xs font-bold text-slate-400 mb-6 uppercase">Real-time Visualization</h3>
+                <div class="relative w-24 flex-1 w-full max-w-[6rem] border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg mb-6 mt-2">
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap">GL(0.00)</div>
+                    <!-- V25: Add preserveAspectRatio="none" block -->
+                    <svg id="viz-svg" viewBox="0 0 100 500" preserveAspectRatio="none" class="w-full h-full block">
                         <rect id="viz-concrete" x="0" y="500" width="100" height="0" fill="#64748b" class="transition-all duration-500 dark:fill-slate-500" />
                         <rect id="viz-tremie" x="40" y="0" width="20" height="0" fill="#94a3b8" stroke="#1e293b" stroke-width="2" class="transition-all duration-500 dark:fill-slate-400" />
                         <line id="viz-tremie-tip" x1="20" y1="0" x2="80" y2="0" stroke="#000" stroke-width="4" class="dark:stroke-white" />
                     </svg>
-                    <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-500 uppercase w-full text-center" id="viz-depth-label"></div>
+                    <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 uppercase w-full text-center whitespace-nowrap" id="viz-depth-label"></div>
                 </div>
             </div>
 
@@ -313,16 +309,16 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-emerald-600 dark:text-emerald-400 w-16 shrink-0">V24:</span> 
-                    <span>เพิ่มเมนูเลือกผู้ผลิตคอนกรีต (CPAC, M Concrete, TPI, ฯลฯ) พร้อมระบบ Auto-fill รหัสสินค้าและ Slump อัตโนมัติ</span>
+                    <span class="font-bold text-red-500 w-16 shrink-0">V25:</span> 
+                    <span>แก้ไขบั๊กการแสดงผลรูปเสาเข็ม Visualization ทับซ้อนกับตัวหนังสือ โดยจัดระเบียบ Layout ใหม่และบังคับอัตราส่วนกราฟิก SVG ไม่ให้ไหลทะลุกรอบ (UI Bug Fix)</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V24:</span> 
+                    <span>เพิ่มเมนูเลือกผู้ผลิตคอนกรีตพร้อมระบบ Auto-fill รหัสสินค้าและ Slump อัตโนมัติ</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-slate-500 w-16 shrink-0">V23:</span> 
                     <span>เพิ่มฟังก์ชันพับเก็บ (Collapse) เมนูตั้งค่าหลุมเจาะ เพื่อประหยัดพื้นที่แสดงผลหน้าจอระหว่างการทำงาน</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-slate-500 w-16 shrink-0">V22:</span> 
-                    <span>ปรับปรุงเงื่อนไข AI แนะนำการตัดท่อ โดยบังคับให้ระยะฝังหลังตัดต้องไม่น้อยกว่าความยาวท่อนมาตรฐาน (หรือขั้นต่ำ 3 เมตร)</span>
                 </li>
             </ul>
         </div>
@@ -459,7 +455,6 @@
             }
         }
 
-        // --- V24: Supplier Auto-Fill Logic ---
         function updateSupplier() {
             const supp = document.getElementById('supplier').value;
             const codeInput = document.getElementById('product-code');
@@ -525,11 +520,11 @@
         };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v24');
+            let saved = localStorage.getItem('tremie_v25');
+            if (!saved) saved = localStorage.getItem('tremie_v24');
             if (!saved) saved = localStorage.getItem('tremie_v23');
             if (!saved) saved = localStorage.getItem('tremie_v22');
             if (!saved) saved = localStorage.getItem('tremie_v21');
-            if (!saved) saved = localStorage.getItem('tremie_v20');
             
             if (saved) {
                 try {
@@ -671,7 +666,7 @@
             }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v24', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v25', JSON.stringify(state)); }
         function exportData() {
             saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -809,14 +804,13 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v24', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v25', JSON.stringify(state)); render(); updatePrediction(); }
 
         function render() {
             const { pileName, diameter, depth, initTremie, secLen, topLen, supplier, productCode } = state.settings;
             const area = Math.PI * Math.pow(diameter / 2, 2);
             document.getElementById('display-pile-name').innerText = pileName ? pileName : 'ยังไม่ระบุ';
             
-            // V24: อัปเดตแถบ Status Header ด้านบน
             const suppDisplay = document.getElementById('display-supplier');
             if (supplier && productCode) {
                 suppDisplay.innerText = `${supplier} | ${productCode.split(' ')[0]}`;
