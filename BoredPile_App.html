@@ -308,6 +308,9 @@
 
         let currentWeekStart, currentWeekEnd, currentMonthKey;
 
+        // --- ลิงก์ฐานข้อมูลเริ่มต้น (Default URL) ---
+        const DEFAULT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_d3Oxo9_vdxQGl2R1aIT8U-2RarYs_Iy2MANCwBi9Dnop58DvSD7tTiRlNf-vRhYupbxeCG4V_Mwc/pub?gid=921370860&single=true&output=csv";
+
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -333,14 +336,16 @@
             document.getElementById('startDate').value = formatDateForInput(currentWeekStart);
             document.getElementById('endDate').value = formatDateForInput(currentWeekEnd);
 
+            // --- ส่วนที่แก้ไข: ตั้งค่าลิงก์และสั่งโหลดข้อมูลอัตโนมัติ ---
             const savedUrl = localStorage.getItem('boredPileUrl');
-            if(savedUrl) {
-                document.getElementById('sheetUrl').value = savedUrl;
-                showStatus('💡 พบลิงก์เดิมที่เคยใช้งาน กดปุ่ม "ดึงข้อมูลจากลิงก์" เพื่อใช้งานต่อได้เลยครับ', 'info');
-            }
+            
+            // ถ้าเคยบันทึกลิงก์อื่นไว้ก็ใช้ลิงก์นั้น ถ้าไม่มีก็ใช้ DEFAULT_URL
+            document.getElementById('sheetUrl').value = savedUrl ? savedUrl : DEFAULT_URL;
+            
+            // สั่งโหลดข้อมูลทันที
+            loadFromUrl();
         });
 
-        // --- ระบบสลับการซ่อน/แสดงเนื้อหาแบบครอบจักรวาล ---
         function toggleSection(contentId, btnId) {
             const container = document.getElementById(contentId);
             const btn = document.getElementById(btnId);
@@ -348,7 +353,6 @@
             container.classList.toggle('collapsed');
             
             if(container.classList.contains('collapsed')) {
-                // ถ้าปุ่มเดิมมีคำว่าซ่อนตาราง ให้สลับเป็นแสดงตาราง นอกนั้นเป็นเนื้อหา
                 const btnText = btn.innerHTML.includes('ตาราง') ? '▶️ แสดงตาราง' : '▶️ แสดงเนื้อหา';
                 btn.innerHTML = btnText;
                 btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
@@ -393,11 +397,16 @@
             const url = document.getElementById('sheetUrl').value.trim();
             if(!url) { showStatus('❌ กรุณาวางลิงก์ก่อนครับ', 'err'); return; }
             localStorage.setItem('boredPileUrl', url);
-            showStatus('กำลังดึงข้อมูลจากลิงก์... ⏳', 'load');
+            showStatus('กำลังดึงข้อมูลจากฐานข้อมูล... ⏳', 'load');
             Papa.parse(url, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: (res) => handleParseResult(res),
-                error: (err) => showStatus(`❌ ดึงข้อมูลไม่สำเร็จ: ${err}`, 'err')
+                error: (err) => {
+                    showStatus(`❌ ดึงข้อมูลไม่สำเร็จ โปรดตรวจสอบลิงก์อีกครั้ง`, 'err');
+                    // ถ้าโหลดไม่ผ่าน ให้โชว์เมนูตั้งค่าไว้
+                    const container = document.getElementById('data-source-container');
+                    if(container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
+                }
             });
         }
 
@@ -413,17 +422,19 @@
         }
 
         function handleParseResult(res) {
-            if(!res.data || res.data.length === 0) { showStatus('❌ ไม่พบข้อมูลในไฟล์', 'err'); return; }
+            if(!res.data || res.data.length === 0) { showStatus('❌ ไม่พบข้อมูลในไฟล์ หรือลิงก์ผิดพลาด', 'err'); return; }
             if(JSON.stringify(res.data[0]).includes('<!DOCTYPE html>')) {
-                 showStatus('❌ ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (อาจลืมใส่ output=csv หรือติดสิทธิ์การเข้าถึง)', 'err'); return;
+                 showStatus('❌ ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (โปรดตรวจสอบสิทธิ์การเข้าถึง)', 'err'); return;
             }
             globalDatabase = res.data;
             processData(globalDatabase);
             showStatus('✅ โหลดข้อมูลสำเร็จ!', 'ok');
+            
+            // เมื่อโหลดข้อมูลสำเร็จ พับเก็บเมนูตั้งค่าให้อัตโนมัติ เพื่อเข้าสู่โหมดการทำงาน
             setTimeout(() => {
                 const container = document.getElementById('data-source-container');
                 if(!container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
-            }, 1000);
+            }, 800);
         }
 
         function parseThaiDate(dateStr) {
@@ -454,10 +465,8 @@
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
                 if (projName) {
-                    // --- แก้ไขบั๊ก เข็ม-แซม: แยกลอจิกนับตาราง ออกจากลอจิกหักลบของ KPI ออกจากกัน ---
                     zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
 
-                    // เข็ม-แซม จะไม่เข้าเงื่อนไขด้านล่างนี้ (จึงไม่ถูกรวมใน KPI และกราฟ)
                     if (!zone.includes("เข็ม-แซม")) {
                         totalPiles++; 
                         if(dateStr) {
