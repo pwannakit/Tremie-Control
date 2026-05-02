@@ -18,7 +18,9 @@
             }
         }
     </script>
-    <!-- โหลด PapaParse สำหรับอ่านไฟล์ CSV -->
+    <!-- โหลด Chart.js, ChartDataLabels และ PapaParse -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { transition: background-color 0.3s, color 0.3s; }
@@ -60,7 +62,7 @@
         @media (max-width: 1024px) { .kanban-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 768px) { .kanban-grid { grid-template-columns: 1fr; } }
         
-        /* Transition สำหรับกล่องนำเข้าข้อมูล */
+        /* Transition สำหรับกล่องต่างๆ */
         #data-source-container {
             transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
             overflow: hidden;
@@ -74,6 +76,19 @@
             margin-bottom: 0;
             padding-top: 0;
             padding-bottom: 0;
+            border-width: 0;
+        }
+
+        /* Transition สำหรับตาราง Zone */
+        #zoneTableContainer {
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            overflow: hidden;
+            max-height: 2000px; /* ให้สูงพอสำหรับข้อมูลทั้งหมด */
+            opacity: 1;
+        }
+        #zoneTableContainer.collapsed {
+            max-height: 0;
+            opacity: 0;
             border-width: 0;
         }
     </style>
@@ -99,7 +114,6 @@
     <!-- Data Source Section -->
     <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- วิธีที่ 1: ดึงผ่าน URL -->
             <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
                 <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
                     <span class="text-blue-500">🌐</span> วิธีที่ 1: ดึงข้อมูลผ่านลิงก์ Google Sheets
@@ -110,7 +124,6 @@
                 </button>
             </div>
 
-            <!-- วิธีที่ 2: อัปโหลดไฟล์ -->
             <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
                 <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
                     <span class="text-yellow-500">📁</span> วิธีที่ 2: อัปโหลดไฟล์ Task.csv (ชัวร์ 100%)
@@ -130,16 +143,30 @@
     <!-- Dashboard Content -->
     <div id="dashboardContent" class="max-w-7xl mx-auto hide">
         
-        <!-- 1. KPI Card เดี่ยว -->
-        <div class="flex justify-center mb-8">
-            <div class="glass-card p-8 border-l-8 border-blue-500 w-full md:w-1/2 text-center">
-                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-2">ผลงานเสาเข็มดำเนินการแล้ว (ไม่รวมเข็มแซม)</h3>
-                <div class="text-6xl font-bold text-gray-800 dark:text-white mt-2">
-                    <span id="kpi-total">0</span> 
-                    <span class="text-2xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+        <!-- 1. KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6 border-l-8 border-blue-500 text-center">
+                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">ผลงานเสาเข็มดำเนินการแล้ว</h3>
+                <div class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-2">
+                    <span id="kpi-total">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
                 </div>
             </div>
+            <div class="glass-card p-6 border-l-8 border-emerald-500 text-center relative overflow-hidden">
+                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
+                <div class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-2">
+                    <span id="kpi-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                </div>
+                <div class="absolute -right-4 -top-4 opacity-10 text-emerald-500 text-8xl">📅</div>
+            </div>
+            <div class="glass-card p-6 border-l-8 border-purple-500 text-center relative overflow-hidden">
+                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
+                <div class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-2">
+                    <span id="kpi-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                </div>
+                <div class="absolute -right-4 -top-4 opacity-10 text-purple-500 text-8xl">🗓️</div>
+            </div>
         </div>
+        <p class="text-xs text-center text-gray-400 dark:text-gray-500 mb-8 -mt-4">*ตัวเลขทุกช่องได้ทำการหักลบ "เข็ม-แซม" ออกแล้วเพื่อให้แสดงเฉพาะผลงานหลัก</p>
 
         <!-- 2. ระบบค้นหาชื่อโปรเจค -->
         <div class="glass-card p-6 overflow-hidden border-t-4 border-purple-500 mb-8">
@@ -191,12 +218,20 @@
             <div class="kanban-grid" id="kanban-board"></div>
         </div>
 
-        <!-- 4. Summary Table Section -->
+        <!-- 4. Summary Table Section (ปรับแก้แบบเต็มและพับเก็บได้) -->
         <div class="glass-card p-6 mb-8 border-t-4 border-blue-400">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">📋 สรุปจำนวนเสาเข็มแยกตามผู้รับผิดชอบ</h3>
-            <div class="overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700" style="max-height: 400px;">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700 relative">
-                    <thead class="bg-gray-100 dark:bg-slate-800 sticky top-0 z-10">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">📋 สรุปจำนวนเสาเข็มแยกตามผู้รับผิดชอบ</h3>
+                <!-- ปุ่มสำหรับ เปิด-ปิด -->
+                <button onclick="toggleZoneTable()" id="toggle-zone-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                    🔽 ซ่อนตาราง
+                </button>
+            </div>
+            
+            <!-- เอา Scroll (max-height) ออก เพื่อให้โชว์ข้อมูลเต็ม แต่ใช้ ID นี้ในการซ่อนแทน -->
+            <div id="zoneTableContainer" class="rounded-lg border border-gray-200 dark:border-slate-700 w-full overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                    <thead class="bg-gray-100 dark:bg-slate-800">
                         <tr>
                             <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
                             <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">จำนวนผลงานที่ทำได้ (ต้น)</th>
@@ -208,26 +243,62 @@
             </div>
         </div>
 
+        <!-- 5. Monthly Executive Report Section -->
+        <div class="glass-card p-6 mb-8 border-t-4 border-emerald-500">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">📊 รายงานสรุปผลงานรายเดือน (Executive Summary)</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">ภาพรวมและเปรียบเทียบผลงานเสาเข็มรายเดือน (ไม่รวมเข็มแซม)</p>
+            
+            <div class="flex flex-wrap items-center gap-3 mb-4 bg-emerald-50 dark:bg-slate-800/80 p-4 rounded-lg border border-emerald-100 dark:border-slate-700 shadow-sm">
+                <label class="text-sm font-bold text-emerald-800 dark:text-emerald-400">⚖️ เปรียบเทียบผลงาน:</label>
+                <select id="compareMonth1" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
+                <span class="text-gray-500 dark:text-gray-400 font-bold text-sm">VS</span>
+                <select id="compareMonth2" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
+                
+                <button onclick="compareMonths()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm">
+                    เปรียบเทียบ
+                </button>
+                <button onclick="resetMonthlyChart()" class="bg-slate-400 hover:bg-slate-500 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm ml-auto">
+                    แสดงทั้งหมด
+                </button>
+            </div>
+
+            <div id="monthlySummaryReport" class="mb-6 p-5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-700 border border-emerald-100 dark:border-slate-600 shadow-sm text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
+            </div>
+            
+            <div class="w-full relative" style="height: 380px;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
     </div>
 
     <!-- Script ควบคุมการทำงาน -->
     <script>
+        // เปิดใช้งานปลั๊กอิน DataLabels สำหรับทุกกราฟในหน้า
+        Chart.register(ChartDataLabels);
+
         let globalDatabase = [];
+        let globalMonthlyData = {}; 
+        let monthlyChartInstance = null;
         const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
-        // --- ทำงานทันทีเมื่อหน้าเว็บโหลดเสร็จ ---
+        let currentWeekStart, currentWeekEnd, currentMonthKey;
+
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. ตั้งค่าวันที่สัปดาห์ปัจจุบัน (แก้ไขบั๊กข้ามเดือน)
             const today = new Date();
-            const currentDay = today.getDay(); // 0 = อา., 1 = จ., ...
+            
+            currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+            const currentDay = today.getDay(); 
             const diffToMonday = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
             
-            // สร้าง Date Object ตัวใหม่ เพื่อไม่ให้กระทบค่าเดิม
-            const startOfWeek = new Date(today);
-            startOfWeek.setDate(diffToMonday);
+            currentWeekStart = new Date(today);
+            currentWeekStart.setDate(diffToMonday);
+            currentWeekStart.setHours(0, 0, 0, 0);
             
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6); // บวกเพิ่มจากวันจันทร์ไป 6 วันเพื่อหาวันอาทิตย์
+            currentWeekEnd = new Date(currentWeekStart);
+            currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+            currentWeekEnd.setHours(23, 59, 59, 999);
 
             const formatDateForInput = (d) => {
                 const year = d.getFullYear();
@@ -236,11 +307,9 @@
                 return `${year}-${month}-${day}`;
             };
 
-            // นำไปใส่ในช่อง Input
-            document.getElementById('startDate').value = formatDateForInput(startOfWeek);
-            document.getElementById('endDate').value = formatDateForInput(endOfWeek);
+            document.getElementById('startDate').value = formatDateForInput(currentWeekStart);
+            document.getElementById('endDate').value = formatDateForInput(currentWeekEnd);
 
-            // 2. โหลดลิงก์เดิมถ้ามี
             const savedUrl = localStorage.getItem('boredPileUrl');
             if(savedUrl) {
                 document.getElementById('sheetUrl').value = savedUrl;
@@ -248,19 +317,26 @@
             }
         });
 
-        // --- ระบบเปิด/ปิด โหมดมืด ---
         function toggleDarkMode() {
             const html = document.documentElement;
             html.classList.toggle('dark');
             const icon = document.getElementById('theme-icon');
-            icon.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+            const isDark = html.classList.contains('dark');
+            icon.textContent = isDark ? '☀️' : '🌙';
+
+            if (monthlyChartInstance) {
+                monthlyChartInstance.options.plugins.legend.labels.color = isDark ? '#cbd5e1' : '#475569';
+                monthlyChartInstance.options.plugins.datalabels.color = isDark ? '#f8fafc' : '#334155';
+                monthlyChartInstance.options.scales.x.ticks.color = isDark ? '#94a3b8' : '#64748b';
+                monthlyChartInstance.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#64748b';
+                monthlyChartInstance.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                monthlyChartInstance.update();
+            }
         }
 
-        // --- ระบบเปิด/ปิด กล่องใส่ข้อมูล ---
         function toggleDataSource() {
             const container = document.getElementById('data-source-container');
             const btn = document.getElementById('toggle-data-btn');
-            
             container.classList.toggle('collapsed');
             
             if(container.classList.contains('collapsed')) {
@@ -272,12 +348,28 @@
             }
         }
 
-        // --- แจ้งเตือน Status ---
+        // --- เพิ่มฟังก์ชัน เปิด-ปิด ตารางสรุป Zone ---
+        function toggleZoneTable() {
+            const container = document.getElementById('zoneTableContainer');
+            const btn = document.getElementById('toggle-zone-btn');
+            
+            container.classList.toggle('collapsed');
+            
+            if(container.classList.contains('collapsed')) {
+                btn.innerHTML = '▶️ แสดงตาราง';
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
+                btn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
+            } else {
+                btn.innerHTML = '🔽 ซ่อนตาราง';
+                btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
+                btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
+            }
+        }
+
         function showStatus(msg, type) {
             const st = document.getElementById('loading-status');
             st.classList.remove('hide');
             st.innerHTML = msg;
-            
             st.className = 'mt-4 text-center p-3 rounded-lg font-bold ';
             if(type === 'load') st.classList.add('bg-blue-100', 'text-blue-800', 'dark:bg-blue-900/40', 'dark:text-blue-400');
             else if(type === 'err') st.classList.add('bg-red-100', 'text-red-800', 'dark:bg-red-900/40', 'dark:text-red-400');
@@ -285,14 +377,11 @@
             else st.classList.add('bg-gray-100', 'text-gray-800', 'dark:bg-gray-800', 'dark:text-gray-300'); 
         }
 
-        // --- ดึงจาก URL ---
         function loadFromUrl() {
             const url = document.getElementById('sheetUrl').value.trim();
             if(!url) { showStatus('❌ กรุณาวางลิงก์ก่อนครับ', 'err'); return; }
-            
             localStorage.setItem('boredPileUrl', url);
             showStatus('กำลังดึงข้อมูลจากลิงก์... ⏳', 'load');
-            
             Papa.parse(url, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: (res) => handleParseResult(res),
@@ -300,13 +389,10 @@
             });
         }
 
-        // --- ดึงจาก File ---
         function loadFromFile() {
             const file = document.getElementById('csvFile').files[0];
             if(!file) { showStatus('❌ กรุณาเลือกไฟล์ก่อนครับ', 'err'); return; }
-            
             showStatus('กำลังอ่านไฟล์... ⏳', 'load');
-            
             Papa.parse(file, {
                 header: true, skipEmptyLines: true,
                 complete: (res) => handleParseResult(res),
@@ -314,25 +400,17 @@
             });
         }
 
-        // --- ประมวลผลหลังอ่านข้อมูลเสร็จ ---
         function handleParseResult(res) {
-            if(!res.data || res.data.length === 0) {
-                 showStatus('❌ ไม่พบข้อมูลในไฟล์', 'err'); return;
-            }
+            if(!res.data || res.data.length === 0) { showStatus('❌ ไม่พบข้อมูลในไฟล์', 'err'); return; }
             if(JSON.stringify(res.data[0]).includes('<!DOCTYPE html>')) {
-                 showStatus('❌ ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (อาจลืมใส่ output=csv หรือติดสิทธิ์การเข้าถึง)', 'err'); 
-                 return;
+                 showStatus('❌ ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (อาจลืมใส่ output=csv หรือติดสิทธิ์การเข้าถึง)', 'err'); return;
             }
-            
             globalDatabase = res.data;
             processData(globalDatabase);
             showStatus('✅ โหลดข้อมูลสำเร็จ!', 'ok');
-            
             setTimeout(() => {
                 const container = document.getElementById('data-source-container');
-                if(!container.classList.contains('collapsed')) {
-                    toggleDataSource();
-                }
+                if(!container.classList.contains('collapsed')) toggleDataSource();
             }, 1000);
         }
 
@@ -341,20 +419,13 @@
             let str = dateStr.toString().trim().replace(/"/g, '');
             let parts = str.split(/[\/\- ]+/); 
             if (parts.length < 3) return null;
-            
             let day = parseInt(parts[0], 10);
             let monthStr = parts[1].trim();
             let year = parseInt(parts[2], 10);
-            
             if (year < 100) year += 2000;
             if (year > 2500) year -= 543;
             
-            const thaiMonths = {
-                'ม.ค.': 0, 'ก.พ.': 1, 'มี.ค.': 2, 'เม.ย.': 3,
-                'พ.ค.': 4, 'มิ.ย.': 5, 'ก.ค.': 6, 'ส.ค.': 7,
-                'ก.ย.': 8, 'ต.ค.': 9, 'พ.ย.': 10, 'ธ.ค.': 11
-            };
-            
+            const thaiMonths = { 'ม.ค.': 0, 'ก.พ.': 1, 'มี.ค.': 2, 'เม.ย.': 3, 'พ.ค.': 4, 'มิ.ย.': 5, 'ก.ค.': 6, 'ส.ค.': 7, 'ก.ย.': 8, 'ต.ค.': 9, 'พ.ย.': 10, 'ธ.ค.': 11 };
             let month = thaiMonths[monthStr] !== undefined ? thaiMonths[monthStr] : (parseInt(monthStr, 10) - 1); 
             if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
             
@@ -362,33 +433,47 @@
         }
 
         function processData(data) {
-            let totalPiles = 0;
+            let totalPiles = 0, currentMonthPiles = 0, currentWeekPiles = 0;
             const zoneCounts = {};
 
             data.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
                 const zone = row['ผู้รับผิดชอบ'] || 'ไม่ระบุ';
+                const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
-                if (projName) {
-                    if (!zone.includes("เข็ม-แซม")) { totalPiles++; }
+                if (projName && !zone.includes("เข็ม-แซม")) {
+                    totalPiles++; 
                     zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
+
+                    if(dateStr) {
+                        const taskDate = parseThaiDate(dateStr);
+                        if(taskDate) {
+                            const mKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}`;
+                            if (mKey === currentMonthKey) currentMonthPiles++;
+                            if (taskDate >= currentWeekStart && taskDate <= currentWeekEnd) currentWeekPiles++;
+                        }
+                    }
                 }
             });
 
             document.getElementById('kpi-total').innerText = totalPiles.toLocaleString();
+            document.getElementById('kpi-month').innerText = currentMonthPiles.toLocaleString();
+            document.getElementById('kpi-week').innerText = currentWeekPiles.toLocaleString();
+
             renderZoneTable(zoneCounts);
+            
             document.getElementById('searchInput').value = '';
             document.getElementById('searchTableBody').innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์</td></tr>`;
             
-            // โหลดข้อมูลลง Kanban ตามวันที่เซ็ตไว้ตอนโหลดเว็บ
             filterKanban();
+            prepareMonthlyChart(data);
+
             document.getElementById('dashboardContent').classList.remove('hide');
         }
 
         function filterKanban() {
             const startVal = document.getElementById('startDate').value; 
             const endVal = document.getElementById('endDate').value;
-            
             if(!startVal || !endVal) return;
 
             const [sYear, sMonth, sDay] = startVal.split('-');
@@ -402,35 +487,32 @@
             const columns = [1, 2, 3, 4, 5, 6, 0]; 
             
             columns.forEach(dayIdx => {
-                board.innerHTML += `
-                    <div class="k-col">
-                        <div class="k-header day-${dayIdx}">${days[dayIdx]}</div>
-                        <div id="k-tasks-${dayIdx}"></div>
-                    </div>
-                `;
+                board.innerHTML += `<div class="k-col"><div class="k-header day-${dayIdx}">${days[dayIdx]}</div><div id="k-tasks-${dayIdx}"></div></div>`;
             });
 
             let foundCount = 0;
-
             globalDatabase.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
                 if (!projName || !dateStr) return;
 
                 const taskDate = parseThaiDate(dateStr);
-                
                 if (taskDate && taskDate >= startDate && taskDate <= endDate) {
                     foundCount++;
                     const dayIndex = taskDate.getDay(); 
                     const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
                     
-                    const cardHTML = `
+                    let shortProjName = projName;
+                    const diaIndex = shortProjName.toLowerCase().indexOf('-dia');
+                    if (diaIndex !== -1) {
+                        shortProjName = shortProjName.substring(0, diaIndex).trim();
+                    }
+                    
+                    document.getElementById(`k-tasks-${dayIndex}`).innerHTML += `
                         <div class="k-card card-${dayIndex}">
-                            <div class="font-bold text-sm mb-1 text-gray-800 dark:text-gray-100">📌 ${projName}</div>
+                            <div class="font-bold text-sm mb-1 text-gray-800 dark:text-gray-100">📌 ${shortProjName}</div>
                             <div class="text-xs text-gray-500 dark:text-gray-400">📅 ${displayDate}</div>
-                        </div>
-                    `;
-                    document.getElementById(`k-tasks-${dayIndex}`).innerHTML += cardHTML;
+                        </div>`;
                 }
             });
 
@@ -482,7 +564,6 @@
         function renderZoneTable(zoneCounts) {
             const tbody = document.getElementById('zoneTableBody');
             tbody.innerHTML = '';
-            
             const sortedZones = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1]);
 
             sortedZones.forEach(([zone, count]) => {
@@ -502,6 +583,194 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right">${count.toLocaleString()}</td>
                     </tr>
                 `;
+            });
+        }
+
+        function prepareMonthlyChart(data) {
+            const monthlyCounts = {};
+            const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+            data.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const zone = row['ผู้รับผิดชอบ'] || '';
+                const dateStr = row['วันที่เสร็จงานจริงๆ'];
+
+                if (projName && dateStr && !zone.includes("เข็ม-แซม")) {
+                    const dateObj = parseThaiDate(dateStr);
+                    if (dateObj) {
+                        const y = dateObj.getFullYear();
+                        const m = dateObj.getMonth();
+                        const sortKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+                        const displayLabel = `${monthNames[m]} ${y + 543}`; 
+
+                        if (!monthlyCounts[sortKey]) {
+                            monthlyCounts[sortKey] = { label: displayLabel, count: 0 };
+                        }
+                        monthlyCounts[sortKey].count++;
+                    }
+                }
+            });
+
+            globalMonthlyData = monthlyCounts; 
+            
+            const sortedKeys = Object.keys(monthlyCounts).sort();
+            const select1 = document.getElementById('compareMonth1');
+            const select2 = document.getElementById('compareMonth2');
+            
+            select1.innerHTML = '';
+            select2.innerHTML = '';
+            
+            sortedKeys.forEach(key => {
+                const opt1 = document.createElement('option');
+                opt1.value = key; opt1.text = monthlyCounts[key].label;
+                select1.appendChild(opt1);
+                
+                const opt2 = document.createElement('option');
+                opt2.value = key; opt2.text = monthlyCounts[key].label;
+                select2.appendChild(opt2);
+            });
+
+            if(sortedKeys.length > 1) {
+                select2.selectedIndex = sortedKeys.length - 1; 
+                select1.selectedIndex = sortedKeys.length - 2; 
+            }
+
+            drawMonthlyChart(globalMonthlyData);
+        }
+
+        function compareMonths() {
+            const m1 = document.getElementById('compareMonth1').value;
+            const m2 = document.getElementById('compareMonth2').value;
+            if(!m1 || !m2) return;
+            
+            const filteredData = {};
+            const keys = [m1, m2].sort();
+            
+            if(globalMonthlyData[keys[0]]) filteredData[keys[0]] = globalMonthlyData[keys[0]];
+            if(keys[0] !== keys[1] && globalMonthlyData[keys[1]]) filteredData[keys[1]] = globalMonthlyData[keys[1]];
+            
+            drawMonthlyChart(filteredData);
+        }
+
+        function resetMonthlyChart() {
+            drawMonthlyChart(globalMonthlyData);
+        }
+
+        function generateSummaryText(dataObj) {
+            const summaryDiv = document.getElementById('monthlySummaryReport');
+            const keys = Object.keys(dataObj).sort(); 
+
+            if (keys.length === 0) {
+                summaryDiv.innerHTML = '<span class="text-gray-500">ไม่พบข้อมูลสำหรับสร้างรายงานสรุป</span>';
+                return;
+            }
+
+            if (keys.length === 1) {
+                const k = keys[0];
+                summaryDiv.innerHTML = `💡 <b>ข้อสรุป:</b> ข้อมูลที่แสดงมีเพียงเดือนเดียวคือ <b>${dataObj[k].label}</b> โดยมีปริมาณผลงานเสร็จสิ้นทั้งสิ้น <b class="text-emerald-600 dark:text-emerald-400 text-2xl">${dataObj[k].count}</b> ต้น`;
+                return;
+            }
+
+            const lastData = dataObj[keys[keys.length - 1]];
+            const prevData = dataObj[keys[keys.length - 2]];
+
+            const diff = lastData.count - prevData.count;
+            const isIncrease = diff > 0;
+            const isEqual = diff === 0;
+            
+            let trendText, colorClass;
+            if(isIncrease) {
+                trendText = "เพิ่มขึ้น 📈";
+                colorClass = "text-emerald-600 dark:text-emerald-400";
+            } else if (isEqual) {
+                trendText = "คงที่ ➖";
+                colorClass = "text-yellow-600 dark:text-yellow-400";
+            } else {
+                trendText = "ลดลง 📉";
+                colorClass = "text-red-600 dark:text-red-400";
+            }
+            
+            const diffAbs = Math.abs(diff);
+            let percentText = "";
+            if (prevData.count > 0) {
+                const percent = ((diffAbs / prevData.count) * 100).toFixed(2);
+                percentText = `คิดเป็น <b>${percent}%</b>`;
+            } else {
+                percentText = `(เดือนก่อนหน้าไม่มีผลงาน)`;
+            }
+
+            summaryDiv.innerHTML = `
+                📝 <b>รายงานสรุปสำหรับผู้บริหาร:</b> <br>
+                ผลการดำเนินงานเดือน <b>${lastData.label}</b> สามารถทำผลงานได้ <b class="text-xl">${lastData.count}</b> ต้น 
+                เมื่อนำมาเปรียบเทียบกับเดือน <b>${prevData.label}</b> (ที่ทำได้ ${prevData.count} ต้น) <br>
+                พบว่าปริมาณงาน <b class="${colorClass} text-xl">${trendText} จำนวน ${diffAbs} ต้น</b> ${isEqual ? '' : percentText}
+            `;
+        }
+
+        function drawMonthlyChart(dataObj) {
+            generateSummaryText(dataObj);
+
+            const sortedKeys = Object.keys(dataObj).sort();
+            const labels = sortedKeys.map(key => dataObj[key].label);
+            const counts = sortedKeys.map(key => dataObj[key].count);
+
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            if(monthlyChartInstance) monthlyChartInstance.destroy();
+
+            const isDark = document.documentElement.classList.contains('dark');
+
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนผลงานเสาเข็มดำเนินการแล้ว (ต้น)',
+                        data: counts,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)', 
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: isDark ? '#cbd5e1' : '#475569', font: { family: 'Sarabun', size: 14 } }
+                        },
+                        tooltip: { titleFont: { family: 'Sarabun' }, bodyFont: { family: 'Sarabun' } },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: isDark ? '#f8fafc' : '#334155',
+                            font: {
+                                family: 'Sarabun',
+                                weight: 'bold',
+                                size: 16
+                            },
+                            formatter: function(value) {
+                                return value > 0 ? value : '';
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 30
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Sarabun' } },
+                            grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Sarabun', size: 13 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
             });
         }
     </script>
