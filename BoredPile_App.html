@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bored Pile Dashboard - พี่เอ็กซ์</title>
+    <!-- โหลดฟอนต์ Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- โหลด Tailwind CSS และเปิดใช้งาน Dark Mode -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <!-- โหลด PapaParse สำหรับอ่านไฟล์ CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s;
+        }
+        .dark .glass-card { 
+            background: rgba(30, 41, 59, 0.95); 
+            border-color: rgba(51, 65, 85, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .dark body { background-color: #0f172a; }
+        
+        .hide { display: none !important; }
+        
+        /* สไตล์ Kanban */
+        .kanban-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 20px; }
+        .k-col { background: #f1f5f9; border-radius: 12px; padding: 10px; min-height: 400px; transition: 0.3s; }
+        .dark .k-col { background: #1e293b; }
+        .k-header { text-align: center; font-weight: bold; color: white; padding: 10px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .k-card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
+        .dark .k-card { background: #334155; color: #f8fafc; border-color: #475569; }
+        .k-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        /* สีประจำวัน */
+        .day-1 { background: #f1c40f; color: #5c4000; } .card-1 { border-left-color: #f1c40f; }
+        .day-2 { background: #e84393; } .card-2 { border-left-color: #e84393; }
+        .day-3 { background: #2ecc71; color: #004d26; } .card-3 { border-left-color: #2ecc71; }
+        .day-4 { background: #e67e22; } .card-4 { border-left-color: #e67e22; }
+        .day-5 { background: #3498db; } .card-5 { border-left-color: #3498db; }
+        .day-6 { background: #9b59b6; } .card-6 { border-left-color: #9b59b6; }
+        .day-0 { background: #e74c3c; } .card-0 { border-left-color: #e74c3c; }
+
+        @media (max-width: 1024px) { .kanban-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) { .kanban-grid { grid-template-columns: 1fr; } }
+        
+        /* Transition สำหรับกล่องนำเข้าข้อมูล */
+        #data-source-container {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
+            overflow: hidden;
+            max-height: 500px;
+            opacity: 1;
+        }
+        #data-source-container.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body class="text-gray-800 bg-slate-50 p-6">
+
+    <!-- Header Section -->
+    <div class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-indigo-900 dark:text-indigo-400">🏗️ Dashboard เสาเข็มเจาะ</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">วิเคราะห์ข้อมูลและติดตามงานรายสัปดาห์</p>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <button onclick="toggleDataSource()" id="toggle-data-btn" class="px-4 py-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                <span>⚙️ ซ่อนการตั้งค่าข้อมูล</span>
+            </button>
+            <button onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-xl" title="สลับโหมดมืด/สว่าง">
+                <span id="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Source Section -->
+    <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- วิธีที่ 1: ดึงผ่าน URL -->
+            <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
+                <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                    <span class="text-blue-500">🌐</span> วิธีที่ 1: ดึงข้อมูลผ่านลิงก์ Google Sheets
+                </h3>
+                <input type="text" id="sheetUrl" placeholder="วางลิงก์ที่ลงท้ายด้วย output=csv ที่นี่..." class="w-full p-3 border border-gray-300 dark:border-slate-600 rounded-lg mb-4 dark:bg-slate-700 dark:text-white outline-none focus:border-blue-500">
+                <button onclick="loadFromUrl()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    🚀 ดึงข้อมูลจากลิงก์
+                </button>
+            </div>
+
+            <!-- วิธีที่ 2: อัปโหลดไฟล์ -->
+            <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
+                <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                    <span class="text-yellow-500">📁</span> วิธีที่ 2: อัปโหลดไฟล์ Task.csv (ชัวร์ 100%)
+                </h3>
+                <input type="file" id="csvFile" accept=".csv" class="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg mb-4 dark:bg-slate-700 dark:text-white outline-none bg-gray-50 file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-gray-200 file:text-gray-700">
+                <button onclick="loadFromFile()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    📥 ดึงข้อมูลจากไฟล์
+                </button>
+            </div>
+        </div>
+        
+        <div id="loading-status" class="mt-4 text-center p-3 rounded-lg font-bold hide">
+            รอรับคำสั่งครับพี่เอ็กซ์...
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboardContent" class="max-w-7xl mx-auto hide">
+        
+        <!-- 1. KPI Card เดี่ยว -->
+        <div class="flex justify-center mb-8">
+            <div class="glass-card p-8 border-l-8 border-blue-500 w-full md:w-1/2 text-center">
+                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-2">ผลงานเสาเข็มดำเนินการแล้ว (ไม่รวมเข็มแซม)</h3>
+                <div class="text-6xl font-bold text-gray-800 dark:text-white mt-2">
+                    <span id="kpi-total">0</span> 
+                    <span class="text-2xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ระบบค้นหาชื่อโปรเจค -->
+        <div class="glass-card p-6 overflow-hidden border-t-4 border-purple-500 mb-8">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">🔍 ค้นหาตามชื่อโปรเจค</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">พิมพ์ชื่อโปรเจคเพื่อดูวันที่เสร็จงานและหมายเหตุ (แสดงผลทันทีที่พิมพ์)</p>
+            
+            <div class="mb-6">
+                <input type="text" id="searchInput" class="w-full p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg dark:bg-slate-800 dark:text-white focus:border-purple-500 outline-none transition-all" placeholder="ตัวอย่างเช่น: 81L/2 ...">
+            </div>
+
+            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-700" style="max-height: 400px;">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                    <thead class="bg-purple-50 dark:bg-slate-800 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">ชื่อโปรเจค</th>
+                            <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">วันที่เสร็จงานจริงๆ</th>
+                            <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-2/4">หมายเหตุ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="searchTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
+                        <tr>
+                            <td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">
+                                👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Kanban Board Section -->
+        <div class="glass-card p-6 mb-8 border-t-4 border-indigo-500">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white">📅 ติดตามงานรายสัปดาห์ (Kanban)</h3>
+                
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 px-4 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm">
+                    <label class="text-gray-600 dark:text-gray-300 font-medium">🗓️ ดูงานตั้งแต่วันที่:</label>
+                    <!-- นำ value เดิมออก เพื่อให้ JS ใส่ค่าให้อัตโนมัติ -->
+                    <input type="date" id="startDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500">
+                    <label class="text-gray-600 dark:text-gray-300 font-medium">ถึง</label>
+                    <input type="date" id="endDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500">
+                    <button onclick="filterKanban()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-1.5 rounded-md font-bold transition-colors">ค้นหา</button>
+                </div>
+            </div>
+
+            <div id="kanban-status" class="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 p-3 rounded-lg text-center font-bold mb-4 border border-green-200 dark:border-green-800">
+                ✅ โปรดระบุวันที่และกดค้นหาเพื่อแสดงข้อมูล
+            </div>
+
+            <div class="kanban-grid" id="kanban-board"></div>
+        </div>
+
+        <!-- 4. Summary Table Section -->
+        <div class="glass-card p-6 mb-8 border-t-4 border-blue-400">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">📋 สรุปจำนวนเสาเข็มแยกตามผู้รับผิดชอบ</h3>
+            <div class="overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700" style="max-height: 400px;">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700 relative">
+                    <thead class="bg-gray-100 dark:bg-slate-800 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
+                            <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">จำนวนผลงานที่ทำได้ (ต้น)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script ควบคุมการทำงาน -->
+    <script>
+        let globalDatabase = [];
+        const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+
+        // --- ทำงานทันทีเมื่อหน้าเว็บโหลดเสร็จ ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. ตั้งค่าวันที่สัปดาห์ปัจจุบัน
+            const today = new Date();
+            const currentDay = today.getDay(); // 0 = อา., 1 = จ., ...
+            
+            // หาวันจันทร์ (ถ้าวันนี้เป็นวันอาทิตย์ ให้ถอยไป 6 วัน, ถ้าเป็นวันอื่นถอยไป day - 1 วัน)
+            const diffToMonday = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+            
+            const startOfWeek = new Date(today.setDate(diffToMonday));
+            const endOfWeek = new Date(today.setDate(diffToMonday + 6));
+
+            // ฟังก์ชันแปลง Date เป็น YYYY-MM-DD
+            const formatDateForInput = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            // นำไปใส่ในช่อง Input
+            document.getElementById('startDate').value = formatDateForInput(startOfWeek);
+            document.getElementById('endDate').value = formatDateForInput(endOfWeek);
+
+            // 2. โหลดลิงก์เดิมถ้ามี
+            const savedUrl = localStorage.getItem('boredPileUrl');
+            if(savedUrl) {
+                document.getElementById('sheetUrl').value = savedUrl;
+                showStatus('💡 พบลิงก์เดิมที่เคยใช้งาน กดปุ่ม "ดึงข้อมูลจากลิงก์" เพื่อใช้งานต่อได้เลยครับ', 'info');
+            }
+        });
+
+        // --- ระบบเปิด/ปิด โหมดมืด ---
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const icon = document.getElementById('theme-icon');
+            icon.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+        }
+
+        // --- ระบบเปิด/ปิด กล่องใส่ข้อมูล ---
+        function toggleDataSource() {
+            const container = document.getElementById('data-source-container');
+            const btn = document.getElementById('toggle-data-btn');
+            
+            container.classList.toggle('collapsed');
+            
+            if(container.classList.contains('collapsed')) {
+                btn.innerHTML = '<span>⚙️ แสดงการตั้งค่าข้อมูล</span>';
+                btn.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-200');
+            } else {
+                btn.innerHTML = '<span>⚙️ ซ่อนการตั้งค่าข้อมูล</span>';
+                btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-200');
+            }
+        }
+
+        // --- แจ้งเตือน Status ---
+        function showStatus(msg, type) {
+            const st = document.getElementById('loading-status');
+            st.classList.remove('hide');
+            st.innerHTML = msg;
+            
+            st.className = 'mt-4 text-center p-3 rounded-lg font-bold ';
+            if(type === 'load') st.classList.add('bg-blue-100', 'text-blue-800', 'dark:bg-blue-900/40', 'dark:text-blue-400');
+            else if(type === 'err') st.classList.add('bg-red-100', 'text-red-800', 'dark:bg-red-900/40', 'dark:text-red-400');
+            else if(type === 'ok') st.classList.add('bg-green-100', 'text-green-800', 'dark:bg-green-900/40', 'dark:text-green-400');
+            else st.classList.add('bg-gray-100', 'text-gray-800', 'dark:bg-gray-800', 'dark:text-gray-300'); 
+        }
+
+        // --- ดึงจาก URL ---
+        function loadFromUrl() {
+            const url = document.getElementById('sheetUrl').value.trim();
+            if(!url) { showStatus('❌ กรุณาวางลิงก์ก่อนครับ', 'err'); return; }
+            
+            localStorage.setItem('boredPileUrl', url);
+            showStatus('กำลังดึงข้อมูลจากลิงก์... ⏳', 'load');
+            
+            Papa.parse(url, {
+                download: true, header: true, skipEmptyLines: true,
+                complete: (res) => handleParseResult(res),
+                error: (err) => showStatus(`❌ ดึงข้อมูลไม่สำเร็จ: ${err}`, 'err')
+            });
+        }
+
+        // --- ดึงจาก File ---
+        function loadFromFile() {
+            const file = document.getElementById('csvFile').files[0];
+            if(!file) { showStatus('❌ กรุณาเลือกไฟล์ก่อนครับ', 'err'); return; }
+            
+            showStatus('กำลังอ่านไฟล์... ⏳', 'load');
+            
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: (res) => handleParseResult(res),
+                error: (err) => showStatus(`❌ อ่านไฟล์ไม่สำเร็จ: ${err}`, 'err')
+            });
+        }
+
+        // --- ประมวลผลหลังอ่านข้อมูลเสร็จ ---
+        function handleParseResult(res) {
+            if(!res.data || res.data.length === 0) {
+                 showStatus('❌ ไม่พบข้อมูลในไฟล์', 'err'); return;
+            }
+            if(JSON.stringify(res.data[0]).includes('<!DOCTYPE html>')) {
+                 showStatus('❌ ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (อาจลืมใส่ output=csv หรือติดสิทธิ์การเข้าถึง)', 'err'); 
+                 return;
+            }
+            
+            globalDatabase = res.data;
+            processData(globalDatabase);
+            showStatus('✅ โหลดข้อมูลสำเร็จ!', 'ok');
+            
+            setTimeout(() => {
+                const container = document.getElementById('data-source-container');
+                if(!container.classList.contains('collapsed')) {
+                    toggleDataSource();
+                }
+            }, 1000);
+        }
+
+        function parseThaiDate(dateStr) {
+            if (!dateStr) return null;
+            let str = dateStr.toString().trim().replace(/"/g, '');
+            let parts = str.split(/[\/\- ]+/); 
+            if (parts.length < 3) return null;
+            
+            let day = parseInt(parts[0], 10);
+            let monthStr = parts[1].trim();
+            let year = parseInt(parts[2], 10);
+            
+            if (year < 100) year += 2000;
+            if (year > 2500) year -= 543;
+            
+            const thaiMonths = {
+                'ม.ค.': 0, 'ก.พ.': 1, 'มี.ค.': 2, 'เม.ย.': 3,
+                'พ.ค.': 4, 'มิ.ย.': 5, 'ก.ค.': 6, 'ส.ค.': 7,
+                'ก.ย.': 8, 'ต.ค.': 9, 'พ.ย.': 10, 'ธ.ค.': 11
+            };
+            
+            let month = thaiMonths[monthStr] !== undefined ? thaiMonths[monthStr] : (parseInt(monthStr, 10) - 1); 
+            if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+            
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+
+        function processData(data) {
+            let totalPiles = 0;
+            const zoneCounts = {};
+
+            data.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const zone = row['ผู้รับผิดชอบ'] || 'ไม่ระบุ';
+
+                if (projName) {
+                    if (!zone.includes("เข็ม-แซม")) { totalPiles++; }
+                    zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
+                }
+            });
+
+            document.getElementById('kpi-total').innerText = totalPiles.toLocaleString();
+            renderZoneTable(zoneCounts);
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchTableBody').innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์</td></tr>`;
+            
+            // โหลดข้อมูลลง Kanban ตามวันที่เซ็ตไว้ตอนโหลดเว็บ
+            filterKanban();
+            document.getElementById('dashboardContent').classList.remove('hide');
+        }
+
+        function filterKanban() {
+            const startVal = document.getElementById('startDate').value; 
+            const endVal = document.getElementById('endDate').value;
+            
+            if(!startVal || !endVal) return;
+
+            const [sYear, sMonth, sDay] = startVal.split('-');
+            const startDate = new Date(parseInt(sYear), parseInt(sMonth) - 1, parseInt(sDay), 0, 0, 0, 0);
+
+            const [eYear, eMonth, eDay] = endVal.split('-');
+            const endDate = new Date(parseInt(eYear), parseInt(eMonth) - 1, parseInt(eDay), 23, 59, 59, 999);
+
+            const board = document.getElementById('kanban-board');
+            board.innerHTML = '';
+            const columns = [1, 2, 3, 4, 5, 6, 0]; 
+            
+            columns.forEach(dayIdx => {
+                board.innerHTML += `
+                    <div class="k-col">
+                        <div class="k-header day-${dayIdx}">${days[dayIdx]}</div>
+                        <div id="k-tasks-${dayIdx}"></div>
+                    </div>
+                `;
+            });
+
+            let foundCount = 0;
+
+            globalDatabase.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const dateStr = row['วันที่เสร็จงานจริงๆ'];
+                if (!projName || !dateStr) return;
+
+                const taskDate = parseThaiDate(dateStr);
+                
+                if (taskDate && taskDate >= startDate && taskDate <= endDate) {
+                    foundCount++;
+                    const dayIndex = taskDate.getDay(); 
+                    const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+                    
+                    const cardHTML = `
+                        <div class="k-card card-${dayIndex}">
+                            <div class="font-bold text-sm mb-1 text-gray-800 dark:text-gray-100">📌 ${projName}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">📅 ${displayDate}</div>
+                        </div>
+                    `;
+                    document.getElementById(`k-tasks-${dayIndex}`).innerHTML += cardHTML;
+                }
+            });
+
+            const banner = document.getElementById('kanban-status');
+            if(foundCount > 0) {
+                banner.className = "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 p-3 rounded-lg text-center font-bold mb-4 border border-green-200 dark:border-green-800";
+                banner.innerHTML = `✅ ดึงข้อมูลสำเร็จ! พบงานเสร็จสิ้นจำนวน ${foundCount} ต้น`;
+            } else {
+                banner.className = "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400 p-3 rounded-lg text-center font-bold mb-4 border border-red-200 dark:border-red-800";
+                banner.innerHTML = `❌ ไม่พบข้อมูลเสาเข็มที่เสร็จสิ้นในช่วงวันที่เลือก`;
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const keyword = e.target.value.toLowerCase().trim();
+            const tbody = document.getElementById('searchTableBody');
+            
+            if (keyword === '') {
+                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์</td></tr>`;
+                return;
+            }
+
+            const results = globalDatabase.filter(row => {
+                const name = row['ชื่อโปรเจค'] || '';
+                return name.toLowerCase().includes(keyword);
+            });
+
+            if (results.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-red-500 dark:text-red-400 font-medium">❌ ไม่พบข้อมูลเสาเข็ม: "${keyword}"</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            results.slice(0, 100).forEach(row => {
+                const projName = row['ชื่อโปรเจค'] || '-';
+                const actualDate = row['วันที่เสร็จงานจริงๆ'] || '-';
+                const remark = row['หมายเหตุ'] || '-'; 
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-700 dark:text-purple-400">📌 ${projName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">📅 ${actualDate}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">${remark}</td>
+                    </tr>
+                `;
+            });
+        });
+
+        function renderZoneTable(zoneCounts) {
+            const tbody = document.getElementById('zoneTableBody');
+            tbody.innerHTML = '';
+            
+            const sortedZones = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1]);
+
+            sortedZones.forEach(([zone, count]) => {
+                let rowClass = "hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors";
+                let textClass = "text-gray-700 dark:text-gray-300 font-medium";
+                let numClass = "font-bold text-indigo-600 dark:text-indigo-400";
+                
+                if (zone.includes("เข็ม-แซม")) {
+                    rowClass = "bg-orange-50 dark:bg-orange-900/20";
+                    textClass = "text-orange-700 dark:text-orange-400 font-bold";
+                    numClass = "font-bold text-orange-600 dark:text-orange-400";
+                }
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${textClass}">${zone}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right">${count.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
