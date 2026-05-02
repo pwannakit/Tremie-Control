@@ -62,33 +62,20 @@
         @media (max-width: 1024px) { .kanban-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 768px) { .kanban-grid { grid-template-columns: 1fr; } }
         
-        /* Transition สำหรับกล่องต่างๆ */
-        #data-source-container {
-            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
+        /* Transition สำหรับระบบซ่อน/แสดง ตารางต่างๆ */
+        .collapsible-content {
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, margin 0.4s ease-in-out, padding 0.4s ease-in-out;
             overflow: hidden;
-            max-height: 500px;
+            max-height: 2500px; /* เผื่อพื้นที่ให้กราฟและตาราง */
             opacity: 1;
         }
-        #data-source-container.collapsed {
+        .collapsible-content.collapsed {
             max-height: 0;
             opacity: 0;
             margin-top: 0;
             margin-bottom: 0;
             padding-top: 0;
             padding-bottom: 0;
-            border-width: 0;
-        }
-
-        /* Transition สำหรับตาราง Zone */
-        #zoneTableContainer {
-            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
-            overflow: hidden;
-            max-height: 2000px; /* ให้สูงพอสำหรับข้อมูลทั้งหมด */
-            opacity: 1;
-        }
-        #zoneTableContainer.collapsed {
-            max-height: 0;
-            opacity: 0;
             border-width: 0;
         }
     </style>
@@ -102,7 +89,7 @@
             <p class="text-gray-500 dark:text-gray-400 mt-1">วิเคราะห์ข้อมูลและติดตามงานรายสัปดาห์</p>
         </div>
         <div class="flex items-center gap-3 w-full md:w-auto">
-            <button onclick="toggleDataSource()" id="toggle-data-btn" class="px-4 py-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+            <button onclick="toggleSection('data-source-container', 'toggle-data-btn')" id="toggle-data-btn" class="px-4 py-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                 <span>⚙️ ซ่อนการตั้งค่าข้อมูล</span>
             </button>
             <button onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-xl" title="สลับโหมดมืด/สว่าง">
@@ -112,7 +99,7 @@
     </div>
 
     <!-- Data Source Section -->
-    <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6">
+    <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6 collapsible-content">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
                 <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
@@ -144,129 +131,166 @@
     <div id="dashboardContent" class="max-w-7xl mx-auto hide">
         
         <!-- 1. KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card p-6 border-l-8 border-blue-500 text-center">
-                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">ผลงานเสาเข็มดำเนินการแล้ว</h3>
-                <div class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-2">
-                    <span id="kpi-total">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
-                </div>
+        <div class="glass-card p-6 border-l-8 border-blue-500 mb-8">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">🎯 สรุปภาพรวมผลงาน (KPIs)</h3>
+                <button onclick="toggleSection('kpi-content', 'toggle-kpi-btn')" id="toggle-kpi-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                    🔽 ซ่อนเนื้อหา
+                </button>
             </div>
-            <div class="glass-card p-6 border-l-8 border-emerald-500 text-center relative overflow-hidden">
-                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
-                <div class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-2">
-                    <span id="kpi-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+            
+            <div id="kpi-content" class="collapsible-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center">
+                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">รวมทั้งหมด</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-blue-600 dark:text-blue-400 mt-2">
+                            <span id="kpi-total">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
+                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">
+                            <span id="kpi-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                        </div>
+                        <div class="absolute -right-4 -top-4 opacity-5 text-emerald-500 text-8xl">📅</div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
+                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                            <span id="kpi-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                        </div>
+                        <div class="absolute -right-4 -top-4 opacity-5 text-purple-500 text-8xl">🗓️</div>
+                    </div>
                 </div>
-                <div class="absolute -right-4 -top-4 opacity-10 text-emerald-500 text-8xl">📅</div>
-            </div>
-            <div class="glass-card p-6 border-l-8 border-purple-500 text-center relative overflow-hidden">
-                <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
-                <div class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mt-2">
-                    <span id="kpi-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
-                </div>
-                <div class="absolute -right-4 -top-4 opacity-10 text-purple-500 text-8xl">🗓️</div>
+                <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-4">*ตัวเลขภาพรวมได้ทำการหักลบ "เข็ม-แซม" ออกแล้วเพื่อให้แสดงเฉพาะผลงานหลัก</p>
             </div>
         </div>
-        <p class="text-xs text-center text-gray-400 dark:text-gray-500 mb-8 -mt-4">*ตัวเลขทุกช่องได้ทำการหักลบ "เข็ม-แซม" ออกแล้วเพื่อให้แสดงเฉพาะผลงานหลัก</p>
 
         <!-- 2. ระบบค้นหาชื่อโปรเจค -->
-        <div class="glass-card p-6 overflow-hidden border-t-4 border-purple-500 mb-8">
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">🔍 ค้นหาตามชื่อโปรเจค</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">พิมพ์ชื่อโปรเจคเพื่อดูวันที่เสร็จงานและหมายเหตุ (แสดงผลทันทีที่พิมพ์)</p>
-            
-            <div class="mb-6">
-                <input type="text" id="searchInput" class="w-full p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg dark:bg-slate-800 dark:text-white focus:border-purple-500 outline-none transition-all" placeholder="ตัวอย่างเช่น: 81L/2 ...">
+        <div class="glass-card p-6 mb-8 border-t-4 border-purple-500">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🔍 ค้นหาตามชื่อโปรเจค</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">พิมพ์ชื่อโปรเจคเพื่อดูวันที่เสร็จงานและหมายเหตุ</p>
+                </div>
+                <button onclick="toggleSection('search-content', 'toggle-search-btn')" id="toggle-search-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                    🔽 ซ่อนเนื้อหา
+                </button>
             </div>
+            
+            <div id="search-content" class="collapsible-content">
+                <div class="mb-6 mt-2">
+                    <input type="text" id="searchInput" class="w-full p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg dark:bg-slate-800 dark:text-white focus:border-purple-500 outline-none transition-all" placeholder="ตัวอย่างเช่น: 81L/2 ...">
+                </div>
 
-            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-700" style="max-height: 400px;">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                    <thead class="bg-purple-50 dark:bg-slate-800 sticky top-0 z-10">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">ชื่อโปรเจค</th>
-                            <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">วันที่เสร็จงานจริงๆ</th>
-                            <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-2/4">หมายเหตุ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="searchTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
-                        <tr>
-                            <td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">
-                                👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-700" style="max-height: 400px;">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                        <thead class="bg-purple-50 dark:bg-slate-800 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">ชื่อโปรเจค</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">วันที่เสร็จงานจริงๆ</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-2/4">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="searchTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">
+                                    👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- 3. Kanban Board Section -->
         <div class="glass-card p-6 mb-8 border-t-4 border-indigo-500">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 dark:border-slate-700 pb-4">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white">📅 ติดตามงานรายสัปดาห์ (Kanban)</h3>
                 
-                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 px-4 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm">
-                    <label class="text-gray-600 dark:text-gray-300 font-medium">🗓️ ดูงานตั้งแต่วันที่:</label>
-                    <input type="date" id="startDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500">
-                    <label class="text-gray-600 dark:text-gray-300 font-medium">ถึง</label>
-                    <input type="date" id="endDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500">
-                    <button onclick="filterKanban()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-1.5 rounded-md font-bold transition-colors">ค้นหา</button>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSection('kanban-content', 'toggle-kanban-btn')" id="toggle-kanban-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                        🔽 ซ่อนเนื้อหา
+                    </button>
                 </div>
             </div>
 
-            <div id="kanban-status" class="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 p-3 rounded-lg text-center font-bold mb-4 border border-green-200 dark:border-green-800">
-                ✅ โปรดระบุวันที่และกดค้นหาเพื่อแสดงข้อมูล
-            </div>
+            <div id="kanban-content" class="collapsible-content">
+                <div class="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-800 p-3 px-4 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm w-fit mb-4">
+                    <label class="text-gray-600 dark:text-gray-300 font-medium text-sm">🗓️ ดูงานตั้งแต่:</label>
+                    <input type="date" id="startDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500 text-sm">
+                    <label class="text-gray-600 dark:text-gray-300 font-medium text-sm">ถึง</label>
+                    <input type="date" id="endDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500 text-sm">
+                    <button onclick="filterKanban()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-1.5 rounded-md font-bold transition-colors text-sm">ค้นหา</button>
+                </div>
 
-            <div class="kanban-grid" id="kanban-board"></div>
+                <div id="kanban-status" class="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 p-3 rounded-lg text-center font-bold mb-4 border border-green-200 dark:border-green-800">
+                    ✅ โปรดระบุวันที่และกดค้นหาเพื่อแสดงข้อมูล
+                </div>
+
+                <div class="kanban-grid" id="kanban-board"></div>
+            </div>
         </div>
 
-        <!-- 4. Summary Table Section (ปรับแก้แบบเต็มและพับเก็บได้) -->
-        <div class="glass-card p-6 mb-8 border-t-4 border-blue-400">
+        <!-- 4. Summary Table Section -->
+        <div class="glass-card p-6 mb-8 border-t-4 border-cyan-500">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">📋 สรุปจำนวนเสาเข็มแยกตามผู้รับผิดชอบ</h3>
-                <!-- ปุ่มสำหรับ เปิด-ปิด -->
-                <button onclick="toggleZoneTable()" id="toggle-zone-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                <button onclick="toggleSection('zone-content', 'toggle-zone-btn')" id="toggle-zone-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
                     🔽 ซ่อนตาราง
                 </button>
             </div>
             
-            <!-- เอา Scroll (max-height) ออก เพื่อให้โชว์ข้อมูลเต็ม แต่ใช้ ID นี้ในการซ่อนแทน -->
-            <div id="zoneTableContainer" class="rounded-lg border border-gray-200 dark:border-slate-700 w-full overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                    <thead class="bg-gray-100 dark:bg-slate-800">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
-                            <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">จำนวนผลงานที่ทำได้ (ต้น)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
-                    </tbody>
-                </table>
+            <div id="zone-content" class="collapsible-content">
+                <div class="rounded-lg border border-gray-200 dark:border-slate-700 w-full overflow-x-auto mt-2">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                        <thead class="bg-gray-100 dark:bg-slate-800">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
+                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">จำนวนผลงานที่ทำได้ (ต้น)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- 5. Monthly Executive Report Section -->
         <div class="glass-card p-6 mb-8 border-t-4 border-emerald-500">
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">📊 รายงานสรุปผลงานรายเดือน (Executive Summary)</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">ภาพรวมและเปรียบเทียบผลงานเสาเข็มรายเดือน (ไม่รวมเข็มแซม)</p>
-            
-            <div class="flex flex-wrap items-center gap-3 mb-4 bg-emerald-50 dark:bg-slate-800/80 p-4 rounded-lg border border-emerald-100 dark:border-slate-700 shadow-sm">
-                <label class="text-sm font-bold text-emerald-800 dark:text-emerald-400">⚖️ เปรียบเทียบผลงาน:</label>
-                <select id="compareMonth1" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
-                <span class="text-gray-500 dark:text-gray-400 font-bold text-sm">VS</span>
-                <select id="compareMonth2" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
-                
-                <button onclick="compareMonths()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm">
-                    เปรียบเทียบ
-                </button>
-                <button onclick="resetMonthlyChart()" class="bg-slate-400 hover:bg-slate-500 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm ml-auto">
-                    แสดงทั้งหมด
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">📊 รายงานสรุปผลงานรายเดือน (Executive Summary)</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">ภาพรวมและเปรียบเทียบผลงานเสาเข็มรายเดือน (ไม่รวมเข็มแซม)</p>
+                </div>
+                <button onclick="toggleSection('monthly-content', 'toggle-monthly-btn')" id="toggle-monthly-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                    🔽 ซ่อนเนื้อหา
                 </button>
             </div>
+            
+            <div id="monthly-content" class="collapsible-content pt-2">
+                <div class="flex flex-wrap items-center gap-3 mb-4 bg-emerald-50 dark:bg-slate-800/80 p-4 rounded-lg border border-emerald-100 dark:border-slate-700 shadow-sm">
+                    <label class="text-sm font-bold text-emerald-800 dark:text-emerald-400">⚖️ เปรียบเทียบผลงาน:</label>
+                    <select id="compareMonth1" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
+                    <span class="text-gray-500 dark:text-gray-400 font-bold text-sm">VS</span>
+                    <select id="compareMonth2" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
+                    
+                    <button onclick="compareMonths()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm">
+                        เปรียบเทียบ
+                    </button>
+                    <button onclick="resetMonthlyChart()" class="bg-slate-400 hover:bg-slate-500 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm ml-auto">
+                        แสดงทั้งหมด
+                    </button>
+                </div>
 
-            <div id="monthlySummaryReport" class="mb-6 p-5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-700 border border-emerald-100 dark:border-slate-600 shadow-sm text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
-            </div>
-            
-            <div class="w-full relative" style="height: 380px;">
-                <canvas id="monthlyChart"></canvas>
+                <div id="monthlySummaryReport" class="mb-6 p-5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-700 border border-emerald-100 dark:border-slate-600 shadow-sm text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
+                </div>
+                
+                <div class="w-full relative" style="height: 380px;">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -274,7 +298,7 @@
 
     <!-- Script ควบคุมการทำงาน -->
     <script>
-        // เปิดใช้งานปลั๊กอิน DataLabels สำหรับทุกกราฟในหน้า
+        // เปิดใช้งานปลั๊กอิน DataLabels
         Chart.register(ChartDataLabels);
 
         let globalDatabase = [];
@@ -286,7 +310,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
-            
             currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 
             const currentDay = today.getDay(); 
@@ -317,6 +340,27 @@
             }
         });
 
+        // --- ระบบสลับการซ่อน/แสดงเนื้อหาแบบครอบจักรวาล ---
+        function toggleSection(contentId, btnId) {
+            const container = document.getElementById(contentId);
+            const btn = document.getElementById(btnId);
+            
+            container.classList.toggle('collapsed');
+            
+            if(container.classList.contains('collapsed')) {
+                // ถ้าปุ่มเดิมมีคำว่าซ่อนตาราง ให้สลับเป็นแสดงตาราง นอกนั้นเป็นเนื้อหา
+                const btnText = btn.innerHTML.includes('ตาราง') ? '▶️ แสดงตาราง' : '▶️ แสดงเนื้อหา';
+                btn.innerHTML = btnText;
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
+                btn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
+            } else {
+                const btnText = btn.innerHTML.includes('ตาราง') ? '🔽 ซ่อนตาราง' : '🔽 ซ่อนเนื้อหา';
+                btn.innerHTML = btnText;
+                btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
+                btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
+            }
+        }
+
         function toggleDarkMode() {
             const html = document.documentElement;
             html.classList.toggle('dark');
@@ -331,38 +375,6 @@
                 monthlyChartInstance.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#64748b';
                 monthlyChartInstance.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
                 monthlyChartInstance.update();
-            }
-        }
-
-        function toggleDataSource() {
-            const container = document.getElementById('data-source-container');
-            const btn = document.getElementById('toggle-data-btn');
-            container.classList.toggle('collapsed');
-            
-            if(container.classList.contains('collapsed')) {
-                btn.innerHTML = '<span>⚙️ แสดงการตั้งค่าข้อมูล</span>';
-                btn.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-200');
-            } else {
-                btn.innerHTML = '<span>⚙️ ซ่อนการตั้งค่าข้อมูล</span>';
-                btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-200');
-            }
-        }
-
-        // --- เพิ่มฟังก์ชัน เปิด-ปิด ตารางสรุป Zone ---
-        function toggleZoneTable() {
-            const container = document.getElementById('zoneTableContainer');
-            const btn = document.getElementById('toggle-zone-btn');
-            
-            container.classList.toggle('collapsed');
-            
-            if(container.classList.contains('collapsed')) {
-                btn.innerHTML = '▶️ แสดงตาราง';
-                btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
-                btn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
-            } else {
-                btn.innerHTML = '🔽 ซ่อนตาราง';
-                btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
-                btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
             }
         }
 
@@ -410,7 +422,7 @@
             showStatus('✅ โหลดข้อมูลสำเร็จ!', 'ok');
             setTimeout(() => {
                 const container = document.getElementById('data-source-container');
-                if(!container.classList.contains('collapsed')) toggleDataSource();
+                if(!container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
             }, 1000);
         }
 
@@ -441,16 +453,20 @@
                 const zone = row['ผู้รับผิดชอบ'] || 'ไม่ระบุ';
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
-                if (projName && !zone.includes("เข็ม-แซม")) {
-                    totalPiles++; 
+                if (projName) {
+                    // --- แก้ไขบั๊ก เข็ม-แซม: แยกลอจิกนับตาราง ออกจากลอจิกหักลบของ KPI ออกจากกัน ---
                     zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
 
-                    if(dateStr) {
-                        const taskDate = parseThaiDate(dateStr);
-                        if(taskDate) {
-                            const mKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}`;
-                            if (mKey === currentMonthKey) currentMonthPiles++;
-                            if (taskDate >= currentWeekStart && taskDate <= currentWeekEnd) currentWeekPiles++;
+                    // เข็ม-แซม จะไม่เข้าเงื่อนไขด้านล่างนี้ (จึงไม่ถูกรวมใน KPI และกราฟ)
+                    if (!zone.includes("เข็ม-แซม")) {
+                        totalPiles++; 
+                        if(dateStr) {
+                            const taskDate = parseThaiDate(dateStr);
+                            if(taskDate) {
+                                const mKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}`;
+                                if (mKey === currentMonthKey) currentMonthPiles++;
+                                if (taskDate >= currentWeekStart && taskDate <= currentWeekEnd) currentWeekPiles++;
+                            }
                         }
                     }
                 }
