@@ -130,78 +130,95 @@
     <div id="dashboardContent" class="max-w-7xl mx-auto hide">
         
         <!-- ======================= -->
-        <!-- 1. KPI Cards: SONIC     -->
+        <!-- 1. KPI Cards: SONIC & GROUTING (MERGED) -->
         <!-- ======================= -->
-        <div class="glass-card p-6 border-l-8 border-blue-500 mb-8">
-            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white">🎯 สรุปภาพรวมงาน Sonic Logging Test</h3>
-                <button onclick="toggleSection('kpi-sonic-content', 'toggle-kpi-sonic-btn')" id="toggle-kpi-sonic-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+        <div class="glass-card p-6 mb-8 relative overflow-hidden">
+            <!-- แถบ Gradient ด้านบนสื่อถึง 2 งาน (น้ำเงิน Sonic -> ส้ม Grout) -->
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-400 to-orange-500"></div>
+            
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3 mt-1">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white">🎯 สรุปภาพรวมงาน Sonic Logging Test & Grouting</h3>
+                <button onclick="toggleSection('kpi-merged-content', 'toggle-kpi-btn')" id="toggle-kpi-btn" class="bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-indigo-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
                     🔽 ซ่อนเนื้อหา
                 </button>
             </div>
             
-            <div id="kpi-sonic-content" class="collapsible-content">
+            <div id="kpi-merged-content" class="collapsible-content">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">รวมทั้งหมด</h3>
-                        <div class="text-4xl md:text-5xl font-bold text-blue-600 dark:text-blue-400 mt-2">
-                            <span id="kpi-sonic-total">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">งาน</span>
+                    
+                    <!-- Card 1: Total -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                        <div class="bg-slate-50 dark:bg-slate-700/50 p-3 text-center border-b border-gray-200 dark:border-slate-700">
+                            <h3 class="text-gray-600 dark:text-gray-300 font-bold uppercase tracking-widest text-xs md:text-sm">รวมทั้งหมด (Total)</h3>
+                        </div>
+                        <div class="flex divide-x divide-gray-100 dark:divide-slate-700 p-4 relative">
+                            <div class="w-1/2 text-center px-2 py-1">
+                                <p class="text-[12px] text-gray-400 font-bold mb-1">📡 Sonic</p>
+                                <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
+                                    <span id="kpi-sonic-total">0</span>
+                                </div>
+                            </div>
+                            <div class="w-1/2 text-center px-2 py-1">
+                                <p class="text-[12px] text-gray-400 font-bold mb-1">🧱 Grouting</p>
+                                <div class="text-3xl md:text-4xl font-bold text-orange-500 dark:text-orange-400">
+                                    <span id="kpi-grout-total">0</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
-                        <div class="text-4xl md:text-5xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">
-                            <span id="kpi-sonic-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">งาน</span>
-                        </div>
-                        <div class="absolute -right-4 -top-4 opacity-5 text-emerald-500 text-8xl">📅</div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
-                        <div class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mt-2">
-                            <span id="kpi-sonic-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">งาน</span>
-                        </div>
-                        <div class="absolute -right-4 -top-4 opacity-5 text-purple-500 text-8xl">🗓️</div>
-                    </div>
-                </div>
-                <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-4">*อ้างอิงข้อมูลที่มีคำว่า "Sonic" และนับจาก <u class="font-bold">"วันที่เริ่มงาน"</u></p>
-            </div>
-        </div>
 
-        <!-- ======================= -->
-        <!-- 2. KPI Cards: GROUTING  -->
-        <!-- ======================= -->
-        <div class="glass-card p-6 border-l-8 border-orange-500 mb-8">
-            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white">🎯 สรุปภาพรวมงาน Grouting</h3>
-                <button onclick="toggleSection('kpi-grout-content', 'toggle-kpi-grout-btn')" id="toggle-kpi-grout-btn" class="bg-orange-50 dark:bg-slate-700 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-orange-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
-                    🔽 ซ่อนเนื้อหา
-                </button>
-            </div>
-            
-            <div id="kpi-grout-content" class="collapsible-content">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">รวมทั้งหมด</h3>
-                        <div class="text-4xl md:text-5xl font-bold text-orange-600 dark:text-orange-400 mt-2">
-                            <span id="kpi-grout-total">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">งาน</span>
+                    <!-- Card 2: Month -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                        <div class="bg-slate-50 dark:bg-slate-700/50 p-3 text-center border-b border-gray-200 dark:border-slate-700 relative overflow-hidden">
+                            <h3 class="text-gray-600 dark:text-gray-300 font-bold uppercase tracking-widest text-xs md:text-sm relative z-10">เดือนปัจจุบัน</h3>
+                            <div class="absolute -right-2 -top-4 opacity-5 text-gray-500 text-6xl z-0">📅</div>
+                        </div>
+                        <div class="flex divide-x divide-gray-100 dark:divide-slate-700 p-4 relative">
+                            <div class="w-1/2 text-center px-2 py-1">
+                                <p class="text-[12px] text-gray-400 font-bold mb-1">📡 Sonic</p>
+                                <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
+                                    <span id="kpi-sonic-month">0</span>
+                                </div>
+                            </div>
+                            <div class="w-1/2 text-center px-2 py-1">
+                                <p class="text-[12px] text-gray-400 font-bold mb-1">🧱 Grouting</p>
+                                <div class="text-3xl md:text-4xl font-bold text-orange-500 dark:text-orange-400">
+                                    <span id="kpi-grout-month">0</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
-                        <div class="text-4xl md:text-5xl font-bold text-teal-600 dark:text-teal-400 mt-2">
-                            <span id="kpi-grout-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">งาน</span>
+
+                    <!-- Card 3: Week -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                        <div class="bg-slate-50 dark:bg-slate-700/50 p-3 text-center border-b border-gray-200 dark:border-slate-700 relative overflow-hidden">
+                            <h3 class="text-gray-600 dark:text-gray-300 font-bold uppercase tracking-widest text-xs md:text-sm relative z-10">สัปดาห์ปัจจุบัน</h3>
+                            <div class="absolute -right-2 -top-4 opacity-5 text-gray-500 text-6xl z-0">🗓️</div>
                         </div>
-                        <div class="absolute -right-4 -top-4 opacity-5 text-teal-500 text-8xl">📅</div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
-                        <div class="text-4xl md:text-5xl font-bold text-rose-600 dark:text-rose-400 mt-2">
-                            <span id="kpi-grout-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">งาน</span>
+                        <div class="flex divide-x divide-gray-100 dark:divide-slate-700 p-4 relative">
+                            <div class="w-1/2 text-center px-2 py-1">
+                                <p class="text-[12px] text-gray-400 font-bold mb-1">📡 Sonic</p>
+                                <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
+                                    <span id="kpi-sonic-week">0</span>
+                                </div>
+                            </div>
+                            <div class="w-1/2 text-center px-2 py-1">
+                                <p class="text-[12px] text-gray-400 font-bold mb-1">🧱 Grouting</p>
+                                <div class="text-3xl md:text-4xl font-bold text-orange-500 dark:text-orange-400">
+                                    <span id="kpi-grout-week">0</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="absolute -right-4 -top-4 opacity-5 text-rose-500 text-8xl">🗓️</div>
                     </div>
+
                 </div>
-                <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-4">*อ้างอิงข้อมูลที่มีคำว่า "Grout" และต้องมี <u class="font-bold">"วันที่เสร็จงานจริงๆ"</u> ปรากฏอยู่เท่านั้นจึงจะถูกนับ</p>
+
+                <!-- Footer Note -->
+                <div class="flex flex-col md:flex-row justify-center gap-2 md:gap-6 text-xs text-gray-500 dark:text-gray-400 mt-5 bg-gray-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-gray-200 dark:border-slate-700 w-fit mx-auto shadow-sm">
+                    <span class="flex items-center gap-1.5"><b class="text-blue-600 dark:text-blue-400">📡 Sonic:</b> อ้างอิงข้อมูลจาก <u class="font-bold border-b border-gray-400">วันที่เริ่มงาน</u></span>
+                    <span class="hidden md:inline border-l border-gray-300 dark:border-slate-600"></span>
+                    <span class="flex items-center gap-1.5"><b class="text-orange-500 dark:text-orange-400">🧱 Grouting:</b> อ้างอิงข้อมูลจาก <u class="font-bold border-b border-gray-400">วันที่เสร็จงานจริงๆ</u></span>
+                </div>
             </div>
         </div>
 
@@ -432,17 +449,17 @@
                 btn.innerHTML = btnText;
                 btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
                 btn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
-                btn.classList.remove('bg-orange-50', 'text-orange-600', 'border-orange-200');
+                btn.classList.remove('bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
                 btn.classList.remove('bg-gray-100', 'text-gray-700');
             } else {
                 const btnText = btn.innerHTML.includes('ตาราง') ? '🔽 ซ่อนตาราง' : '🔽 ซ่อนเนื้อหา';
                 btn.innerHTML = btnText;
                 btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
                 
-                if(btnId === 'toggle-kpi-grout-btn') {
-                    btn.classList.add('bg-orange-50', 'text-orange-600', 'border-orange-200', 'dark:bg-slate-700');
-                } else if(btnId === 'toggle-other-btn') {
+                if(btnId === 'toggle-other-btn') {
                     btn.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200', 'dark:bg-slate-700', 'dark:text-gray-300');
+                } else if(btnId === 'toggle-kpi-btn') {
+                    btn.classList.add('bg-indigo-50', 'text-indigo-600', 'border-indigo-200', 'dark:bg-slate-700');
                 } else {
                     btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
                 }
@@ -917,9 +934,6 @@
             `;
         }
 
-        // ==========================================
-        // ฟังก์ชันประมวลผลข้อมูลสำหรับกราฟ 2 แท่ง
-        // ==========================================
         function prepareMonthlyChart(data) {
             const monthlyCounts = {};
             const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -944,7 +958,6 @@
 
                 if (!projName) return;
 
-                // นับยอด Sonic
                 if (zone.includes("sonic") && startDateStr) {
                     const dateObj = parseThaiDate(startDateStr);
                     if (dateObj) {
@@ -953,7 +966,6 @@
                     }
                 }
                 
-                // นับยอด Grout
                 if (zone.includes("grout") && finishDateStr && finishDateStr.trim().length > 2) {
                     const dateObj = parseThaiDate(finishDateStr);
                     if (dateObj) {
@@ -1008,9 +1020,6 @@
             drawMonthlyChart(globalMonthlyData);
         }
 
-        // ==========================================
-        // ฟังก์ชันสร้างกล่องข้อความอัจฉริยะ (แยก 2 หมวดหมู่)
-        // ==========================================
         function generateSummaryText(dataObj) {
             const summaryDiv = document.getElementById('monthlySummaryReport');
             const keys = Object.keys(dataObj).sort(); 
@@ -1048,9 +1057,6 @@
             `;
         }
 
-        // ==========================================
-        // ฟังก์ชันวาดกราฟแท่งคู่ (Grouped Bar Chart)
-        // ==========================================
         function drawMonthlyChart(dataObj) {
             generateSummaryText(dataObj);
 
@@ -1072,7 +1078,7 @@
                         {
                             label: '📡 Sonic Logging Test',
                             data: sonicCounts,
-                            backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue-500
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)', 
                             borderColor: 'rgb(59, 130, 246)',
                             borderWidth: 1,
                             borderRadius: 4
@@ -1080,7 +1086,7 @@
                         {
                             label: '🧱 Grouting',
                             data: groutCounts,
-                            backgroundColor: 'rgba(249, 115, 22, 0.8)', // Orange-500
+                            backgroundColor: 'rgba(249, 115, 22, 0.8)', 
                             borderColor: 'rgb(249, 115, 22)',
                             borderWidth: 1,
                             borderRadius: 4
