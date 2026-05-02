@@ -177,7 +177,6 @@
                 
                 <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 px-4 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm">
                     <label class="text-gray-600 dark:text-gray-300 font-medium">🗓️ ดูงานตั้งแต่วันที่:</label>
-                    <!-- นำ value เดิมออก เพื่อให้ JS ใส่ค่าให้อัตโนมัติ -->
                     <input type="date" id="startDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500">
                     <label class="text-gray-600 dark:text-gray-300 font-medium">ถึง</label>
                     <input type="date" id="endDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500">
@@ -218,17 +217,18 @@
 
         // --- ทำงานทันทีเมื่อหน้าเว็บโหลดเสร็จ ---
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. ตั้งค่าวันที่สัปดาห์ปัจจุบัน
+            // 1. ตั้งค่าวันที่สัปดาห์ปัจจุบัน (แก้ไขบั๊กข้ามเดือน)
             const today = new Date();
             const currentDay = today.getDay(); // 0 = อา., 1 = จ., ...
-            
-            // หาวันจันทร์ (ถ้าวันนี้เป็นวันอาทิตย์ ให้ถอยไป 6 วัน, ถ้าเป็นวันอื่นถอยไป day - 1 วัน)
             const diffToMonday = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
             
-            const startOfWeek = new Date(today.setDate(diffToMonday));
-            const endOfWeek = new Date(today.setDate(diffToMonday + 6));
+            // สร้าง Date Object ตัวใหม่ เพื่อไม่ให้กระทบค่าเดิม
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(diffToMonday);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6); // บวกเพิ่มจากวันจันทร์ไป 6 วันเพื่อหาวันอาทิตย์
 
-            // ฟังก์ชันแปลง Date เป็น YYYY-MM-DD
             const formatDateForInput = (d) => {
                 const year = d.getFullYear();
                 const month = String(d.getMonth() + 1).padStart(2, '0');
