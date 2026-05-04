@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verticality Analyzer V28 - โครงการจตุโชติ</title>
+    <title>Verticality Analyzer V28.1 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
@@ -11,8 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; transition: all 0.3s ease; }
-        .dark { background-color: #0f172a; color: #f8fafc; }
+        body { font-family: 'Sarabun', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
+        
         .dark input, .dark select { background-color: #1e293b; color: #f8fafc; border-color: #334155; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -20,14 +20,18 @@
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-10 text-slate-800 dark:text-slate-200">
+<!-- แก้ไข: เพิ่ม dark:bg-slate-900 เพื่อให้พื้นหลังมืดสนิท -->
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen pb-10 text-slate-800 dark:text-slate-200">
+
+    <!-- แก้ไข: ซ่อน Class สีเขียว/แดง เอาไว้เพื่อให้ Tailwind CDN ดึงไปสร้าง CSS เผื่อไว้ให้ JavaScript เรียกใช้ -->
+    <div class="hidden bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 dark:border-emerald-600 bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-600 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400"></div>
 
     <!-- Header -->
     <header class="bg-slate-900 dark:bg-black text-white p-4 shadow-lg mb-6 border-b border-slate-800">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-emerald-400">
-                    <i class="fas fa-bullseye mr-2"></i>Verticality Analyzer V28
+                    <i class="fas fa-bullseye mr-2"></i>Verticality Analyzer V28.1
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -175,11 +179,9 @@
         </div>
     </main>
 
-    <!-- PURE JAVASCRIPT: No inline events -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- 1. State & DOM Variables ---
             let appState = { records: [], currentResult: null };
             
             const DOM = {
@@ -212,7 +214,6 @@
                 themeIcon: document.getElementById('theme-icon')
             };
 
-            // --- 2. Theme Logic ---
             function toggleTheme() {
                 const isDark = document.documentElement.classList.toggle('dark');
                 DOM.themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
@@ -225,7 +226,6 @@
                 DOM.themeIcon.className = 'fas fa-sun';
             }
 
-            // --- 3. Core Logic ---
             function calculate() {
                 const depthStr = DOM.inpDepth.value;
                 const criteriaStr = DOM.selCriteria.value;
@@ -235,7 +235,6 @@
                 const depthM = parseFloat(depthStr);
                 const criteria = parseFloat(criteriaStr) || 100;
                 
-                // Allowable Limit (Depth / Criteria), Convert M to CM (* 100)
                 let limitCm = 0;
                 if (!isNaN(depthM) && depthM > 0) {
                     limitCm = (depthM / criteria) * 100;
@@ -245,7 +244,6 @@
                 const xCm = parseFloat(xStr);
                 const yCm = parseFloat(yStr);
 
-                // Validation
                 if (isNaN(depthM) || isNaN(xCm) || isNaN(yCm) || xStr.trim() === '' || yStr.trim() === '') {
                     resetDisplay();
                     appState.currentResult = null;
@@ -253,7 +251,6 @@
                     return;
                 }
 
-                // Math
                 const resCm = Math.sqrt((xCm * xCm) + (yCm * yCm));
                 const resM = resCm / 100;
 
@@ -262,10 +259,8 @@
 
                 const isPass = resCm <= limitCm;
 
-                // Update State
                 appState.currentResult = { xCm, yCm, limitCm, resCm, ratio, isPass, depthM };
 
-                // Update UI
                 DOM.outResCm.textContent = resCm.toFixed(1);
                 DOM.outResM.textContent = `(${resM.toFixed(2)} m)`;
                 DOM.outRatio.textContent = ratio > 0 ? `1 : ${ratio}` : 'Perfect (0)';
@@ -292,7 +287,6 @@
                 DOM.badgeStatus.textContent = "รอข้อมูล";
             }
 
-            // --- 4. Drawing Logic ---
             function drawCanvas() {
                 if (!DOM.canvas) return;
                 
@@ -317,7 +311,6 @@
                     line: isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.5)'
                 };
 
-                // Draw Axis
                 ctx.beginPath();
                 ctx.strokeStyle = colors.axis;
                 ctx.lineWidth = 1;
@@ -331,7 +324,6 @@
                 const maxRadiusPx = Math.min(cx, cy) * 0.6;
                 const scale = maxRadiusPx / limitCm;
 
-                // Draw Limits
                 if (!isNaN(scale) && isFinite(scale) && scale > 0) {
                     ctx.beginPath();
                     ctx.arc(cx, cy, limitCm * scale, 0, 2 * Math.PI);
@@ -349,7 +341,6 @@
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    // Draw Point
                     if (appState.currentResult) {
                         const pxX = cx + (appState.currentResult.xCm * scale);
                         const pxY = cy - (appState.currentResult.yCm * scale);
@@ -372,7 +363,6 @@
                 }
             }
 
-            // --- 5. Data Management ---
             function saveRecord() {
                 if (!appState.currentResult) {
                     alert("ข้อมูลไม่ครบถ้วน! กรุณากรอก 'เยื้องแกน X และ Y' ก่อนบันทึก");
@@ -396,7 +386,6 @@
                 saveToLocal();
                 renderTable();
 
-                // Clear Form
                 DOM.inpX.value = '';
                 DOM.inpY.value = '';
                 calculate();
@@ -451,7 +440,6 @@
                     DOM.tbody.appendChild(tr);
                 });
 
-                // Attach delete events
                 document.querySelectorAll('.btn-del').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const id = parseInt(e.currentTarget.getAttribute('data-id'));
@@ -491,7 +479,6 @@
                 e.target.value = ''; 
             }
 
-            // --- 6. Event Listeners ---
             DOM.inpDepth.addEventListener('input', calculate);
             DOM.selCriteria.addEventListener('change', calculate);
             DOM.inpX.addEventListener('input', calculate);
@@ -507,7 +494,6 @@
             
             window.addEventListener('resize', drawCanvas);
 
-            // --- 7. Boot up ---
             try {
                 const saved = localStorage.getItem('verticality_logs_v28');
                 if (saved) appState.records = JSON.parse(saved);
@@ -516,7 +502,6 @@
             calculate();
             renderTable();
 
-            // Small delay to ensure container is fully sized before first draw
             setTimeout(drawCanvas, 100);
         });
     </script>
