@@ -3,43 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bored Pile Verticality Analyzer V27 - โครงการจตุโชติ</title>
+    <title>Verticality Analyzer V28 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', }
+        tailwind.config = { darkMode: 'class' }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        
-        .dark input, .dark select, .dark textarea { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
-        
+        body { font-family: 'Sarabun', sans-serif; transition: all 0.3s ease; }
+        .dark { background-color: #0f172a; color: #f8fafc; }
+        .dark input, .dark select { background-color: #1e293b; color: #f8fafc; border-color: #334155; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 min-h-screen pb-10 text-slate-800 dark:text-slate-200">
+<body class="bg-slate-50 min-h-screen pb-10 text-slate-800 dark:text-slate-200">
 
-    <header class="bg-slate-900 dark:bg-slate-950 text-white p-4 shadow-lg mb-6 transition-colors border-b dark:border-slate-800">
+    <!-- Header -->
+    <header class="bg-slate-900 dark:bg-black text-white p-4 shadow-lg mb-6 border-b border-slate-800">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-emerald-400">
-                    <i class="fas fa-bullseye mr-2"></i>Verticality Analyzer V27
+                    <i class="fas fa-bullseye mr-2"></i>Verticality Analyzer V28
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
-            <div class="flex flex-wrap items-center justify-center gap-2">
-                <button type="button" onclick="toggleDarkMode()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-amber-300 font-bold shadow transition border border-slate-600">
+            <div class="flex gap-2">
+                <button id="btn-theme" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-amber-300 font-bold border border-slate-700 transition">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
-                <input type="file" id="file-input" accept=".json" class="hidden" onchange="importData(event)">
-                <button type="button" onclick="document.getElementById('file-input').click()" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                <input type="file" id="file-import" accept=".json" class="hidden">
+                <button id="btn-import" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
                     <i class="fas fa-folder-open mr-1"></i> โหลด
                 </button>
-                <button type="button" onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                <button id="btn-export" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
                     <i class="fas fa-save mr-1"></i> เซฟ
                 </button>
             </div>
@@ -48,34 +48,32 @@
 
     <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Left Column -->
+        <!-- Left Panel: Inputs -->
         <div class="lg:col-span-5 space-y-6">
-            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                 <h2 class="font-bold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
                     <i class="fas fa-keyboard mr-2 text-blue-500"></i>ข้อมูลหลุมเจาะและผลทดสอบ
                 </h2>
                 
                 <div class="space-y-4">
+                    <!-- General Settings -->
                     <div class="grid grid-cols-2 gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
-                            <input type="text" id="pile-id" placeholder="e.g. OR4-65 No.B3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
+                            <input type="text" id="inp-pile" placeholder="e.g. OR4-65 No.B3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">เส้นผ่านศูนย์กลาง (m)</label>
-                            <input type="number" id="diameter" value="1.2" step="0.1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                        </div>
-                        <div>
+                        <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ความลึกพิจารณา (m)</label>
-                            <input type="number" id="depth" value="60.0" step="0.1" oninput="calculate()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold text-blue-600 dark:text-blue-400">
+                            <input type="number" id="inp-depth" value="60.0" step="0.1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold text-blue-600 dark:text-blue-400">
                             <p class="text-[9px] text-slate-400 mt-1">*ความลึกจุดที่เกิด Deviation สูงสุด</p>
                         </div>
                     </div>
 
+                    <!-- Koden Data -->
                     <div class="grid grid-cols-2 gap-3 pt-2">
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-emerald-600 dark:text-emerald-500 mb-1 uppercase">เกณฑ์มาตรฐานที่ยอมรับได้</label>
-                            <select id="criteria" onchange="calculate()" class="w-full p-2 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none bg-emerald-50 dark:bg-slate-900 font-bold text-emerald-700 dark:text-emerald-400">
+                            <select id="sel-criteria" class="w-full p-2 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none bg-emerald-50 dark:bg-slate-900 font-bold text-emerald-700 dark:text-emerald-400">
                                 <option value="75">1 : 75</option>
                                 <option value="100" selected>1 : 100 (มาตรฐานโครงการ)</option>
                                 <option value="150">1 : 150</option>
@@ -84,70 +82,74 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">เยื้องแกน X (cm)</label>
-                            <input type="number" id="dev-x" placeholder="e.g. 40" oninput="calculate()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-400 outline-none font-bold bg-slate-50 dark:bg-slate-900 text-lg">
+                            <input type="number" id="inp-x" placeholder="เช่น 40" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-400 outline-none font-bold bg-slate-50 dark:bg-slate-900 text-lg">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">เยื้องแกน Y (cm)</label>
-                            <input type="number" id="dev-y" placeholder="e.g. 60" oninput="calculate()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-400 outline-none font-bold bg-slate-50 dark:bg-slate-900 text-lg">
+                            <input type="number" id="inp-y" placeholder="เช่น 60" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-400 outline-none font-bold bg-slate-50 dark:bg-slate-900 text-lg">
                         </div>
-                        <div class="col-span-2 flex items-center justify-between mt-2">
-                            <span class="text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">*เปลี่ยนหน่วยจาก mm เป็น cm แล้ว</span>
-                            <button type="button" onclick="saveRecord()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition text-sm flex items-center">
+                        <div class="col-span-2 flex items-center justify-between mt-4">
+                            <span class="text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded border border-blue-200 dark:border-blue-800">หน่วยเป็น CM แล้ว</span>
+                            <button id="btn-save" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition text-sm flex items-center">
                                 <i class="fas fa-save mr-2"></i> บันทึกผล
                             </button>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </div>
 
-        <!-- Right Column -->
+        <!-- Right Panel: Dashboard -->
         <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Number Cards -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">ระยะเยื้องศูนย์ลัพธ์ (Resultant)</p>
                     <p class="text-3xl font-bold text-slate-800 dark:text-white">
-                        <span id="res-cm">0.0</span> <span class="text-sm font-normal text-slate-400">cm</span>
+                        <span id="out-res-cm">0.0</span> <span class="text-sm font-normal text-slate-400">cm</span>
                     </p>
-                    <p class="text-xs text-slate-400 mt-1" id="res-m">(0.00 m)</p>
+                    <p class="text-xs text-slate-400 mt-1" id="out-res-m">(0.00 m)</p>
                 </div>
                 
-                <div id="status-card" class="bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors flex flex-col justify-center">
+                <div id="card-status" class="bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors duration-300">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">สัดส่วนความเอียงจริง (Actual)</p>
-                    <p class="text-3xl font-bold text-slate-800 dark:text-white" id="actual-ratio">1 : -</p>
-                    <div id="status-badge" class="mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                    <p class="text-3xl font-bold text-slate-800 dark:text-white" id="out-ratio">1 : -</p>
+                    <div id="badge-status" class="mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                         รอข้อมูล
                     </div>
                 </div>
             </div>
 
-            <!-- Visualization -->
-            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors flex flex-col items-center">
+            <!-- Target Graphic -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col items-center">
                 <div class="w-full flex justify-between items-center mb-4">
                     <h2 class="font-bold text-slate-700 dark:text-slate-200 text-sm"><i class="fas fa-crosshairs mr-2"></i>Target Visualization</h2>
                     <div class="flex gap-3 text-[10px] font-bold text-slate-500">
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-400 opacity-50 mr-1"></span>ขอบเขตผ่านเกณฑ์</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-400 opacity-50 mr-1"></span>ผ่านเกณฑ์</span>
                         <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-500 mr-1"></span>จุดเยื้องศูนย์</span>
                     </div>
                 </div>
                 
-                <div class="relative w-full max-w-sm aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <canvas id="targetCanvas" class="w-full h-full"></canvas>
+                <div id="canvas-container" class="relative w-full max-w-[320px] aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <canvas id="targetCanvas" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">+Y</div>
                     <div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">-Y</div>
                     <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">+X</div>
                     <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">-X</div>
                 </div>
-                <p id="allowable-text" class="text-xs text-slate-500 font-bold mt-4 text-center">ระยะเยื้องศูนย์ที่ยอมรับได้: <span id="allow-val" class="text-emerald-600 dark:text-emerald-400">0</span> cm</p>
-            </section>
+                <p class="text-xs text-slate-500 font-bold mt-4 text-center">
+                    ระยะเยื้องศูนย์ที่ยอมรับได้: <span id="out-allow" class="text-emerald-600 dark:text-emerald-400 text-sm">0</span> cm
+                </p>
+            </div>
         </div>
 
-        <!-- Table -->
+        <!-- Table Panel -->
         <div class="lg:col-span-12">
-            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
                     <span><i class="fas fa-history mr-2"></i>บันทึกผลการตรวจสอบ (Data Log)</span>
-                    <button type="button" onclick="clearRecords()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded shadow transition"><i class="fas fa-trash mr-1"></i> ล้างข้อมูล</button>
+                    <button id="btn-clear" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded shadow transition"><i class="fas fa-trash mr-1"></i> ล้างข้อมูล</button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -163,327 +165,360 @@
                                 <th class="px-4 py-3 text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="log-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        <tbody id="table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                     </table>
                 </div>
-                <div id="empty-state" class="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">
+                <div id="table-empty" class="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">
                     ยังไม่มีข้อมูลบันทึก
                 </div>
-            </section>
+            </div>
         </div>
     </main>
 
+    <!-- PURE JAVASCRIPT: No inline events -->
     <script>
-        function applyTheme(isDark) {
-            const icon = document.getElementById('theme-icon');
-            if (isDark) { document.documentElement.classList.add('dark'); icon.className = 'fas fa-sun'; } 
-            else { document.documentElement.classList.remove('dark'); icon.className = 'fas fa-moon'; }
-            drawCanvas(); 
-        }
-        function toggleDarkMode() {
-            const isDark = !document.documentElement.classList.contains('dark');
-            try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
-            applyTheme(isDark);
-        }
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { applyTheme(true); } 
-        else { applyTheme(false); }
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. State & DOM Variables ---
+            let appState = { records: [], currentResult: null };
+            
+            const DOM = {
+                inpPile: document.getElementById('inp-pile'),
+                inpDepth: document.getElementById('inp-depth'),
+                selCriteria: document.getElementById('sel-criteria'),
+                inpX: document.getElementById('inp-x'),
+                inpY: document.getElementById('inp-y'),
+                
+                outResCm: document.getElementById('out-res-cm'),
+                outResM: document.getElementById('out-res-m'),
+                outRatio: document.getElementById('out-ratio'),
+                outAllow: document.getElementById('out-allow'),
+                
+                cardStatus: document.getElementById('card-status'),
+                badgeStatus: document.getElementById('badge-status'),
+                
+                canvas: document.getElementById('targetCanvas'),
+                canvasContainer: document.getElementById('canvas-container'),
+                
+                tbody: document.getElementById('table-body'),
+                tEmpty: document.getElementById('table-empty'),
+                
+                btnSave: document.getElementById('btn-save'),
+                btnClear: document.getElementById('btn-clear'),
+                btnExport: document.getElementById('btn-export'),
+                btnImport: document.getElementById('btn-import'),
+                fileImport: document.getElementById('file-import'),
+                btnTheme: document.getElementById('btn-theme'),
+                themeIcon: document.getElementById('theme-icon')
+            };
 
-        let records = [];
-        let currentCalc = { dx: 0, dy: 0, resCm: 0, limitCm: 0, isPass: null, ratio: 0 };
+            // --- 2. Theme Logic ---
+            function toggleTheme() {
+                const isDark = document.documentElement.classList.toggle('dark');
+                DOM.themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                try { localStorage.setItem('theme_v28', isDark ? 'dark' : 'light'); } catch(e){}
+                drawCanvas();
+            }
+            
+            if (localStorage.getItem('theme_v28') === 'dark' || (!localStorage.getItem('theme_v28') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                DOM.themeIcon.className = 'fas fa-sun';
+            }
 
-        function init() {
-            try {
-                const saved = localStorage.getItem('verticality_logs');
-                if (saved) { records = JSON.parse(saved); }
-            } catch(e) {}
-            drawCanvas(); 
-            window.addEventListener('resize', drawCanvas);
-            calculate();
-            renderTable();
-        }
+            // --- 3. Core Logic ---
+            function calculate() {
+                const depthStr = DOM.inpDepth.value;
+                const criteriaStr = DOM.selCriteria.value;
+                const xStr = DOM.inpX.value;
+                const yStr = DOM.inpY.value;
 
-        // --- Core Calculation ---
-        function calculate() {
-            try {
-                const depthStr = document.getElementById('depth').value;
-                const dxStr = document.getElementById('dev-x').value;
-                const dyStr = document.getElementById('dev-y').value;
-                const criteriaStr = document.getElementById('criteria').value;
-
-                const depthM = parseFloat(depthStr) || 0;
-                const dx = parseFloat(dxStr);
-                const dy = parseFloat(dyStr);
+                const depthM = parseFloat(depthStr);
                 const criteria = parseFloat(criteriaStr) || 100;
+                
+                // Allowable Limit (Depth / Criteria), Convert M to CM (* 100)
+                let limitCm = 0;
+                if (!isNaN(depthM) && depthM > 0) {
+                    limitCm = (depthM / criteria) * 100;
+                }
+                DOM.outAllow.textContent = limitCm.toFixed(1);
 
-                const resDisplay = document.getElementById('res-cm');
-                const resMDisplay = document.getElementById('res-m');
-                const ratioDisplay = document.getElementById('actual-ratio');
-                const statusCard = document.getElementById('status-card');
-                const badge = document.getElementById('status-badge');
-                const allowVal = document.getElementById('allow-val');
+                const xCm = parseFloat(xStr);
+                const yCm = parseFloat(yStr);
 
-                if (depthM <= 0) return;
-
-                // 1. Calculate Limits (Convert m to cm)
-                const limitM = depthM / criteria;
-                const limitCm = limitM * 100; 
-                allowVal.innerText = limitCm.toFixed(1);
-                currentCalc.limitCm = limitCm;
-
-                // 2. Validate Inputs Safely
-                const hasDx = !isNaN(dx) && dxStr.trim() !== '';
-                const hasDy = !isNaN(dy) && dyStr.trim() !== '';
-
-                if (!hasDx || !hasDy) {
-                    resDisplay.innerText = "0.0";
-                    resMDisplay.innerText = "(0.00 m)";
-                    ratioDisplay.innerText = "1 : -";
-                    statusCard.className = "bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors flex flex-col justify-center";
-                    badge.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
-                    badge.innerText = "รอข้อมูล";
-                    currentCalc.resCm = 0; 
-                    currentCalc.isPass = null;
+                // Validation
+                if (isNaN(depthM) || isNaN(xCm) || isNaN(yCm) || xStr.trim() === '' || yStr.trim() === '') {
+                    resetDisplay();
+                    appState.currentResult = null;
                     drawCanvas();
                     return;
                 }
 
-                // 3. Process Valid Data
-                const resultantCm = Math.sqrt((dx * dx) + (dy * dy));
-                const resultantM = resultantCm / 100;
+                // Math
+                const resCm = Math.sqrt((xCm * xCm) + (yCm * yCm));
+                const resM = resCm / 100;
 
-                currentCalc.resCm = resultantCm;
-                currentCalc.dx = dx;
-                currentCalc.dy = dy;
+                let ratio = 0;
+                if (resM > 0) ratio = Math.floor(depthM / resM);
 
-                resDisplay.innerText = resultantCm.toFixed(1);
-                resMDisplay.innerText = `(${resultantM.toFixed(2)} m)`;
+                const isPass = resCm <= limitCm;
 
-                let actualRatio = Infinity;
-                if (resultantM > 0) {
-                    actualRatio = depthM / resultantM;
-                    ratioDisplay.innerText = `1 : ${Math.floor(actualRatio)}`;
-                    currentCalc.ratio = Math.floor(actualRatio);
-                } else {
-                    ratioDisplay.innerText = "Perfect (0)";
-                    currentCalc.ratio = 0;
-                }
+                // Update State
+                appState.currentResult = { xCm, yCm, limitCm, resCm, ratio, isPass, depthM };
 
-                const isPass = resultantCm <= limitCm;
-                currentCalc.isPass = isPass;
+                // Update UI
+                DOM.outResCm.textContent = resCm.toFixed(1);
+                DOM.outResM.textContent = `(${resM.toFixed(2)} m)`;
+                DOM.outRatio.textContent = ratio > 0 ? `1 : ${ratio}` : 'Perfect (0)';
 
                 if (isPass) {
-                    statusCard.className = "bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-sm text-center transition-colors flex flex-col justify-center";
-                    badge.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-sm";
-                    badge.innerHTML = "<i class='fas fa-check mr-1'></i> ผ่านเกณฑ์ (PASS)";
+                    DOM.cardStatus.className = "bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-sm text-center flex flex-col justify-center transition-colors";
+                    DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-sm";
+                    DOM.badgeStatus.innerHTML = "<i class='fas fa-check mr-1'></i> ผ่านเกณฑ์ (PASS)";
                 } else {
-                    statusCard.className = "bg-red-50 dark:bg-red-900/20 p-5 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-sm text-center transition-colors flex flex-col justify-center animate-pulse";
-                    badge.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white shadow-sm";
-                    badge.innerHTML = "<i class='fas fa-times mr-1'></i> ไม่ผ่าน (FAIL)";
+                    DOM.cardStatus.className = "bg-red-50 dark:bg-red-900/20 p-5 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-sm text-center flex flex-col justify-center transition-colors animate-pulse";
+                    DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white shadow-sm";
+                    DOM.badgeStatus.innerHTML = "<i class='fas fa-times mr-1'></i> ไม่ผ่าน (FAIL)";
                 }
 
                 drawCanvas();
-            } catch (err) { console.error("Calculation Error:", err); }
-        }
+            }
 
-        // --- Canvas Drawing ---
-        function drawCanvas() {
-            const canvas = document.getElementById('targetCanvas');
-            if(!canvas) return;
-            
-            let w = canvas.parentElement.clientWidth || 300;
-            let h = canvas.parentElement.clientHeight || 300;
-            canvas.width = w;
-            canvas.height = h;
+            function resetDisplay() {
+                DOM.outResCm.textContent = "0.0";
+                DOM.outResM.textContent = "(0.00 m)";
+                DOM.outRatio.textContent = "1 : -";
+                DOM.cardStatus.className = "bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors";
+                DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
+                DOM.badgeStatus.textContent = "รอข้อมูล";
+            }
 
-            const ctx = canvas.getContext('2d');
-            const cx = w / 2;
-            const cy = h / 2;
+            // --- 4. Drawing Logic ---
+            function drawCanvas() {
+                if (!DOM.canvas) return;
+                
+                let w = DOM.canvasContainer.clientWidth || 300;
+                let h = DOM.canvasContainer.clientHeight || 300;
+                
+                DOM.canvas.width = w;
+                DOM.canvas.height = h;
 
-            ctx.clearRect(0, 0, w, h);
+                const ctx = DOM.canvas.getContext('2d');
+                const cx = w / 2;
+                const cy = h / 2;
 
-            const isDark = document.documentElement.classList.contains('dark');
-            const colorAxis = isDark ? '#334155' : '#e2e8f0';
-            const colorTargetFill = isDark ? 'rgba(52, 211, 153, 0.15)' : 'rgba(16, 185, 129, 0.15)'; 
-            const colorTargetStroke = isDark ? '#10b981' : '#059669';
-            const colorPoint = isDark ? '#ef4444' : '#dc2626'; 
-            const colorLine = isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.5)';
+                ctx.clearRect(0, 0, w, h);
 
-            ctx.beginPath();
-            ctx.strokeStyle = colorAxis;
-            ctx.lineWidth = 1;
-            ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
-            ctx.moveTo(0, cy); ctx.lineTo(w, cy);
-            ctx.stroke();
+                const isDark = document.documentElement.classList.contains('dark');
+                const colors = {
+                    axis: isDark ? '#334155' : '#e2e8f0',
+                    targetFill: isDark ? 'rgba(52, 211, 153, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                    targetStroke: isDark ? '#10b981' : '#059669',
+                    point: isDark ? '#ef4444' : '#dc2626',
+                    line: isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.5)'
+                };
 
-            if (currentCalc.limitCm <= 0) return;
-
-            const maxRadiusPx = Math.min(cx, cy) * 0.6;
-            const scalePxPerCm = maxRadiusPx / currentCalc.limitCm;
-
-            if (!isNaN(scalePxPerCm) && isFinite(scalePxPerCm) && scalePxPerCm > 0) {
+                // Draw Axis
                 ctx.beginPath();
-                ctx.arc(cx, cy, currentCalc.limitCm * scalePxPerCm, 0, 2 * Math.PI);
-                ctx.fillStyle = colorTargetFill;
-                ctx.fill();
-                ctx.strokeStyle = colorTargetStroke;
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]); 
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, (currentCalc.limitCm / 2) * scalePxPerCm, 0, 2 * Math.PI);
-                ctx.strokeStyle = colorAxis;
+                ctx.strokeStyle = colors.axis;
                 ctx.lineWidth = 1;
+                ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+                ctx.moveTo(0, cy); ctx.lineTo(w, cy);
                 ctx.stroke();
 
-                if (!isNaN(currentCalc.dx) && !isNaN(currentCalc.dy)) {
-                    const plotX = cx + (currentCalc.dx * scalePxPerCm);
-                    const plotY = cy - (currentCalc.dy * scalePxPerCm); 
+                const limitCm = parseFloat(DOM.outAllow.textContent) || 0;
+                if (limitCm <= 0) return;
 
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy);
-                    ctx.lineTo(plotX, plotY);
-                    ctx.strokeStyle = colorLine;
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+                const maxRadiusPx = Math.min(cx, cy) * 0.6;
+                const scale = maxRadiusPx / limitCm;
 
+                // Draw Limits
+                if (!isNaN(scale) && isFinite(scale) && scale > 0) {
                     ctx.beginPath();
-                    ctx.arc(plotX, plotY, 6, 0, 2 * Math.PI);
-                    ctx.fillStyle = colorPoint;
+                    ctx.arc(cx, cy, limitCm * scale, 0, 2 * Math.PI);
+                    ctx.fillStyle = colors.targetFill;
                     ctx.fill();
-                    ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 1.5;
+                    ctx.strokeStyle = colors.targetStroke;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]); 
                     ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, (limitCm / 2) * scale, 0, 2 * Math.PI);
+                    ctx.strokeStyle = colors.axis;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    // Draw Point
+                    if (appState.currentResult) {
+                        const pxX = cx + (appState.currentResult.xCm * scale);
+                        const pxY = cy - (appState.currentResult.yCm * scale);
+
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.lineTo(pxX, pxY);
+                        ctx.strokeStyle = colors.line;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(pxX, pxY, 6, 0, 2 * Math.PI);
+                        ctx.fillStyle = colors.point;
+                        ctx.fill();
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    }
                 }
             }
-        }
 
-        // --- Data Management ---
-        function saveRecord() {
-            try { calculate(); } catch (e) {}
+            // --- 5. Data Management ---
+            function saveRecord() {
+                if (!appState.currentResult) {
+                    alert("ข้อมูลไม่ครบถ้วน! กรุณากรอก 'เยื้องแกน X และ Y' ก่อนบันทึก");
+                    return;
+                }
 
-            const pileId = document.getElementById('pile-id').value || 'Unknown';
-            const depthStr = document.getElementById('depth').value;
-            const dxStr = document.getElementById('dev-x').value;
-            const dyStr = document.getElementById('dev-y').value;
+                const pileId = DOM.inpPile.value.trim() || 'Unknown';
+                
+                const record = {
+                    id: Date.now(),
+                    pileId: pileId,
+                    depth: appState.currentResult.depthM,
+                    dx: appState.currentResult.xCm,
+                    dy: appState.currentResult.yCm,
+                    res: appState.currentResult.resCm,
+                    ratio: appState.currentResult.ratio,
+                    isPass: appState.currentResult.isPass
+                };
 
-            const depthM = parseFloat(depthStr);
-            const dx = parseFloat(dxStr);
-            const dy = parseFloat(dyStr);
+                appState.records.push(record);
+                saveToLocal();
+                renderTable();
 
-            if (isNaN(depthM) || isNaN(dx) || isNaN(dy) || dxStr.trim() === '' || dyStr.trim() === '') {
-                alert("ข้อมูลไม่ครบถ้วน! กรุณากรอกตัวเลข 'ระยะเยื้องแกน X และ Y' ให้เรียบร้อยก่อนกดบันทึก");
-                return;
+                // Clear Form
+                DOM.inpX.value = '';
+                DOM.inpY.value = '';
+                calculate();
             }
 
-            const record = {
-                id: Date.now(),
-                pileId: pileId,
-                depth: depthM,
-                dx: dx,
-                dy: dy,
-                res: currentCalc.resCm || 0,
-                ratio: currentCalc.ratio || 0,
-                isPass: currentCalc.isPass
-            };
-
-            records.push(record);
-            
-            try { localStorage.setItem('verticality_logs', JSON.stringify(records)); } catch (e) {}
-            
-            renderTable();
-
-            document.getElementById('dev-x').value = '';
-            document.getElementById('dev-y').value = '';
-            
-            calculate(); 
-        }
-
-        function deleteRecord(id) {
-            records = records.filter(r => r.id !== id);
-            try { localStorage.setItem('verticality_logs', JSON.stringify(records)); } catch(e) {}
-            renderTable();
-        }
-
-        function clearRecords() {
-            if(confirm("คำเตือน: คุณต้องการลบประวัติการเทสที่บันทึกไว้ทั้งหมดใช่หรือไม่?")) {
-                records = [];
-                try { localStorage.removeItem('verticality_logs'); } catch(e) {}
+            function deleteRecord(id) {
+                appState.records = appState.records.filter(r => r.id !== id);
+                saveToLocal();
                 renderTable();
             }
-        }
 
-        function renderTable() {
-            const tbody = document.getElementById('log-body');
-            const emptyState = document.getElementById('empty-state');
-            
-            tbody.innerHTML = '';
-            if (records.length === 0) {
-                emptyState.style.display = 'block';
-                return;
+            function clearRecords() {
+                if(confirm("ลบประวัติการเทสที่บันทึกไว้ทั้งหมดหรือไม่?")) {
+                    appState.records = [];
+                    saveToLocal();
+                    renderTable();
+                }
             }
-            
-            emptyState.style.display = 'none';
-            
-            [...records].reverse().forEach(r => {
-                const statusHtml = r.isPass 
-                    ? `<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">PASS</span>`
-                    : `<span class="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded text-[10px] font-bold">FAIL</span>`;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-bold">${r.pileId}</td>
-                    <td class="px-4 py-3 text-center font-mono opacity-80">${r.depth.toFixed(1)}</td>
-                    <td class="px-4 py-3 text-center font-mono opacity-80">${r.dx.toFixed(1)}</td>
-                    <td class="px-4 py-3 text-center font-mono opacity-80">${r.dy.toFixed(1)}</td>
-                    <td class="px-4 py-3 text-center font-bold text-blue-600 dark:text-blue-400">${r.res.toFixed(1)}</td>
-                    <td class="px-4 py-3 text-center font-bold">1:${r.ratio}</td>
-                    <td class="px-4 py-3 text-center">${statusHtml}</td>
-                    <td class="px-4 py-3 text-center">
-                        <button type="button" onclick="deleteRecord(${r.id})" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function exportData() {
-            if (records.length === 0) {
-                alert("ยังไม่มีข้อมูลสำหรับบันทึกเป็นไฟล์");
-                return;
+            function saveToLocal() {
+                try { localStorage.setItem('verticality_logs_v28', JSON.stringify(appState.records)); } 
+                catch (e) { console.warn("Local storage disabled by browser."); }
             }
-            const dataStr = JSON.stringify(records, null, 2); 
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob); 
-            const a = document.createElement('a');
-            const d = new Date(); 
-            const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-            a.href = url; a.download = `Verticality_Log_${dateStr}.json`; 
-            a.click(); 
-            URL.revokeObjectURL(url);
-        }
 
-        function importData(event) {
-            const file = event.target.files[0]; 
-            if (!file) return; 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (Array.isArray(parsed)) {
-                        records = parsed;
-                        try { localStorage.setItem('verticality_logs', JSON.stringify(records)); } catch(err) {}
-                        renderTable();
-                        alert("โหลดข้อมูลประวัติสำเร็จ!");
-                    } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); }
-                } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์ .json'); }
-            };
-            reader.readAsText(file); 
-            event.target.value = ''; 
-        }
+            function renderTable() {
+                DOM.tbody.innerHTML = '';
+                if (appState.records.length === 0) {
+                    DOM.tEmpty.style.display = 'block';
+                    return;
+                }
+                
+                DOM.tEmpty.style.display = 'none';
+                
+                [...appState.records].reverse().forEach(r => {
+                    const statusHtml = r.isPass 
+                        ? `<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">PASS</span>`
+                        : `<span class="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded text-[10px] font-bold">FAIL</span>`;
 
-        window.onload = init;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-bold">${r.pileId}</td>
+                        <td class="px-4 py-3 text-center font-mono opacity-80">${r.depth.toFixed(1)}</td>
+                        <td class="px-4 py-3 text-center font-mono opacity-80">${r.dx.toFixed(1)}</td>
+                        <td class="px-4 py-3 text-center font-mono opacity-80">${r.dy.toFixed(1)}</td>
+                        <td class="px-4 py-3 text-center font-bold text-blue-600 dark:text-blue-400">${r.res.toFixed(1)}</td>
+                        <td class="px-4 py-3 text-center font-bold">1:${r.ratio}</td>
+                        <td class="px-4 py-3 text-center">${statusHtml}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button class="btn-del text-red-400 hover:text-red-600 transition" data-id="${r.id}"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    DOM.tbody.appendChild(tr);
+                });
+
+                // Attach delete events
+                document.querySelectorAll('.btn-del').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        deleteRecord(id);
+                    });
+                });
+            }
+
+            function exportJSON() {
+                if (appState.records.length === 0) return alert("ไม่มีข้อมูลให้เซฟ");
+                const blob = new Blob([JSON.stringify(appState.records, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob); 
+                const a = document.createElement('a');
+                const d = new Date(); 
+                const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+                a.href = url; a.download = `Verticality_${dateStr}.json`; 
+                a.click(); 
+                URL.revokeObjectURL(url);
+            }
+
+            function importJSON(e) {
+                const file = e.target.files[0]; 
+                if (!file) return; 
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const parsed = JSON.parse(evt.target.result);
+                        if (Array.isArray(parsed)) {
+                            appState.records = parsed;
+                            saveToLocal();
+                            renderTable();
+                            alert("โหลดข้อมูลสำเร็จ!");
+                        } else alert('ไฟล์ไม่ถูกต้อง');
+                    } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); }
+                };
+                reader.readAsText(file); 
+                e.target.value = ''; 
+            }
+
+            // --- 6. Event Listeners ---
+            DOM.inpDepth.addEventListener('input', calculate);
+            DOM.selCriteria.addEventListener('change', calculate);
+            DOM.inpX.addEventListener('input', calculate);
+            DOM.inpY.addEventListener('input', calculate);
+            
+            DOM.btnSave.addEventListener('click', saveRecord);
+            DOM.btnClear.addEventListener('click', clearRecords);
+            DOM.btnTheme.addEventListener('click', toggleTheme);
+            
+            DOM.btnExport.addEventListener('click', exportJSON);
+            DOM.btnImport.addEventListener('click', () => DOM.fileImport.click());
+            DOM.fileImport.addEventListener('change', importJSON);
+            
+            window.addEventListener('resize', drawCanvas);
+
+            // --- 7. Boot up ---
+            try {
+                const saved = localStorage.getItem('verticality_logs_v28');
+                if (saved) appState.records = JSON.parse(saved);
+            } catch(e) {}
+            
+            calculate();
+            renderTable();
+
+            // Small delay to ensure container is fully sized before first draw
+            setTimeout(drawCanvas, 100);
+        });
     </script>
 </body>
 </html>
