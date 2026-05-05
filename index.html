@@ -55,7 +55,7 @@
                 </button>
 
                 <button onclick="openAnalyticsModal()" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-chart-pie mr-1"></i> ดูสถิติ
+                    <i class="fas fa-chart-pie mr-1"></i> สถิติ
                 </button>
 
                 <button onclick="openManualModal()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
@@ -69,6 +69,9 @@
                 <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
                     <i class="fas fa-save mr-1"></i> เซฟ
                 </button>
+		<button id="btn-sync" onclick="syncToCloud()" class="bg-sky-500 hover:bg-sky-600 px-3 py-2 rounded-lg text-sm font-bold shadow transition ml-2 text-white">
+    			<i class="fas fa-cloud-upload-alt mr-1"></i> อัปเดต
+		</button>
                 <button onclick="resetApp()" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition ml-2">
                     <i class="fas fa-undo mr-1"></i> เริ่มใหม่
                 </button>
@@ -457,6 +460,8 @@
             let saved = localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32') || localStorage.getItem('tremie_v31') || localStorage.getItem('tremie_v30') || localStorage.getItem('tremie_v29');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
+	// เพิ่มบรรทัดนี้: สั่งให้ซิงค์ออโต้ทุกๆ 300,000 มิลลิวินาที (5 นาที)
+    		setInterval(() => syncToCloud(true), 300000);
         }
 
         function populateSettingsUI() {
@@ -599,7 +604,7 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v33', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v33', JSON.stringify(state)); render(); updatePrediction(); syncToCloud(true); }
 
         function copyReport() {
             const s = state.settings;
@@ -835,6 +840,72 @@
         }
 
         window.onload = init;
+// เอา URL ที่ได้จาก Step 3 มาใส่ตรงนี้
+const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxDaKYrZENtQ6XfpIrtCiJOEe_8G8hnefIiI86g-QxzKkUH4H_paYKRlYTePMXAL57IMw/exec"; 
+
+// เพิ่มตัวแปร isAuto = false เข้าไป
+function syncToCloud(isAuto = false) {
+    const btn = document.getElementById('btn-sync');
+    const originalText = '<i class="fas fa-cloud-upload-alt mr-1"></i> อัปเดต Cloud'; 
+    
+    if (!isAuto) {
+        // ถ้าคนกดปุ่มเอง ให้ปุ่มเป็นสีเทาหมุนๆ
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> กำลังซิงค์...';
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+    } else {
+        // ถ้าออโต้ ให้ปุ่มแค่เปลี่ยนข้อความเล็กน้อย ไม่ขัดจังหวะการทำงาน
+        btn.innerHTML = '<i class="fas fa-sync fa-spin mr-1"></i> Auto Sync...';
+    }
+
+    // คำนวณค่าปัจจุบัน
+    const area = Math.PI * Math.pow(state.settings.diameter / 2, 2);
+    let actualVol = 0; let actualPipeLen = state.settings.initTremie; let actualConcLvl = 0;
+    state.events.forEach(ev => {
+        if (ev.type === 'pour' && ev.isCompleted) {
+            actualVol += ev.val; actualConcLvl = actualVol / area;
+        } else if (ev.type === 'remove') {
+            actualPipeLen -= ev.val;
+            if (ev.sounding > 0) { actualConcLvl = state.settings.depth - ev.sounding; actualVol = actualConcLvl * area; }
+        }
+    });
+    let actualEmbed = actualConcLvl - (state.settings.depth - actualPipeLen);
+
+    // แพ็กข้อมูลเตรียมส่ง
+    const payload = {
+        pileName: state.settings.pileName || "ไม่ระบุ",
+        supplier: state.settings.supplier || "-",
+        status: state.isFinished ? "จบงานแล้ว" : "กำลังดำเนินการ",
+        concreteVol: actualVol.toFixed(1),
+        embedment: actualEmbed.toFixed(2),
+        state: state
+    };
+
+    // ส่งข้อมูลไปที่ Google Sheets
+    fetch(CLOUD_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.text())
+    .then(result => {
+        // เปลี่ยนปุ่มเป็นสีเขียว พร้อมบอกเวลาที่ซิงค์สำเร็จ
+        btn.innerHTML = '<i class="fas fa-check-circle mr-1"></i> ซิงค์ล่าสุด ' + new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+        btn.classList.replace('bg-sky-500', 'bg-emerald-500');
+        setTimeout(() => { 
+            btn.innerHTML = originalText;
+            btn.classList.replace('bg-emerald-500', 'bg-sky-500');
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }, 5000); // โชว์ข้อความสำเร็จค้างไว้ 5 วินาที
+    })
+    .catch(error => {
+        console.error('Error Syncing:', error);
+        // แจ้งเตือนเฉพาะกรณีที่คนกดปุ่มเอง (ถ้าเป็น Auto จะข้ามไปเงียบๆ)
+        if (!isAuto) alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Cloud (หน้างานอาจไม่มีสัญญาณเน็ต)'); 
+        btn.innerHTML = originalText;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed', 'bg-emerald-500');
+        btn.classList.add('bg-sky-500');
+    });
+}
+
     </script>
 </body>
 </html>
