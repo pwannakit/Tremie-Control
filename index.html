@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V29 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V31 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V29
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V31
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -329,25 +329,27 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-orange-500 w-16 shrink-0">V29:</span> 
-                    <span>แก้ไขบั๊กการบันทึกภาพหน้าต่างสถิติ (Analytics Modal) ขาดหาย โดยปลดล็อก Scrollbar ก่อนเรนเดอร์ภาพ เพื่อให้ได้ภาพกราฟทั้ง 4 ตัวครบถ้วน 100%</span>
+                    <span class="font-bold text-blue-500 w-16 shrink-0">V31:</span> 
+                    <span>ปรับปรุงหน้าต่าง Analytics ใหม่: ขยายกราฟที่ 1 เต็มความกว้างและยุบรวมเส้นเกณฑ์ 120 นาทีเข้าไปเพื่อความชัดเจน, ลบกราฟที่ 2 แบบเก่าออกเพื่อลดความซ้ำซ้อน</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-slate-500 w-16 shrink-0">V28:</span> 
-                    <span>เพิ่มฟังก์ชัน Export ภาพ Dashboard จากปุ่ม "ดูสถิติ"</span>
+                    <span class="font-bold text-purple-500 w-16 shrink-0">V30:</span> 
+                    <span>แก้ไขข้อผิดพลาดจำนวนท่อค้างที่ 0 ท่อน โดยเพิ่มการคำนวณจำนวนท่ออัตโนมัติตามความยาวที่เหลือ</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-orange-500 w-16 shrink-0">V29:</span> 
+                    <span>แก้ไขบั๊กการบันทึกภาพหน้าต่างสถิติ (Analytics Modal) ขาดหาย โดยปลดล็อก Scrollbar ก่อนเรนเดอร์ภาพ</span>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- Analytics Modal (V29: Fixed Capture Issue) -->
+    <!-- Analytics Modal (V31 Updated Layout) -->
     <div id="analytics-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
-        <!-- V29 Note: Add an ID to the modal container to target it for temp-expanding -->
         <div id="analytics-modal-container" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden transition-colors flex flex-col h-[90vh]">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
                 <span><i class="fas fa-chart-pie mr-2"></i>Supplier Performance Analytics</span>
                 <div>
-                    <!-- Added ID to button for spinner state -->
                     <button id="btn-save-img" onclick="downloadAnalyticsImage()" class="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1.5 rounded mr-3 shadow transition border border-blue-500 outline-none">
                         <i class="fas fa-camera mr-1"></i>บันทึกรูปภาพ
                     </button>
@@ -355,18 +357,30 @@
                 </div>
             </div>
             <div id="analytics-capture-area" class="p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 flex-1 relative">
-                <!-- Watermark for downloaded image -->
                 <div class="text-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
                     <h2 class="font-bold text-slate-700 dark:text-slate-200 text-lg">รายงานประสิทธิภาพผู้ผลิตคอนกรีต</h2>
                     <p class="text-xs text-slate-500">หลุมเจาะ: <span id="chart-pile-name" class="font-bold text-blue-500"></span> | วันที่: <span id="chart-date"></span></p>
                 </div>
-
+                
+                <!-- V31 Grid Layout -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-blue-500 dark:text-blue-400 text-sm mb-2"><i class="fas fa-bars mr-1"></i> 1. เวลาเดินทาง vs หน้างาน (นาที)</h3><div class="relative h-48 w-full"><canvas id="chart-stacked"></canvas></div></div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-emerald-500 dark:text-emerald-400 text-sm mb-2"><i class="fas fa-chart-area mr-1"></i> 2. อายุคอนกรีตรวม (Control Chart)</h3><div class="relative h-48 w-full"><canvas id="chart-line"></canvas></div></div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-purple-500 dark:text-purple-400 text-sm mb-2"><i class="fas fa-project-diagram mr-1"></i> 3. ความสัมพันธ์ช่วงเวลาส่ง</h3><div class="relative h-48 w-full"><canvas id="chart-scatter"></canvas></div></div>
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-amber-500 dark:text-amber-400 text-sm mb-2"><i class="fas fa-balance-scale mr-1"></i> 4. ค่าเฉลี่ยประสิทธิภาพสุทธิ</h3><div class="relative h-48 w-full"><canvas id="chart-bar"></canvas></div></div>
+                    <!-- กราฟที่ 1: เต็มความกว้าง -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm lg:col-span-2">
+                        <h3 class="font-bold text-blue-500 dark:text-blue-400 text-sm mb-2"><i class="fas fa-bars mr-1"></i> 1. เวลาเดินทาง vs หน้างานเปรียบเทียบเกณฑ์ (นาที)</h3>
+                        <div class="relative h-64 w-full"><canvas id="chart-stacked"></canvas></div>
+                    </div>
+                    <!-- กราฟที่ 2 (เดิมคือ 3) -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 class="font-bold text-purple-500 dark:text-purple-400 text-sm mb-2"><i class="fas fa-project-diagram mr-1"></i> 2. ความสัมพันธ์ช่วงเวลาส่ง</h3>
+                        <div class="relative h-48 w-full"><canvas id="chart-scatter"></canvas></div>
+                    </div>
+                    <!-- กราฟที่ 3 (เดิมคือ 4) -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 class="font-bold text-amber-500 dark:text-amber-400 text-sm mb-2"><i class="fas fa-balance-scale mr-1"></i> 3. ค่าเฉลี่ยประสิทธิภาพสุทธิ</h3>
+                        <div class="relative h-48 w-full"><canvas id="chart-bar"></canvas></div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -443,7 +457,7 @@
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v29') || localStorage.getItem('tremie_v28') || localStorage.getItem('tremie_v27');
+            let saved = localStorage.getItem('tremie_v31') || localStorage.getItem('tremie_v30') || localStorage.getItem('tremie_v29') || localStorage.getItem('tremie_v28') || localStorage.getItem('tremie_v27');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
@@ -494,7 +508,7 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v29', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v31', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
@@ -566,7 +580,7 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v29', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v31', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
             const s = state.settings;
@@ -673,14 +687,23 @@
             }
 
             let actualEmbed = actualConcLevelFromBottom - (depth - actualPipeLen);
-            document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs">m³</span>`; document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs">m</span>`; document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg opacity-50">m</span>`;
+            document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs">m³</span>`; 
+            document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs">m</span>`; 
+            
+            let remainingPcs = 0;
+            if (actualPipeLen > 0) {
+                if (!isTopPieceRemoved) { remainingPcs = 1 + Math.max(0, (actualPipeLen - topLen) / secLen); } 
+                else { remainingPcs = actualPipeLen / secLen; }
+            }
+            document.getElementById('actual-pipe-pcs').innerHTML = `เหลือ ≈ ${remainingPcs.toFixed(1)} ท่อน`;
+
+            document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg opacity-50">m</span>`;
             document.getElementById('viz-depth-label').innerText = `ก้นหลุม (${depth.toFixed(1)}m)`; const scale = 500 / depth;
             const concH = actualConcLevelFromBottom * scale; document.getElementById('viz-concrete').setAttribute('height', concH); document.getElementById('viz-concrete').setAttribute('y', 500 - concH);
             const tremieH = actualPipeLen * scale; document.getElementById('viz-tremie').setAttribute('height', tremieH);
             const tipPos = 500 - ((depth - actualPipeLen) * scale); document.getElementById('viz-tremie-tip').setAttribute('y1', tipPos); document.getElementById('viz-tremie-tip').setAttribute('y2', tipPos);
         }
 
-        // --- V29 Analytics & FULL Image Capture Logic ---
         function openAnalyticsModal() { document.getElementById('analytics-modal').classList.remove('hidden'); renderCharts(); }
         function closeAnalyticsModal() { document.getElementById('analytics-modal').classList.add('hidden'); }
         
@@ -688,7 +711,8 @@
             let validPours = state.events.filter(e => e.type === 'pour' && e.isCompleted && e.batchTime && e.arrivalTime && e.pourTime);
             let chartData = validPours.map((e, index) => { let transitMins = getMinsDiff(e.batchTime, e.arrivalTime) || 0; let siteMins = getMinsDiff(e.arrivalTime, e.pourTime) || 0; let totalMins = transitMins + siteMins; let [bH, bM] = e.batchTime.split(':').map(Number); return { id: e.truck, no: `คันที่ ${index+1}`, supplier: e.supplier || 'Unk', batchTimeHour: bH + (bM/60), transit: transitMins, site: siteMins, total: totalMins }; });
             
-            ['chart-stacked', 'chart-line', 'chart-scatter', 'chart-bar'].forEach(id => { if (activeCharts[id]) activeCharts[id].destroy(); });
+            // V31: ลบการสร้างกราฟ 'chart-line' ออกจากระบบ
+            ['chart-stacked', 'chart-scatter', 'chart-bar'].forEach(id => { if (activeCharts[id]) activeCharts[id].destroy(); });
             
             document.getElementById('chart-pile-name').innerText = state.settings.pileName || 'ไม่ระบุ';
             const today = new Date(); document.getElementById('chart-date').innerText = today.toLocaleDateString('th-TH');
@@ -696,13 +720,29 @@
             if (chartData.length === 0) return; 
             const labels = chartData.map(d => d.id); const supColorMap = { 'CPAC': '#10b981', 'M Concrete': '#a855f7', 'TPI': '#f97316', 'Qmix': '#3b82f6', 'INSEE': '#ef4444' }; const getColor = (sup) => supColorMap[sup] || '#94a3b8';
             
-            activeCharts['chart-stacked'] = new Chart(document.getElementById('chart-stacked'), { type: 'bar', data: { labels: labels, datasets: [ { label: 'เดินทาง', data: chartData.map(d => d.transit), backgroundColor: '#3b82f6' }, { label: 'หน้างาน', data: chartData.map(d => d.site), backgroundColor: '#f59e0b' } ] }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } });
+            // V31: เพิ่มเส้นเกณฑ์ 120 นาทีและบังคับแกน Y ขั้นต่ำเป็น 130
+            activeCharts['chart-stacked'] = new Chart(document.getElementById('chart-stacked'), { 
+                type: 'bar', 
+                data: { 
+                    labels: labels, 
+                    datasets: [ 
+                        { label: 'เดินทาง', data: chartData.map(d => d.transit), backgroundColor: '#3b82f6' }, 
+                        { label: 'หน้างาน', data: chartData.map(d => d.site), backgroundColor: '#f59e0b' },
+                        { type: 'line', label: 'เกณฑ์ (120 นาที)', data: chartData.map(() => 120), borderColor: '#ef4444', borderDash: [5, 5], fill: false, pointRadius: 0, borderWidth: 2 }
+                    ] 
+                }, 
+                options: { 
+                    animation: false, 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true }, 
+                        y: { stacked: true, suggestedMax: 130 } 
+                    } 
+                } 
+            });
             
-            let datasetsLine = []; let suppliers = [...new Set(chartData.map(d => d.supplier))];
-            suppliers.forEach(sup => { let dataPoints = chartData.map(d => d.supplier === sup ? d.total : null); datasetsLine.push({ label: sup, data: dataPoints, borderColor: getColor(sup), backgroundColor: getColor(sup), tension: 0.3, spanGaps: true }); });
-            datasetsLine.push({ label: 'เกณฑ์ (120 นาที)', data: chartData.map(() => 120), borderColor: '#ef4444', borderDash: [5, 5], fill: false, pointRadius: 0 });
-            
-            activeCharts['chart-line'] = new Chart(document.getElementById('chart-line'), { type: 'line', data: { labels: chartData.map(d => d.no), datasets: datasetsLine }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { y: { min: 0 } } } });
+            let suppliers = [...new Set(chartData.map(d => d.supplier))];
             
             let datasetsScatter = suppliers.map(sup => { return { label: sup, data: chartData.filter(d => d.supplier === sup).map(d => ({ x: d.batchTimeHour, y: d.total })), backgroundColor: getColor(sup), pointRadius: 6 }; });
             activeCharts['chart-scatter'] = new Chart(document.getElementById('chart-scatter'), { type: 'scatter', data: { datasets: datasetsScatter }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { title: {display: true, text: 'เวลาออกจากแพลนท์'}, ticks: {callback: val => val+':00'} }, y: { title: {display: true, text: 'นาทีรวม'} } } } });
@@ -713,37 +753,31 @@
             activeCharts['chart-bar'] = new Chart(document.getElementById('chart-bar'), { type: 'bar', data: { labels: avgLabels, datasets: [ { label: 'เฉลี่ยเดินทาง', data: avgTransit, backgroundColor: '#3b82f6' }, { label: 'เฉลี่ยเทหน้างาน', data: avgSite, backgroundColor: '#f59e0b' } ] }, options: { animation: false, responsive: true, maintainAspectRatio: false } });
         }
 
-        // V29: ฟังก์ชันถ่ายรูปที่ปลดล็อก Scrollbar ชั่วคราวให้ถ่ายได้ครบ 100%
         function downloadAnalyticsImage() {
             const captureArea = document.getElementById('analytics-capture-area');
             const modalContainer = document.getElementById('analytics-modal-container');
             const btn = document.getElementById('btn-save-img');
             const isDark = document.documentElement.classList.contains('dark');
             
-            // 1. เก็บสถานะเดิมไว้ก่อน
             const originalScrollTop = captureArea.scrollTop;
             const originalHeight = modalContainer.style.height;
             const originalOverflow = modalContainer.style.overflow;
             const captureOriginalOverflow = captureArea.style.overflow;
 
-            // เปลี่ยนสถานะปุ่มเพื่อแจ้งผู้ใช้ว่ากำลังทำงาน
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>กำลังประมวลผล...';
             btn.disabled = true;
 
-            // 2. ปลดล็อกข้อจำกัด CSS ชั่วคราวให้กางออกเต็มจอ
             captureArea.scrollTop = 0;
             modalContainer.style.height = 'auto';
             modalContainer.style.overflow = 'visible';
             captureArea.style.overflow = 'visible';
 
-            // 3. หน่วงเวลาเล็กน้อยเพื่อให้เบราว์เซอร์จัดการ Layout ใหม่ให้เสร็จ แล้วถ่ายรูป
             setTimeout(() => {
                 html2canvas(captureArea, { 
                     backgroundColor: isDark ? '#0f172a' : '#f8fafc', 
                     scale: 2,
-                    windowHeight: captureArea.scrollHeight // ระบุความสูงรวมทั้งหมดให้ชัวร์
+                    windowHeight: captureArea.scrollHeight
                 }).then(canvas => {
-                    // 4. หดทุกอย่างกลับมาเป็นเหมือนเดิมอย่างรวดเร็ว
                     modalContainer.style.height = originalHeight;
                     modalContainer.style.overflow = originalOverflow;
                     captureArea.style.overflow = captureOriginalOverflow;
@@ -752,7 +786,6 @@
                     btn.innerHTML = '<i class="fas fa-camera mr-1"></i>บันทึกรูปภาพ';
                     btn.disabled = false;
 
-                    // 5. โหลดไฟล์ภาพลงเครื่อง
                     let link = document.createElement('a');
                     let pile = state.settings.pileName || 'Pile';
                     const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
@@ -760,7 +793,7 @@
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                 });
-            }, 300); // 300 milliseconds delay
+            }, 300);
         }
 
         window.onload = init;
