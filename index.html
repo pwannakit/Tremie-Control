@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V31 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V33 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V31
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V33
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -213,10 +213,11 @@
                                 <th class="px-3 py-3 text-center">#</th>
                                 <th class="px-3 py-3">ข้อมูลการเดินทาง & อายุคอนกรีต</th>
                                 <th class="px-3 py-3 text-center">ระดับปูน</th>
-                                <th class="px-3 py-3 text-center">ปลายท่อ</th>
+                                <!-- V33: Changed column from ปลายท่อ to ท่อเหลือ -->
+                                <th class="px-3 py-3 text-center">ท่อเหลือ</th>
                                 <th class="px-3 py-3 text-center">Embed</th>
                                 <th class="px-3 py-3 text-center w-24">สถานะ</th>
-                                <th class="px-3 py-3 text-center w-20">จัดการ</th>
+                                <th class="px-3 py-3 text-center w-28">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="log-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
@@ -329,22 +330,22 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
+                    <span class="font-bold text-teal-500 w-16 shrink-0">V33:</span> 
+                    <span>เพิ่มระบบยืนยัน (Confirm) เพื่อป้องกันการเผลอกดสลับคิวรถปูนผิดพลาด และเปลี่ยนการแสดงผลในตารางจาก "ปลายท่อ" เป็นความยาว "ท่อเหลือ" เพื่อให้ง่ายต่อการสื่อสารหน้างาน</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-emerald-500 w-16 shrink-0">V32:</span> 
+                    <span>เพิ่มปุ่มลูกศร ขึ้น/ลง (⬆️ / ⬇️) ในหน้า Timeline เพื่อสลับลำดับคิวรถปูน กรณีรถเข้าเทไม่ตรงตามลำดับที่ลงทะเบียนไว้</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-blue-500 w-16 shrink-0">V31:</span> 
-                    <span>ปรับปรุงหน้าต่าง Analytics ใหม่: ขยายกราฟที่ 1 เต็มความกว้างและยุบรวมเส้นเกณฑ์ 120 นาทีเข้าไปเพื่อความชัดเจน, ลบกราฟที่ 2 แบบเก่าออกเพื่อลดความซ้ำซ้อน</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-purple-500 w-16 shrink-0">V30:</span> 
-                    <span>แก้ไขข้อผิดพลาดจำนวนท่อค้างที่ 0 ท่อน โดยเพิ่มการคำนวณจำนวนท่ออัตโนมัติตามความยาวที่เหลือ</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-orange-500 w-16 shrink-0">V29:</span> 
-                    <span>แก้ไขบั๊กการบันทึกภาพหน้าต่างสถิติ (Analytics Modal) ขาดหาย โดยปลดล็อก Scrollbar ก่อนเรนเดอร์ภาพ</span>
+                    <span>ปรับปรุงหน้าต่าง Analytics ใหม่: ขยายกราฟที่ 1 เต็มความกว้างและยุบรวมเส้นเกณฑ์ 120 นาทีเข้าไปเพื่อความชัดเจน</span>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- Analytics Modal (V31 Updated Layout) -->
+    <!-- Analytics Modal -->
     <div id="analytics-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
         <div id="analytics-modal-container" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden transition-colors flex flex-col h-[90vh]">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
@@ -362,19 +363,15 @@
                     <p class="text-xs text-slate-500">หลุมเจาะ: <span id="chart-pile-name" class="font-bold text-blue-500"></span> | วันที่: <span id="chart-date"></span></p>
                 </div>
                 
-                <!-- V31 Grid Layout -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
-                    <!-- กราฟที่ 1: เต็มความกว้าง -->
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm lg:col-span-2">
                         <h3 class="font-bold text-blue-500 dark:text-blue-400 text-sm mb-2"><i class="fas fa-bars mr-1"></i> 1. เวลาเดินทาง vs หน้างานเปรียบเทียบเกณฑ์ (นาที)</h3>
                         <div class="relative h-64 w-full"><canvas id="chart-stacked"></canvas></div>
                     </div>
-                    <!-- กราฟที่ 2 (เดิมคือ 3) -->
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 class="font-bold text-purple-500 dark:text-purple-400 text-sm mb-2"><i class="fas fa-project-diagram mr-1"></i> 2. ความสัมพันธ์ช่วงเวลาส่ง</h3>
                         <div class="relative h-48 w-full"><canvas id="chart-scatter"></canvas></div>
                     </div>
-                    <!-- กราฟที่ 3 (เดิมคือ 4) -->
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 class="font-bold text-amber-500 dark:text-amber-400 text-sm mb-2"><i class="fas fa-balance-scale mr-1"></i> 3. ค่าเฉลี่ยประสิทธิภาพสุทธิ</h3>
                         <div class="relative h-48 w-full"><canvas id="chart-bar"></canvas></div>
@@ -457,7 +454,7 @@
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v31') || localStorage.getItem('tremie_v30') || localStorage.getItem('tremie_v29') || localStorage.getItem('tremie_v28') || localStorage.getItem('tremie_v27');
+            let saved = localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32') || localStorage.getItem('tremie_v31') || localStorage.getItem('tremie_v30') || localStorage.getItem('tremie_v29');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
@@ -508,7 +505,7 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v31', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v33', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
@@ -542,6 +539,28 @@
             if (ev.type === 'pour') { ev.isCompleted = !ev.isCompleted; if (ev.isCompleted && !ev.pourTime) { const now = new Date(); ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); } saveAndRender(); }
         }
         function deleteEvent(i) { if(confirm('ยืนยันการลบ?')) { state.events.splice(i, 1); saveAndRender(); } }
+
+        // V33: Added Confirmation logic for Move Up / Move Down
+        function moveEventUp(i) {
+            if (i > 0) {
+                if(confirm('ยืนยันการเลื่อนคิวนี้ "ขึ้น" เพื่อเทก่อน?')) {
+                    const temp = state.events[i - 1];
+                    state.events[i - 1] = state.events[i];
+                    state.events[i] = temp;
+                    saveAndRender();
+                }
+            }
+        }
+        function moveEventDown(i) {
+            if (i < state.events.length - 1) {
+                if(confirm('ยืนยันการเลื่อนคิวนี้ "ลง" เพื่อเททีหลัง?')) {
+                    const temp = state.events[i + 1];
+                    state.events[i + 1] = state.events[i];
+                    state.events[i] = temp;
+                    saveAndRender();
+                }
+            }
+        }
 
         function openEditModal(i) {
             const ev = state.events[i]; document.getElementById('edit-index').value = i;
@@ -580,7 +599,7 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v31', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v33', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
             const s = state.settings;
@@ -617,6 +636,12 @@
 
             state.events.forEach((ev, i) => {
                 const row = document.createElement('tr'); let rowHtml = "";
+                
+                let moveBtns = `
+                    <button onclick="moveEventUp(${i})" class="text-slate-400 hover:text-blue-500 mr-2 transition-colors" ${i === 0 ? 'disabled style="opacity:0.2; cursor:not-allowed;"' : ''} title="เลื่อนขึ้น"><i class="fas fa-arrow-up"></i></button>
+                    <button onclick="moveEventDown(${i})" class="text-slate-400 hover:text-blue-500 mr-2 transition-colors" ${i === state.events.length - 1 ? 'disabled style="opacity:0.2; cursor:not-allowed;"' : ''} title="เลื่อนลง"><i class="fas fa-arrow-down"></i></button>
+                `;
+
                 if (ev.type === 'pour') {
                     predVol += ev.val; predConcLevelFromBottom = predVol / area; let predDepthTop = depth - predConcLevelFromBottom; let predTipTop = depth - predPipeLen; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
                     let totalAgeMins = calculateAgeMinutes(ev.batchTime, ev.isCompleted ? ev.pourTime : null); let colorClass = getAgeColor(totalAgeMins); let arrTimeDisplay = ev.arrivalTime ? ev.arrivalTime : '?';
@@ -630,7 +655,10 @@
                         rowHtml = `
                             <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
                             <td class="px-3 py-3"><div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-300">${ageHTML}</div></td>
-                            <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono opacity-60">${predTipTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
+                            <!-- V33: Changed to output Remaining Pipe (predPipeLen) -->
+                            <td class="px-3 py-3 text-center font-mono opacity-60">${predPipeLen.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
                         `;
                     } else {
@@ -638,7 +666,10 @@
                         rowHtml = `
                             <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
                             <td class="px-3 py-3"><div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div></td>
-                            <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predTipTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                            <!-- V33: Changed to output Remaining Pipe (predPipeLen) -->
+                            <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predPipeLen.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 text-[10px] py-2 rounded font-bold transition">✔️ เทแล้ว</button></td>
                         `;
                     }
@@ -653,12 +684,21 @@
                     rowHtml = `
                         <td class="px-3 py-3 text-center opacity-60 text-xs">${i+1}</td>
                         <td class="px-3 py-3 font-bold"><i class="fas fa-cut mr-1"></i>ตัดออก ${ev.val}m<br><span class="text-[10px] opacity-80 font-normal bg-purple-100 dark:bg-purple-900/30 text-purple-700 px-1 rounded mr-1">≈ ${parseFloat(pcsCut.toFixed(1))} ท่อน</span><span class="text-[10px] opacity-80 font-normal border border-slate-300 dark:border-slate-600 px-1 rounded">${ev.sounding > 0 ? `เทป ${ev.sounding}m` : 'ไม่วัด'}</span></td>
-                        <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono text-blue-600">${predTipTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                        <!-- V33: Changed to output Remaining Pipe (predPipeLen) -->
+                        <td class="px-3 py-3 text-center font-mono text-blue-600">${predPipeLen.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                         <td class="px-3 py-3 text-center text-[10px] font-bold opacity-80">-- ตัดท่อ --</td>
                     `;
                     insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: ตัดท่อ ${ev.val}m</option>`;
                 }
-                rowHtml += `<td class="px-3 py-3 text-center"><button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-edit"></i></button><button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>`;
+                
+                rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap">
+                    ${moveBtns}
+                    <button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-2 transition-colors" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 transition-colors" title="ลบ"><i class="fas fa-trash"></i></button>
+                </td>`;
+                
                 row.innerHTML = rowHtml; logBody.appendChild(row);
             });
             insertSelect.value = currentInsertVal; if (insertSelect.selectedIndex === -1) insertSelect.value = "-1"; 
@@ -711,7 +751,6 @@
             let validPours = state.events.filter(e => e.type === 'pour' && e.isCompleted && e.batchTime && e.arrivalTime && e.pourTime);
             let chartData = validPours.map((e, index) => { let transitMins = getMinsDiff(e.batchTime, e.arrivalTime) || 0; let siteMins = getMinsDiff(e.arrivalTime, e.pourTime) || 0; let totalMins = transitMins + siteMins; let [bH, bM] = e.batchTime.split(':').map(Number); return { id: e.truck, no: `คันที่ ${index+1}`, supplier: e.supplier || 'Unk', batchTimeHour: bH + (bM/60), transit: transitMins, site: siteMins, total: totalMins }; });
             
-            // V31: ลบการสร้างกราฟ 'chart-line' ออกจากระบบ
             ['chart-stacked', 'chart-scatter', 'chart-bar'].forEach(id => { if (activeCharts[id]) activeCharts[id].destroy(); });
             
             document.getElementById('chart-pile-name').innerText = state.settings.pileName || 'ไม่ระบุ';
@@ -720,7 +759,6 @@
             if (chartData.length === 0) return; 
             const labels = chartData.map(d => d.id); const supColorMap = { 'CPAC': '#10b981', 'M Concrete': '#a855f7', 'TPI': '#f97316', 'Qmix': '#3b82f6', 'INSEE': '#ef4444' }; const getColor = (sup) => supColorMap[sup] || '#94a3b8';
             
-            // V31: เพิ่มเส้นเกณฑ์ 120 นาทีและบังคับแกน Y ขั้นต่ำเป็น 130
             activeCharts['chart-stacked'] = new Chart(document.getElementById('chart-stacked'), { 
                 type: 'bar', 
                 data: { 
