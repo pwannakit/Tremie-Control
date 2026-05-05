@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V27 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V29 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = { darkMode: 'class', }
     </script>
@@ -35,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V27
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V29
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -49,7 +50,6 @@
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
 
-                <!-- V27: Share to LINE Button -->
                 <button onclick="copyReport()" class="bg-[#00B900] hover:bg-[#009900] px-3 py-2 rounded-lg text-white text-sm font-bold shadow transition border border-[#009900]">
                     <i class="fab fa-line mr-1 text-lg leading-none"></i> แชร์สรุปงาน
                 </button>
@@ -248,7 +248,6 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <!-- V27: Yield Indicator inside Actual Volume -->
                 <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors flex flex-col justify-center">
                     <p class="text-[10px] font-bold text-slate-400">ปูนที่เทจริงแล้ว</p>
                     <p id="actual-vol" class="text-xl font-bold text-slate-800 dark:text-white">0.0 <span class="text-xs">m³</span></p>
@@ -330,26 +329,39 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-blue-500 w-16 shrink-0">V27:</span> 
-                    <span>เพิ่มปุ่ม "แชร์สรุปงาน (LINE)" สำหรับทำรายงานผลด่วน และเพิ่มระบบ "Yield Analysis" คำนวณ %ความคืบหน้า และ %Overbreak ทันทีที่กดจบงานเทคอนกรีต</span>
+                    <span class="font-bold text-orange-500 w-16 shrink-0">V29:</span> 
+                    <span>แก้ไขบั๊กการบันทึกภาพหน้าต่างสถิติ (Analytics Modal) ขาดหาย โดยปลดล็อก Scrollbar ก่อนเรนเดอร์ภาพ เพื่อให้ได้ภาพกราฟทั้ง 4 ตัวครบถ้วน 100%</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-slate-500 w-16 shrink-0">V26:</span> 
-                    <span>เพิ่มระบบ Data Analytics แสดงกราฟเปรียบเทียบประสิทธิภาพ Supplier และเพิ่มเวลาถึงไซต์</span>
+                    <span class="font-bold text-slate-500 w-16 shrink-0">V28:</span> 
+                    <span>เพิ่มฟังก์ชัน Export ภาพ Dashboard จากปุ่ม "ดูสถิติ"</span>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- Analytics Modal -->
+    <!-- Analytics Modal (V29: Fixed Capture Issue) -->
     <div id="analytics-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden transition-colors flex flex-col h-[90vh]">
+        <!-- V29 Note: Add an ID to the modal container to target it for temp-expanding -->
+        <div id="analytics-modal-container" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden transition-colors flex flex-col h-[90vh]">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
                 <span><i class="fas fa-chart-pie mr-2"></i>Supplier Performance Analytics</span>
-                <button onclick="closeAnalyticsModal()" class="text-slate-300 hover:text-white"><i class="fas fa-times"></i></button>
+                <div>
+                    <!-- Added ID to button for spinner state -->
+                    <button id="btn-save-img" onclick="downloadAnalyticsImage()" class="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1.5 rounded mr-3 shadow transition border border-blue-500 outline-none">
+                        <i class="fas fa-camera mr-1"></i>บันทึกรูปภาพ
+                    </button>
+                    <button onclick="closeAnalyticsModal()" class="text-slate-300 hover:text-white text-lg leading-none outline-none"><i class="fas fa-times"></i></button>
+                </div>
             </div>
-            <div class="p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 flex-1">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div id="analytics-capture-area" class="p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 flex-1 relative">
+                <!-- Watermark for downloaded image -->
+                <div class="text-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <h2 class="font-bold text-slate-700 dark:text-slate-200 text-lg">รายงานประสิทธิภาพผู้ผลิตคอนกรีต</h2>
+                    <p class="text-xs text-slate-500">หลุมเจาะ: <span id="chart-pile-name" class="font-bold text-blue-500"></span> | วันที่: <span id="chart-date"></span></p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-blue-500 dark:text-blue-400 text-sm mb-2"><i class="fas fa-bars mr-1"></i> 1. เวลาเดินทาง vs หน้างาน (นาที)</h3><div class="relative h-48 w-full"><canvas id="chart-stacked"></canvas></div></div>
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-emerald-500 dark:text-emerald-400 text-sm mb-2"><i class="fas fa-chart-area mr-1"></i> 2. อายุคอนกรีตรวม (Control Chart)</h3><div class="relative h-48 w-full"><canvas id="chart-line"></canvas></div></div>
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="font-bold text-purple-500 dark:text-purple-400 text-sm mb-2"><i class="fas fa-project-diagram mr-1"></i> 3. ความสัมพันธ์ช่วงเวลาส่ง</h3><div class="relative h-48 w-full"><canvas id="chart-scatter"></canvas></div></div>
@@ -369,39 +381,17 @@
             <div class="p-6 space-y-4">
                 <input type="hidden" id="edit-index">
                 <div id="edit-pour-group" class="space-y-4 hidden">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">หมายเลขรถ</label>
-                        <input type="text" id="edit-truck" class="w-full p-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">ปริมาตร (m³)</label>
-                        <input type="number" id="edit-vol" step="0.5" class="w-full p-2 border rounded-lg font-bold text-emerald-600 dark:text-emerald-400 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
-                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">หมายเลขรถ</label><input type="text" id="edit-truck" class="w-full p-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">ปริมาตร (m³)</label><input type="number" id="edit-vol" step="0.5" class="w-full p-2 border rounded-lg font-bold text-emerald-600 dark:text-emerald-400 outline-none bg-white dark:bg-slate-700 dark:border-slate-600"></div>
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">เวลาผลิต</label>
-                            <input type="time" id="edit-batch" class="w-full p-2 border rounded-lg font-bold text-amber-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">เวลาถึงไซต์</label>
-                            <input type="time" id="edit-arrival" class="w-full p-2 border rounded-lg font-bold text-blue-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
-                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">เวลาผลิต</label><input type="time" id="edit-batch" class="w-full p-2 border rounded-lg font-bold text-amber-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">เวลาถึงไซต์</label><input type="time" id="edit-arrival" class="w-full p-2 border rounded-lg font-bold text-blue-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600"></div>
                     </div>
-                    <div id="edit-pour-time-div" class="hidden">
-                        <label class="block text-xs font-bold text-slate-500 mb-1">เวลาเทเสร็จ</label>
-                        <input type="time" id="edit-pour-time" class="w-full p-2 border rounded-lg font-bold text-emerald-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
-                    </div>
+                    <div id="edit-pour-time-div" class="hidden"><label class="block text-xs font-bold text-slate-500 mb-1">เวลาเทเสร็จ</label><input type="time" id="edit-pour-time" class="w-full p-2 border rounded-lg font-bold text-emerald-600 outline-none bg-white dark:bg-slate-700 dark:border-slate-600"></div>
                 </div>
-                
                 <div id="edit-remove-group" class="space-y-4 hidden">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">ระยะหย่อนเทป (m)</label>
-                        <input type="number" id="edit-sounding" step="0.1" class="w-full p-2 border rounded-lg font-bold text-blue-600 dark:text-blue-400 focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">ระยะตัดท่อออก (m)</label>
-                        <input type="number" id="edit-cut" step="0.5" class="w-full p-2 border rounded-lg font-bold text-amber-600 dark:text-amber-500 focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600">
-                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">ระยะหย่อนเทป (m)</label><input type="number" id="edit-sounding" step="0.1" class="w-full p-2 border rounded-lg font-bold text-blue-600 dark:text-blue-400 focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">ระยะตัดท่อออก (m)</label><input type="number" id="edit-cut" step="0.5" class="w-full p-2 border rounded-lg font-bold text-amber-600 dark:text-amber-500 focus:ring-2 outline-none bg-white dark:bg-slate-700 dark:border-slate-600"></div>
                 </div>
                 <div class="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 mt-4">
                     <button onclick="saveEdit()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg">บันทึก</button>
@@ -415,24 +405,11 @@
     <div id="manual-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-colors flex flex-col max-h-[90vh]">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
-                <span><i class="fas fa-book mr-2"></i>เกณฑ์และเงื่อนไขการทำงาน</span>
-                <button onclick="closeManualModal()" class="text-slate-300 hover:text-white"><i class="fas fa-times"></i></button>
+                <span><i class="fas fa-book mr-2"></i>เกณฑ์และเงื่อนไขการทำงาน</span><button onclick="closeManualModal()" class="text-slate-300 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-6 space-y-5 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
-                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-ruler-vertical text-blue-500 mr-2"></i>1. ระยะฝังท่อทรีมี่ (Embedment Depth)</h4>
-                    <ul class="space-y-1 mt-2">
-                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">≥ 3.0 m</span> ปลอดภัย (ระยะมาตรฐานใหม่)</li>
-                        <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">> 6.0 m</span> ระวัง! (ฝังลึกเกินไป เสี่ยงท่อติด)</li>
-                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< 3.0 m</span> อันตราย! (เสี่ยงท่อหลุด หรือน้อยกว่า 1 ท่อน)</li>
-                    </ul>
-                </div>
-                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-clock text-amber-500 mr-2"></i>2. อายุคอนกรีต (Batch Age)</h4>
-                    <ul class="space-y-1 mt-2">
-                        <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">< 1.5 ชม.</span> ปกติ (ไหลตัวได้ดี)</li>
-                        <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">1.5 - 2.0 ชม.</span> ระวัง! (ควรเร่งเท / เช็คหน้างาน)</li>
-                        <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">> 2.0 ชม.</span> อันตราย! (เสี่ยงเกิด Cold Joint)</li>
-                    </ul>
-                </div>
+                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-ruler-vertical text-blue-500 mr-2"></i>1. ระยะฝังท่อทรีมี่</h4><ul class="space-y-1 mt-2"><li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">≥ 3.0 m</span> ปลอดภัย</li><li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">> 6.0 m</span> ระวัง!</li><li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< 3.0 m</span> อันตราย!</li></ul></div>
+                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-clock text-amber-500 mr-2"></i>2. อายุคอนกรีต (Batch Age)</h4><ul class="space-y-1 mt-2"><li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">< 1.5 ชม.</span> ปกติ</li><li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">1.5 - 2.0 ชม.</span> ระวัง!</li><li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">> 2.0 ชม.</span> อันตราย!</li></ul></div>
             </div>
             <div class="p-4 border-t border-slate-200 dark:border-slate-700 shrink-0 bg-slate-50 dark:bg-slate-900">
                 <button onclick="closeManualModal()" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 rounded-lg transition-colors">ปิดหน้าต่าง</button>
@@ -441,72 +418,33 @@
     </div>
 
     <script>
-        // --- Chart.js Global Defaults ---
         Chart.defaults.color = '#94a3b8'; Chart.defaults.borderColor = '#334155'; Chart.defaults.font.family = 'Sarabun';
         let activeCharts = {}; 
 
-        // --- Dark Mode Logic ---
         function applyTheme(isDark) {
             const icon = document.getElementById('theme-icon');
             if (isDark) { document.documentElement.classList.add('dark'); icon.className = 'fas fa-sun'; Chart.defaults.color = '#94a3b8'; Chart.defaults.borderColor = '#334155'; } 
             else { document.documentElement.classList.remove('dark'); icon.className = 'fas fa-moon'; Chart.defaults.color = '#64748b'; Chart.defaults.borderColor = '#e2e8f0'; }
         }
-        function toggleDarkMode() {
-            const isDark = !document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark);
-        }
+        function toggleDarkMode() { const isDark = !document.documentElement.classList.contains('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark); }
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { applyTheme(true); } else { applyTheme(false); }
 
-        function toggleSetup() {
-            const content = document.getElementById('setup-content'); const icon = document.getElementById('setup-toggle-icon');
-            if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.replace('fa-chevron-down', 'fa-chevron-up'); } 
-            else { content.classList.add('hidden'); icon.classList.replace('fa-chevron-up', 'fa-chevron-down'); }
-        }
-        function toggleChangelog() {
-            const content = document.getElementById('changelog-content'); const icon = document.getElementById('changelog-icon');
-            if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.replace('fa-chevron-down', 'fa-chevron-up'); } 
-            else { content.classList.add('hidden'); icon.classList.replace('fa-chevron-up', 'fa-chevron-down'); }
-        }
-
-        function updateSupplier() {
-            const supp = document.getElementById('supplier').value; const codeInput = document.getElementById('product-code');
-            const data = { 'CPAC': '35BAA4AB32 Slump 15-20 cm.', 'M Concrete': 'TP3520BBF100 Slump 18-23 cm.', 'TPI': '836313 Slump 18-23 cm.', 'Qmix': 'ZBDQ1K017P Slump 15-20 cm.', 'INSEE': '84369401 Slump 18-23 cm.' };
-            if(data[supp]) codeInput.value = data[supp]; else codeInput.value = ''; updateSettings();
-        }
-
-        // --- Time Functions ---
+        function toggleSetup() { const content = document.getElementById('setup-content'); const icon = document.getElementById('setup-toggle-icon'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.replace('fa-chevron-down', 'fa-chevron-up'); } else { content.classList.add('hidden'); icon.classList.replace('fa-chevron-up', 'fa-chevron-down'); } }
+        function toggleChangelog() { const content = document.getElementById('changelog-content'); const icon = document.getElementById('changelog-icon'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.replace('fa-chevron-down', 'fa-chevron-up'); } else { content.classList.add('hidden'); icon.classList.replace('fa-chevron-up', 'fa-chevron-down'); } }
+        function updateSupplier() { const supp = document.getElementById('supplier').value; const codeInput = document.getElementById('product-code'); const data = { 'CPAC': '35BAA4AB32 Slump 15-20 cm.', 'M Concrete': 'TP3520BBF100 Slump 18-23 cm.', 'TPI': '836313 Slump 18-23 cm.', 'Qmix': 'ZBDQ1K017P Slump 15-20 cm.', 'INSEE': '84369401 Slump 18-23 cm.' }; if(data[supp]) codeInput.value = data[supp]; else codeInput.value = ''; updateSettings(); }
         function setNowBatchTime() { const now = new Date(); document.getElementById('batch-time').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }
         function setNowArrTime() { const now = new Date(); document.getElementById('arr-time').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }
-        function getMinsDiff(startStr, endStr) {
-            if (!startStr || !endStr) return null;
-            let [sH, sM] = startStr.split(':').map(Number); let [eH, eM] = endStr.split(':').map(Number);
-            let diff = (eH * 60 + eM) - (sH * 60 + sM);
-            if (diff < 0) diff += 24 * 60; return diff;
-        }
+        function getMinsDiff(startStr, endStr) { if (!startStr || !endStr) return null; let [sH, sM] = startStr.split(':').map(Number); let [eH, eM] = endStr.split(':').map(Number); let diff = (eH * 60 + eM) - (sH * 60 + sM); if (diff < 0) diff += 24 * 60; return diff; }
         function calculateAgeMinutes(batchTimeStr, pourTimeStr) { return getMinsDiff(batchTimeStr, pourTimeStr); }
-        function formatAgeString(mins) {
-            if (mins === null || isNaN(mins)) return '-'; const h = Math.floor(mins / 60); const m = mins % 60;
-            return h > 0 ? `${h}h ${m}m` : `${m}m`;
-        }
-        function formatThaiDuration(mins) {
-            if (mins === null || isNaN(mins)) return '- นาที'; const h = Math.floor(mins / 60); const m = mins % 60;
-            if (h > 0) return m > 0 ? `${h} ชั่วโมง ${m} นาที` : `${h} ชั่วโมง`; return `${m} นาที`;
-        }
-        function getAgeColor(mins) {
-            if (mins === null || isNaN(mins)) return "text-slate-400";
-            if (mins >= 120) return "text-red-600 dark:text-red-400 font-bold animate-pulse";
-            if (mins >= 90) return "text-amber-500 dark:text-amber-400 font-bold"; return "text-emerald-600 dark:text-emerald-400 font-bold";
-        }
+        function formatAgeString(mins) { if (mins === null || isNaN(mins)) return '-'; const h = Math.floor(mins / 60); const m = mins % 60; return h > 0 ? `${h}h ${m}m` : `${m}m`; }
+        function formatThaiDuration(mins) { if (mins === null || isNaN(mins)) return '- นาที'; const h = Math.floor(mins / 60); const m = mins % 60; if (h > 0) return m > 0 ? `${h} ชั่วโมง ${m} นาที` : `${h} ชั่วโมง`; return `${m} นาที`; }
+        function getAgeColor(mins) { if (mins === null || isNaN(mins)) return "text-slate-400"; if (mins >= 120) return "text-red-600 dark:text-red-400 font-bold animate-pulse"; if (mins >= 90) return "text-amber-500 dark:text-amber-400 font-bold"; return "text-emerald-600 dark:text-emerald-400 font-bold"; }
 
-        // --- Application State ---
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v27');
-            if (!saved) saved = localStorage.getItem('tremie_v26');
-            if (saved) {
-                try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {}
-            }
+            let saved = localStorage.getItem('tremie_v29') || localStorage.getItem('tremie_v28') || localStorage.getItem('tremie_v27');
+            if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
 
@@ -526,7 +464,6 @@
             saveAndRender();
         }
 
-        // --- Logic ---
         function suggestCut() {
             const soundingStr = document.getElementById('sounding-input').value; const sugDiv = document.getElementById('cut-suggestion'); const insertIdx = parseInt(document.getElementById('insert-index').value);
             if (!soundingStr) { sugDiv.classList.add('hidden'); return; } const sounding = parseFloat(soundingStr); if (isNaN(sounding) || sounding <= 0) { sugDiv.classList.add('hidden'); return; }
@@ -536,7 +473,7 @@
             let currentEmbed = actualPipeLen - sounding;
             if (currentEmbed < minEmbed) {
                 let txt = currentEmbed < 0 ? `ท่อหลุดคอนกรีต! ระยะฝังติดลบ (${currentEmbed.toFixed(2)}m)` : `ระยะฝังปัจจุบัน (${currentEmbed.toFixed(2)}m) น้อยกว่าเกณฑ์ความปลอดภัย (${minEmbed.toFixed(1)}m)`;
-                sugDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-1 text-sm"></i><span class="font-bold">อันตราย:</span> ${txt} ไม่สามารถตัดท่อได้แล้ว`;
+                sugDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-1 text-sm"></i><span class="font-bold">อันตราย:</span> ${txt}`;
                 sugDiv.className = "col-span-3 text-xs bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-2.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm mt-1 transition-all"; sugDiv.classList.remove('hidden'); return;
             }
             let testCut = 0; let piecesToCut = 0;
@@ -545,7 +482,7 @@
                 sugDiv.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center"><i class="fas fa-magic text-emerald-500 mr-2 text-sm"></i><span><span class="font-bold uppercase tracking-wider">แนะนำให้ตัด:</span> <b>${piecesToCut} ท่อน</b> (${testCut.toFixed(1)}m)</span></div><div class="bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded font-bold text-emerald-800 dark:text-emerald-300">ฝังจะเหลือ ${(currentEmbed - testCut).toFixed(2)}m</div></div>`;
                 sugDiv.className = "col-span-3 text-xs bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-700 shadow-sm mt-1 transition-all";
             } else {
-                sugDiv.innerHTML = `<div class="flex items-center"><i class="fas fa-info-circle text-blue-500 mr-2 text-sm"></i><span><span class="font-bold uppercase tracking-wider">ยังไม่ควรตัด:</span> ระยะฝังปัจจุบัน <b>${currentEmbed.toFixed(2)}m</b> (หากตัดท่อจะเหลือน้อยกว่า ${minEmbed.toFixed(1)}m)</span></div>`;
+                sugDiv.innerHTML = `<div class="flex items-center"><i class="fas fa-info-circle text-blue-500 mr-2 text-sm"></i><span><span class="font-bold uppercase tracking-wider">ยังไม่ควรตัด:</span> ระยะฝังปัจจุบัน <b>${currentEmbed.toFixed(2)}m</b></span></div>`;
                 sugDiv.className = "col-span-3 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 p-2.5 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm mt-1 transition-all";
             }
             sugDiv.classList.remove('hidden'); updatePrediction();
@@ -554,16 +491,11 @@
         function autoCalcPipeM() {
             const pcs = parseFloat(document.getElementById('pipe-pcs').value); const secLen = parseFloat(document.getElementById('sec-len').value) || 3.0; const topLen = parseFloat(document.getElementById('top-len').value) || 1.5;
             const inputM = document.getElementById('pipe-input'); const insertIdx = parseInt(document.getElementById('insert-index').value);
-            if (!isNaN(pcs) && pcs > 0) {
-                let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1;
-                for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } }
-                let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; }
-                if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2);
-            } else { inputM.value = ''; }
+            if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v27', JSON.stringify(state)); }
-        function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `TremieV27_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v29', JSON.stringify(state)); }
+        function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
         function updatePrediction() {
@@ -595,8 +527,7 @@
             const ev = state.events[index];
             if (ev.type === 'pour') { ev.isCompleted = !ev.isCompleted; if (ev.isCompleted && !ev.pourTime) { const now = new Date(); ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); } saveAndRender(); }
         }
-
-        function deleteEvent(i) { if(confirm('ยืนยันการลบ? ข้อมูลทั้งหมดในลำดับถัดไปจะถูกคำนวณใหม่')) { state.events.splice(i, 1); saveAndRender(); } }
+        function deleteEvent(i) { if(confirm('ยืนยันการลบ?')) { state.events.splice(i, 1); saveAndRender(); } }
 
         function openEditModal(i) {
             const ev = state.events[i]; document.getElementById('edit-index').value = i;
@@ -621,10 +552,9 @@
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
         function openManualModal() { document.getElementById('manual-modal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manual-modal').classList.add('hidden'); }
-        
         function toggleFinishJob() {
-            if (state.isFinished) { if (confirm('ยืนยันการ "ยกเลิกการจบงาน"?')) { state.isFinished = false; state.finishTime = null; saveAndRender(); } } 
-            else { if (confirm('ยืนยันการ "จบงาน"?\n(ระบบจะคำนวณ Overbreak ให้ทันที)')) { state.isFinished = true; const now = new Date(); state.finishTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); saveAndRender(); } }
+            if (state.isFinished) { if (confirm('ยกเลิกการจบงาน?')) { state.isFinished = false; state.finishTime = null; saveAndRender(); } } 
+            else { if (confirm('ยืนยันจบงาน? (แอปจะคำนวณ Overbreak ให้)')) { state.isFinished = true; const now = new Date(); state.finishTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); saveAndRender(); } }
         }
 
         function resetApp() {
@@ -636,59 +566,27 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v27', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v29', JSON.stringify(state)); render(); updatePrediction(); }
 
-        // --- V27: Share Report Logic ---
         function copyReport() {
             const s = state.settings;
-            if (!s.pileName) { alert('กรุณาระบุชื่อหลุมเจาะก่อนสร้างรายงาน'); return; }
-
-            const area = Math.PI * Math.pow(s.diameter / 2, 2);
-            const theoVol = s.depth * area;
+            if (!s.pileName) { alert('ระบุชื่อหลุมเจาะก่อนสร้างรายงาน'); return; }
+            const area = Math.PI * Math.pow(s.diameter / 2, 2); const theoVol = s.depth * area;
             let actualVol = 0; let firstBatch = null; let lastFinish = null;
+            state.events.forEach(ev => { if (ev.type === 'pour' && ev.isCompleted) { actualVol += ev.val; if(!firstBatch && ev.batchTime) firstBatch = ev.batchTime; if(ev.pourTime) lastFinish = ev.pourTime; } });
             
-            state.events.forEach(ev => { 
-                if (ev.type === 'pour' && ev.isCompleted) { 
-                    actualVol += ev.val; 
-                    if(!firstBatch && ev.batchTime) firstBatch = ev.batchTime;
-                    if(ev.pourTime) lastFinish = ev.pourTime;
-                } 
-            });
-
             let overbreak = theoVol > 0 ? ((actualVol - theoVol) / theoVol * 100).toFixed(1) : 0;
-            let overbreakText = overbreak > 0 ? `+${overbreak}% (Overbreak)` : `${overbreak}% (Necking/Under Yield)`;
+            let overbreakText = overbreak > 0 ? `+${overbreak}% (Overbreak)` : `${overbreak}% (Necking)`;
+            let statusText = state.isFinished ? `เทเสร็จสิ้นเวลา ${state.finishTime}` : `กำลังดำเนินการ...`;
             
-            let statusText = state.isFinished ? `เทเสร็จสิ้นเวลา ${state.finishTime}` : `กำลังดำเนินการเท...`;
-            
-            let report = `📋 *สรุปงานเทคอนกรีต เสาเข็มเจาะ*\n`;
-            report += `โครงการ: ทางพิเศษฉลองรัชส่วนต่อขยาย\n`;
-            report += `หลุมเจาะ: ${s.pileName}\n`;
-            report += `ขนาด: Ø${s.diameter.toFixed(2)}m x ลึก ${s.depth.toFixed(1)}m\n`;
-            report += `ผู้ผลิต: ${s.supplier || '-'}\n\n`;
-            
-            report += `⏱️ เวลาเทคันแรก: ${firstBatch || '-'}\n`;
-            if (state.isFinished) report += `🏁 เทเสร็จสิ้น: ${state.finishTime}\n\n`;
-            else report += `⏳ สถานะ: ${statusText}\n\n`;
-            
-            report += `📊 *สรุปปริมาตรคอนกรีต*\n`;
-            report += `- ทฤษฎี (พอดีหลุม): ${theoVol.toFixed(1)} m³\n`;
-            report += `- ใช้จริง: ${actualVol.toFixed(1)} m³\n`;
-            
-            if (state.isFinished) {
-                report += `- คิดเป็น Yield: ${overbreakText}\n\n`;
-            } else {
-                let progress = theoVol > 0 ? ((actualVol / theoVol) * 100).toFixed(1) : 0;
-                report += `- ความคืบหน้า (Progress): ${progress}%\n\n`;
-            }
-            
-            if(state.notes) { report += `📝 หมายเหตุหน้างาน:\n${state.notes}\n`; }
-
-            navigator.clipboard.writeText(report).then(() => {
-                alert('✅ คัดลอกรายงานลง Clipboard แล้ว\nสามารถเปิดแอป LINE แล้วกด "วาง (Paste)" ได้เลยครับ');
-            }).catch(err => { alert('เกิดข้อผิดพลาดในการคัดลอก: ' + err); });
+            let report = `📋 *สรุปงานเทคอนกรีต เสาเข็มเจาะ*\nโครงการ: ทางพิเศษฉลองรัชส่วนต่อขยาย\nหลุมเจาะ: ${s.pileName}\nขนาด: Ø${s.diameter.toFixed(2)}m x ลึก ${s.depth.toFixed(1)}m\nผู้ผลิต: ${s.supplier || '-'}\n\n⏱️ เวลาเทคันแรก: ${firstBatch || '-'}\n`;
+            if (state.isFinished) report += `🏁 เทเสร็จสิ้น: ${state.finishTime}\n\n`; else report += `⏳ สถานะ: ${statusText}\n\n`;
+            report += `📊 *สรุปปริมาตรคอนกรีต*\n- ทฤษฎี: ${theoVol.toFixed(1)} m³\n- ใช้จริง: ${actualVol.toFixed(1)} m³\n`;
+            if (state.isFinished) { report += `- คิดเป็น Yield: ${overbreakText}\n\n`; } else { let progress = theoVol > 0 ? ((actualVol / theoVol) * 100).toFixed(1) : 0; report += `- ความคืบหน้า (Progress): ${progress}%\n\n`; }
+            if(state.notes) { report += `📝 หมายเหตุ:\n${state.notes}\n`; }
+            navigator.clipboard.writeText(report).then(() => { alert('✅ คัดลอกข้อความสรุปงานแล้ว\n\n💡 หากต้องการรูปกราฟไปแนบใน LINE ด้วย ให้ไปที่เมนู "ดูสถิติ" แล้วกด "บันทึกรูปภาพ" ครับ'); }).catch(err => { alert('เกิดข้อผิดพลาดในการคัดลอก: ' + err); });
         }
 
-        // --- Render UI ---
         function render() {
             const { pileName, diameter, depth, initTremie, secLen, topLen, supplier, productCode } = state.settings;
             const area = Math.PI * Math.pow(diameter / 2, 2);
@@ -706,40 +604,27 @@
             state.events.forEach((ev, i) => {
                 const row = document.createElement('tr'); let rowHtml = "";
                 if (ev.type === 'pour') {
-                    predVol += ev.val; predConcLevelFromBottom = predVol / area;
-                    let predDepthTop = depth - predConcLevelFromBottom; let predTipTop = depth - predPipeLen; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
-
+                    predVol += ev.val; predConcLevelFromBottom = predVol / area; let predDepthTop = depth - predConcLevelFromBottom; let predTipTop = depth - predPipeLen; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
                     let totalAgeMins = calculateAgeMinutes(ev.batchTime, ev.isCompleted ? ev.pourTime : null); let colorClass = getAgeColor(totalAgeMins); let arrTimeDisplay = ev.arrivalTime ? ev.arrivalTime : '?';
-                    let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b class="text-blue-500 dark:text-blue-400">${arrTimeDisplay}</b> | `;
+                    let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b class="text-blue-500">${arrTimeDisplay}</b> | `;
                     if (ev.isCompleted) { ageHTML += `เสร็จ: <b>${ev.pourTime||'?'}</b><br><span class="text-[10px] ${colorClass} mt-0.5 inline-block"><i class="fas fa-clock"></i> รวม ${formatAgeString(totalAgeMins)}</span>`; } 
                     else { ageHTML += `<span class="text-[10px] ${colorClass} mt-0.5 inline-block animate-pulse"><i class="fas fa-clock"></i> ผ่านไป ${formatAgeString(totalAgeMins)}</span>`; }
-
                     if (ev.isCompleted) { actualVol += ev.val; actualConcLevelFromBottom = actualVol / area; lastPourTimeStr = ev.pourTime; hasCompletedPour = true; }
 
                     if (!ev.isCompleted) {
                         row.className = "row-pending";
                         rowHtml = `
                             <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
-                            <td class="px-3 py-3">
-                                <div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div>
-                                <div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border border-slate-200 dark:border-slate-600 inline-block text-slate-600 dark:text-slate-300 leading-relaxed">${ageHTML}</div>
-                            </td>
-                            <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-mono opacity-60">${predTipTop.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded border font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
+                            <td class="px-3 py-3"><div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-300">${ageHTML}</div></td>
+                            <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono opacity-60">${predTipTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
                         `;
                     } else {
                         row.className = "row-completed";
                         rowHtml = `
                             <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
-                            <td class="px-3 py-3">
-                                <div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div>
-                                <div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border border-emerald-100 dark:border-slate-700 inline-block text-slate-600 dark:text-slate-400 leading-relaxed">${ageHTML}</div>
-                            </td>
-                            <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predTipTop.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                            <td class="px-3 py-3"><div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div></td>
+                            <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predTipTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 text-[10px] py-2 rounded font-bold transition">✔️ เทแล้ว</button></td>
                         `;
                     }
@@ -749,15 +634,12 @@
                     predPipeLen -= ev.val; let predDepthTop = depth - predConcLevelFromBottom; let predTipTop = depth - predPipeLen; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
                     if (ev.sounding > 0) { actualConcLevelFromBottom = depth - ev.sounding; actualVol = actualConcLevelFromBottom * area; }
                     actualPipeLen -= ev.val;
-
                     let pcsCut = 0; if (!isTopPieceRemoved) { pcsCut = 1 + (ev.val - topLen) / secLen; isTopPieceRemoved = true; } else { pcsCut = ev.val / secLen; }
                     row.className = "row-cut";
                     rowHtml = `
                         <td class="px-3 py-3 text-center opacity-60 text-xs">${i+1}</td>
                         <td class="px-3 py-3 font-bold"><i class="fas fa-cut mr-1"></i>ตัดออก ${ev.val}m<br><span class="text-[10px] opacity-80 font-normal bg-purple-100 dark:bg-purple-900/30 text-purple-700 px-1 rounded mr-1">≈ ${parseFloat(pcsCut.toFixed(1))} ท่อน</span><span class="text-[10px] opacity-80 font-normal border border-slate-300 dark:border-slate-600 px-1 rounded">${ev.sounding > 0 ? `เทป ${ev.sounding}m` : 'ไม่วัด'}</span></td>
-                        <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
-                        <td class="px-3 py-3 text-center font-mono text-blue-600">${predTipTop.toFixed(2)}</td>
-                        <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono text-blue-600">${predTipTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                         <td class="px-3 py-3 text-center text-[10px] font-bold opacity-80">-- ตัดท่อ --</td>
                     `;
                     insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: ตัดท่อ ${ev.val}m</option>`;
@@ -767,28 +649,17 @@
             });
             insertSelect.value = currentInsertVal; if (insertSelect.selectedIndex === -1) insertSelect.value = "-1"; 
 
-            // --- V27: Yield Calculation Display ---
-            const theoTotalVol = depth * area;
-            let yieldHtml = "";
-            if (actualVol === 0) {
-                yieldHtml = `Progress: 0%`;
-            } else if (state.isFinished) {
-                let overbreak = ((actualVol - theoTotalVol) / theoTotalVol) * 100;
-                if (overbreak > 0) yieldHtml = `OB: <span class="text-red-500 font-bold">+${overbreak.toFixed(1)}%</span>`;
-                else yieldHtml = `Yield: <span class="text-orange-500 font-bold">${(100+overbreak).toFixed(1)}%</span>`;
-            } else {
-                let progress = (actualVol / theoTotalVol) * 100;
-                yieldHtml = `Progress: <span class="text-blue-500 font-bold">${progress.toFixed(1)}%</span>`;
-            }
+            const theoTotalVol = depth * area; let yieldHtml = "";
+            if (actualVol === 0) { yieldHtml = `Progress: 0%`; } 
+            else if (state.isFinished) { let overbreak = ((actualVol - theoTotalVol) / theoTotalVol) * 100; if (overbreak > 0) yieldHtml = `OB: <span class="text-red-500 font-bold">+${overbreak.toFixed(1)}%</span>`; else yieldHtml = `Yield: <span class="text-orange-500 font-bold">${(100+overbreak).toFixed(1)}%</span>`; } 
+            else { let progress = (actualVol / theoTotalVol) * 100; yieldHtml = `Progress: <span class="text-blue-500 font-bold">${progress.toFixed(1)}%</span>`; }
             document.getElementById('yield-status').innerHTML = yieldHtml;
 
-            // Idle Tracker Logic
             const idleCard = document.getElementById('idle-tracker-card'); const idleDisplay = document.getElementById('idle-time-display'); const idleStatus = document.getElementById('idle-status');
             const finishBtnContainer = document.getElementById('finish-job-container'); const finishBtn = document.getElementById('finish-job-btn');
 
             if (state.isFinished) {
-                idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 shadow-md text-center"; idleDisplay.className = "text-2xl md:text-3xl font-bold text-blue-600"; idleDisplay.innerText = "จบงาน";
-                idleStatus.innerText = `เสร็จสิ้นเวลา ${state.finishTime}`; idleStatus.className = "text-xs font-bold mt-2 text-blue-600";
+                idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 shadow-md text-center"; idleDisplay.className = "text-2xl md:text-3xl font-bold text-blue-600"; idleDisplay.innerText = "จบงาน"; idleStatus.innerText = `เสร็จสิ้นเวลา ${state.finishTime}`; idleStatus.className = "text-xs font-bold mt-2 text-blue-600";
                 finishBtnContainer.classList.remove('hidden'); finishBtn.className = "w-full bg-white text-slate-500 border py-1.5 mt-2 rounded-lg text-[10px] font-bold shadow-sm"; finishBtn.innerHTML = '<i class="fas fa-undo mr-1"></i> ยกเลิกการจบงาน';
             } else if (hasCompletedPour && lastPourTimeStr) {
                 const now = new Date(); const [lH, lM] = lastPourTimeStr.split(':').map(Number); let lastPDate = new Date(); lastPDate.setHours(lH, lM, 0, 0); if (lastPDate > now) lastPDate.setDate(lastPDate.getDate() - 1);
@@ -801,37 +672,97 @@
                 idleDisplay.innerText = "- นาที"; idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border shadow-sm text-center opacity-50"; idleDisplay.className = "text-3xl font-bold text-slate-400"; idleStatus.innerText = "รอคันแรก"; idleStatus.className = "text-xs font-bold mt-2 text-slate-400"; finishBtnContainer.classList.add('hidden'); 
             }
 
-            // Actual Embed updates
             let actualEmbed = actualConcLevelFromBottom - (depth - actualPipeLen);
             document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs">m³</span>`; document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs">m</span>`; document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg opacity-50">m</span>`;
-
-            // SVG Viz Updates
             document.getElementById('viz-depth-label').innerText = `ก้นหลุม (${depth.toFixed(1)}m)`; const scale = 500 / depth;
             const concH = actualConcLevelFromBottom * scale; document.getElementById('viz-concrete').setAttribute('height', concH); document.getElementById('viz-concrete').setAttribute('y', 500 - concH);
             const tremieH = actualPipeLen * scale; document.getElementById('viz-tremie').setAttribute('height', tremieH);
             const tipPos = 500 - ((depth - actualPipeLen) * scale); document.getElementById('viz-tremie-tip').setAttribute('y1', tipPos); document.getElementById('viz-tremie-tip').setAttribute('y2', tipPos);
         }
 
-        // --- Analytics Logic ---
+        // --- V29 Analytics & FULL Image Capture Logic ---
         function openAnalyticsModal() { document.getElementById('analytics-modal').classList.remove('hidden'); renderCharts(); }
         function closeAnalyticsModal() { document.getElementById('analytics-modal').classList.add('hidden'); }
+        
         function renderCharts() {
             let validPours = state.events.filter(e => e.type === 'pour' && e.isCompleted && e.batchTime && e.arrivalTime && e.pourTime);
             let chartData = validPours.map((e, index) => { let transitMins = getMinsDiff(e.batchTime, e.arrivalTime) || 0; let siteMins = getMinsDiff(e.arrivalTime, e.pourTime) || 0; let totalMins = transitMins + siteMins; let [bH, bM] = e.batchTime.split(':').map(Number); return { id: e.truck, no: `คันที่ ${index+1}`, supplier: e.supplier || 'Unk', batchTimeHour: bH + (bM/60), transit: transitMins, site: siteMins, total: totalMins }; });
+            
             ['chart-stacked', 'chart-line', 'chart-scatter', 'chart-bar'].forEach(id => { if (activeCharts[id]) activeCharts[id].destroy(); });
+            
+            document.getElementById('chart-pile-name').innerText = state.settings.pileName || 'ไม่ระบุ';
+            const today = new Date(); document.getElementById('chart-date').innerText = today.toLocaleDateString('th-TH');
+
             if (chartData.length === 0) return; 
             const labels = chartData.map(d => d.id); const supColorMap = { 'CPAC': '#10b981', 'M Concrete': '#a855f7', 'TPI': '#f97316', 'Qmix': '#3b82f6', 'INSEE': '#ef4444' }; const getColor = (sup) => supColorMap[sup] || '#94a3b8';
-            activeCharts['chart-stacked'] = new Chart(document.getElementById('chart-stacked'), { type: 'bar', data: { labels: labels, datasets: [ { label: 'เดินทาง', data: chartData.map(d => d.transit), backgroundColor: '#3b82f6' }, { label: 'หน้างาน', data: chartData.map(d => d.site), backgroundColor: '#f59e0b' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } });
+            
+            activeCharts['chart-stacked'] = new Chart(document.getElementById('chart-stacked'), { type: 'bar', data: { labels: labels, datasets: [ { label: 'เดินทาง', data: chartData.map(d => d.transit), backgroundColor: '#3b82f6' }, { label: 'หน้างาน', data: chartData.map(d => d.site), backgroundColor: '#f59e0b' } ] }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } });
+            
             let datasetsLine = []; let suppliers = [...new Set(chartData.map(d => d.supplier))];
             suppliers.forEach(sup => { let dataPoints = chartData.map(d => d.supplier === sup ? d.total : null); datasetsLine.push({ label: sup, data: dataPoints, borderColor: getColor(sup), backgroundColor: getColor(sup), tension: 0.3, spanGaps: true }); });
             datasetsLine.push({ label: 'เกณฑ์ (120 นาที)', data: chartData.map(() => 120), borderColor: '#ef4444', borderDash: [5, 5], fill: false, pointRadius: 0 });
-            activeCharts['chart-line'] = new Chart(document.getElementById('chart-line'), { type: 'line', data: { labels: chartData.map(d => d.no), datasets: datasetsLine }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0 } } } });
+            
+            activeCharts['chart-line'] = new Chart(document.getElementById('chart-line'), { type: 'line', data: { labels: chartData.map(d => d.no), datasets: datasetsLine }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { y: { min: 0 } } } });
+            
             let datasetsScatter = suppliers.map(sup => { return { label: sup, data: chartData.filter(d => d.supplier === sup).map(d => ({ x: d.batchTimeHour, y: d.total })), backgroundColor: getColor(sup), pointRadius: 6 }; });
-            activeCharts['chart-scatter'] = new Chart(document.getElementById('chart-scatter'), { type: 'scatter', data: { datasets: datasetsScatter }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: {display: true, text: 'เวลาออกจากแพลนท์'}, ticks: {callback: val => val+':00'} }, y: { title: {display: true, text: 'นาทีรวม'} } } } });
+            activeCharts['chart-scatter'] = new Chart(document.getElementById('chart-scatter'), { type: 'scatter', data: { datasets: datasetsScatter }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { title: {display: true, text: 'เวลาออกจากแพลนท์'}, ticks: {callback: val => val+':00'} }, y: { title: {display: true, text: 'นาทีรวม'} } } } });
+            
             let avgLabels = []; let avgTransit = []; let avgSite = [];
             suppliers.forEach(sup => { let supData = chartData.filter(d => d.supplier === sup); avgLabels.push(sup); avgTransit.push(supData.reduce((acc, d) => acc + d.transit, 0) / supData.length); avgSite.push(supData.reduce((acc, d) => acc + d.site, 0) / supData.length); });
-            activeCharts['chart-bar'] = new Chart(document.getElementById('chart-bar'), { type: 'bar', data: { labels: avgLabels, datasets: [ { label: 'เฉลี่ยเดินทาง', data: avgTransit, backgroundColor: '#3b82f6' }, { label: 'เฉลี่ยเทหน้างาน', data: avgSite, backgroundColor: '#f59e0b' } ] }, options: { responsive: true, maintainAspectRatio: false } });
+            
+            activeCharts['chart-bar'] = new Chart(document.getElementById('chart-bar'), { type: 'bar', data: { labels: avgLabels, datasets: [ { label: 'เฉลี่ยเดินทาง', data: avgTransit, backgroundColor: '#3b82f6' }, { label: 'เฉลี่ยเทหน้างาน', data: avgSite, backgroundColor: '#f59e0b' } ] }, options: { animation: false, responsive: true, maintainAspectRatio: false } });
         }
+
+        // V29: ฟังก์ชันถ่ายรูปที่ปลดล็อก Scrollbar ชั่วคราวให้ถ่ายได้ครบ 100%
+        function downloadAnalyticsImage() {
+            const captureArea = document.getElementById('analytics-capture-area');
+            const modalContainer = document.getElementById('analytics-modal-container');
+            const btn = document.getElementById('btn-save-img');
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            // 1. เก็บสถานะเดิมไว้ก่อน
+            const originalScrollTop = captureArea.scrollTop;
+            const originalHeight = modalContainer.style.height;
+            const originalOverflow = modalContainer.style.overflow;
+            const captureOriginalOverflow = captureArea.style.overflow;
+
+            // เปลี่ยนสถานะปุ่มเพื่อแจ้งผู้ใช้ว่ากำลังทำงาน
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>กำลังประมวลผล...';
+            btn.disabled = true;
+
+            // 2. ปลดล็อกข้อจำกัด CSS ชั่วคราวให้กางออกเต็มจอ
+            captureArea.scrollTop = 0;
+            modalContainer.style.height = 'auto';
+            modalContainer.style.overflow = 'visible';
+            captureArea.style.overflow = 'visible';
+
+            // 3. หน่วงเวลาเล็กน้อยเพื่อให้เบราว์เซอร์จัดการ Layout ใหม่ให้เสร็จ แล้วถ่ายรูป
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    backgroundColor: isDark ? '#0f172a' : '#f8fafc', 
+                    scale: 2,
+                    windowHeight: captureArea.scrollHeight // ระบุความสูงรวมทั้งหมดให้ชัวร์
+                }).then(canvas => {
+                    // 4. หดทุกอย่างกลับมาเป็นเหมือนเดิมอย่างรวดเร็ว
+                    modalContainer.style.height = originalHeight;
+                    modalContainer.style.overflow = originalOverflow;
+                    captureArea.style.overflow = captureOriginalOverflow;
+                    captureArea.scrollTop = originalScrollTop;
+
+                    btn.innerHTML = '<i class="fas fa-camera mr-1"></i>บันทึกรูปภาพ';
+                    btn.disabled = false;
+
+                    // 5. โหลดไฟล์ภาพลงเครื่อง
+                    let link = document.createElement('a');
+                    let pile = state.settings.pileName || 'Pile';
+                    const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+                    link.download = `Analytics_${pile}_${dateStr}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            }, 300); // 300 milliseconds delay
+        }
+
         window.onload = init;
     </script>
 </body>
