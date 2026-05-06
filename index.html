@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V33 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V35 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V33
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V35
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -46,31 +46,35 @@
                     <span id="display-supplier" class="text-[10px] text-slate-400 font-normal mt-0.5 hidden"></span>
                 </div>
                 
-                <button onclick="toggleDarkMode()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-amber-300 font-bold shadow transition border border-slate-600">
+                <button onclick="toggleDarkMode()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-amber-300 font-bold shadow transition border border-slate-600" title="โหมดมืด/สว่าง">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
 
                 <button onclick="copyReport()" class="bg-[#00B900] hover:bg-[#009900] px-3 py-2 rounded-lg text-white text-sm font-bold shadow transition border border-[#009900]">
-                    <i class="fab fa-line mr-1 text-lg leading-none"></i>สรุปงาน
+                    <i class="fab fa-line mr-1 text-lg leading-none"></i> แชร์สรุปงาน
+                </button>
+
+                <button id="btn-sync" onclick="syncToCloud()" class="bg-sky-500 hover:bg-sky-600 px-3 py-2 rounded-lg text-sm font-bold shadow transition text-white hidden">
+                    <i class="fas fa-cloud-upload-alt mr-1"></i> อัปเดต Cloud
                 </button>
 
                 <button onclick="openAnalyticsModal()" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-chart-pie mr-1"></i>สถิติ
+                    <i class="fas fa-chart-pie mr-1"></i> ดูสถิติ
                 </button>
 
                 <button onclick="openManualModal()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-info-circle mr-1"></i>คู่มือ
+                    <i class="fas fa-info-circle mr-1"></i> คู่มือ
                 </button>
 
                 <input type="file" id="file-input" accept=".json" class="hidden" onchange="importData(event)">
                 <button onclick="document.getElementById('file-input').click()" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-folder-open mr-1"></i>
+                    <i class="fas fa-folder-open mr-1"></i> โหลด
                 </button>
                 <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-save mr-1"></i>
+                    <i class="fas fa-save mr-1"></i> เซฟ
                 </button>
                 <button onclick="resetApp()" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition ml-2">
-                    <i class="fas fa-undo mr-1"></i>เริ่มใหม่
+                    <i class="fas fa-undo mr-1"></i> เริ่มใหม่
                 </button>
             </div>
         </div>
@@ -78,10 +82,8 @@
 
     <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Left Side: Inputs & Logs -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- Setup Section -->
             <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
                 <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="toggleSetup()">
                     <h2 class="font-bold text-slate-700 dark:text-slate-200 select-none"><i class="fas fa-sliders-h mr-2"></i>1. ตั้งค่าหลุมเจาะและคอนกรีต</h2>
@@ -132,9 +134,7 @@
                 </div>
             </section>
 
-            <!-- Action Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Add Concrete -->
                 <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-50 dark:bg-emerald-900/10 rounded-bl-full z-0"></div>
                     <h2 class="font-bold text-emerald-700 dark:text-emerald-400 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 relative z-10"><i class="fas fa-truck-loading mr-2"></i>2. ต่อคิวรถปูน</h2>
@@ -169,7 +169,6 @@
                     </div>
                 </section>
 
-                <!-- Remove Pipe -->
                 <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors relative">
                     <h2 class="font-bold text-amber-700 dark:text-amber-500 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2"><i class="fas fa-ruler-combined mr-2"></i>3. วัดระดับ & ตัดท่อ</h2>
                     <div class="space-y-3">
@@ -190,7 +189,6 @@
                                 <input type="number" id="pipe-input" placeholder="อัตโนมัติ" step="0.5" class="w-full p-2 border rounded-lg text-amber-700 dark:text-amber-500 font-bold outline-none bg-slate-50 dark:bg-slate-700 cursor-not-allowed" readonly>
                             </div>
                             
-                            <!-- กล่องแสดงคำแนะนำอัจฉริยะ -->
                             <div id="cut-suggestion" class="col-span-3 hidden"></div>
                         </div>
                         <button onclick="submitRemove()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-bold shadow transition mt-2">
@@ -200,7 +198,6 @@
                 </section>
             </div>
 
-            <!-- Timeline Log -->
             <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
                 <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
                     <span><i class="fas fa-list-ul mr-2"></i>Timeline & Concrete Flow</span>
@@ -213,7 +210,6 @@
                                 <th class="px-3 py-3 text-center">#</th>
                                 <th class="px-3 py-3">ข้อมูลการเดินทาง & อายุคอนกรีต</th>
                                 <th class="px-3 py-3 text-center">ระดับปูน</th>
-                                <!-- V33: Changed column from ปลายท่อ to ท่อเหลือ -->
                                 <th class="px-3 py-3 text-center">ท่อเหลือ</th>
                                 <th class="px-3 py-3 text-center">Embed</th>
                                 <th class="px-3 py-3 text-center w-24">สถานะ</th>
@@ -226,14 +222,12 @@
             </section>
         </div>
 
-        <!-- Right Side: Actual Dashboard & Predictions -->
         <div class="lg:col-span-4 space-y-4">
             
             <div class="bg-blue-600 dark:bg-blue-700 text-white text-center py-2 rounded-xl font-bold shadow-md uppercase tracking-wider text-sm transition-colors">
                 หน้าปัดสถานะจริง (Actual)
             </div>
 
-            <!-- Idle Time Tracker Card -->
             <div id="idle-tracker-card" class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors">
                 <div class="flex items-center justify-center gap-2 mb-1">
                     <i class="fas fa-stopwatch text-slate-400"></i>
@@ -266,21 +260,31 @@
                 </div>
             </div>
 
-            <!-- Visualization -->
-            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[350px] flex flex-col items-center justify-center transition-colors">
+            <!-- Visualization (V35 Widened Koden Overlay) -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[350px] flex flex-col items-center justify-center transition-colors relative">
+                <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
+                    <input type="file" id="koden-upload" accept="image/*" class="hidden" onchange="loadKodenImage(event)">
+                    <button onclick="document.getElementById('koden-upload').click()" class="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 px-2 py-1 rounded shadow-sm transition outline-none font-bold">
+                        <i class="fas fa-layer-group mr-1 text-purple-500"></i> โหลดกราฟ Koden
+                    </button>
+                    <button id="btn-clear-koden" onclick="clearKodenImage()" class="hidden text-[10px] text-red-500 hover:underline px-1 outline-none">เอาภาพออก</button>
+                </div>
                 <h3 class="text-xs font-bold text-slate-400 mb-6 uppercase">Real-time Visualization</h3>
-                <div class="relative w-24 flex-1 w-full max-w-[6rem] border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg mb-6 mt-2">
+                
+                <!-- V35: Changed w-24 max-w-[6rem] to w-48 max-w-[12rem] to double the width -->
+                <div id="viz-container" class="relative w-48 flex-1 w-full max-w-[12rem] border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg mb-6 mt-2 bg-center bg-no-repeat bg-[length:100%_100%] transition-all">
                     <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap">GL(0.00)</div>
+                    
                     <svg id="viz-svg" viewBox="0 0 100 500" preserveAspectRatio="none" class="w-full h-full block">
-                        <rect id="viz-concrete" x="0" y="500" width="100" height="0" fill="#64748b" class="transition-all duration-500 dark:fill-slate-500" />
-                        <rect id="viz-tremie" x="40" y="0" width="20" height="0" fill="#94a3b8" stroke="#1e293b" stroke-width="2" class="transition-all duration-500 dark:fill-slate-400" />
+                        <rect id="viz-concrete" x="0" y="500" width="100" height="0" fill="rgba(100, 116, 139, 0.75)" class="transition-all duration-500" />
+                        <rect id="viz-tremie" x="40" y="0" width="20" height="0" fill="#94a3b8" stroke="#1e293b" stroke-width="2" class="transition-all duration-500" />
                         <line id="viz-tremie-tip" x1="20" y1="0" x2="80" y2="0" stroke="#000" stroke-width="4" class="dark:stroke-white" />
                     </svg>
+                    
                     <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 uppercase w-full text-center whitespace-nowrap" id="viz-depth-label"></div>
                 </div>
             </div>
 
-            <!-- PERMANENT PREDICTION CARD -->
             <div class="bg-slate-800 dark:bg-slate-900 text-white p-5 rounded-xl border border-slate-700 shadow-lg relative overflow-hidden transition-colors">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500 opacity-10 rounded-bl-full z-0"></div>
                 <h3 class="font-bold text-blue-300 mb-3 text-sm uppercase tracking-wide relative z-10">
@@ -310,7 +314,6 @@
                 </div>
             </div>
 
-            <!-- SITE NOTES AREA -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors mt-4">
                 <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase">
                     <i class="fas fa-sticky-note mr-1 text-amber-500"></i> โน้ตปัญหา / หมายเหตุหน้างาน
@@ -330,16 +333,16 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
+                    <span class="font-bold text-orange-500 w-16 shrink-0">V35:</span> 
+                    <span>ขยายความกว้างของกราฟิก Real-time Visualization เพิ่มขึ้น 2 เท่า เพื่อให้มองเห็นรายละเอียดกราฟ Koden ที่นำมาซ้อนทับได้ชัดเจนขึ้น</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-purple-500 w-16 shrink-0">V34:</span> 
+                    <span>เพิ่มฟีเจอร์อัปโหลดภาพกราฟ Koden เพื่อนำมาซ้อนทับ (Overlay) ใต้กราฟิก Real-time Visualization สำหรับตรวจสอบระดับคอนกรีตเทียบกับหลุมจริง</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-teal-500 w-16 shrink-0">V33:</span> 
-                    <span>เพิ่มระบบยืนยัน (Confirm) เพื่อป้องกันการเผลอกดสลับคิวรถปูนผิดพลาด และเปลี่ยนการแสดงผลในตารางจาก "ปลายท่อ" เป็นความยาว "ท่อเหลือ" เพื่อให้ง่ายต่อการสื่อสารหน้างาน</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-emerald-500 w-16 shrink-0">V32:</span> 
-                    <span>เพิ่มปุ่มลูกศร ขึ้น/ลง (⬆️ / ⬇️) ในหน้า Timeline เพื่อสลับลำดับคิวรถปูน กรณีรถเข้าเทไม่ตรงตามลำดับที่ลงทะเบียนไว้</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-blue-500 w-16 shrink-0">V31:</span> 
-                    <span>ปรับปรุงหน้าต่าง Analytics ใหม่: ขยายกราฟที่ 1 เต็มความกว้างและยุบรวมเส้นเกณฑ์ 120 นาทีเข้าไปเพื่อความชัดเจน</span>
+                    <span>เพิ่มระบบยืนยัน (Confirm) เพื่อป้องกันการเผลอกดสลับคิวรถปูน และเปลี่ยนตารางจาก "ปลายท่อ" เป็นความยาว "ท่อเหลือ"</span>
                 </li>
             </ul>
         </div>
@@ -411,7 +414,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Manual Modal -->
     <div id="manual-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-colors flex flex-col max-h-[90vh]">
@@ -454,7 +457,7 @@
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32') || localStorage.getItem('tremie_v31') || localStorage.getItem('tremie_v30') || localStorage.getItem('tremie_v29');
+            let saved = localStorage.getItem('tremie_v35') || localStorage.getItem('tremie_v34') || localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32') || localStorage.getItem('tremie_v31');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
@@ -473,6 +476,28 @@
             state.settings.secLen = parseFloat(document.getElementById('sec-len').value) || 3.0; state.settings.topLen = parseFloat(document.getElementById('top-len').value) || 1.5;
             state.settings.supplier = document.getElementById('supplier').value || ''; state.settings.productCode = document.getElementById('product-code').value || '';
             saveAndRender();
+        }
+
+        function loadKodenImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgUrl = e.target.result;
+                const container = document.getElementById('viz-container');
+                container.style.backgroundImage = `url('${imgUrl}')`;
+                container.classList.remove('pile-gradient'); 
+                document.getElementById('btn-clear-koden').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearKodenImage() {
+            const container = document.getElementById('viz-container');
+            container.style.backgroundImage = 'none';
+            container.classList.add('pile-gradient');
+            document.getElementById('file-input').value = "";
+            document.getElementById('btn-clear-koden').classList.add('hidden');
         }
 
         function suggestCut() {
@@ -505,7 +530,7 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v33', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v35', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
@@ -540,7 +565,6 @@
         }
         function deleteEvent(i) { if(confirm('ยืนยันการลบ?')) { state.events.splice(i, 1); saveAndRender(); } }
 
-        // V33: Added Confirmation logic for Move Up / Move Down
         function moveEventUp(i) {
             if (i > 0) {
                 if(confirm('ยืนยันการเลื่อนคิวนี้ "ขึ้น" เพื่อเทก่อน?')) {
@@ -595,11 +619,12 @@
                 state.events = []; state.notes = ''; state.isFinished = false; state.finishTime = null;
                 document.getElementById('pile-name').value = ''; document.getElementById('predict-sounding').value = '';
                 document.getElementById('cut-suggestion').classList.add('hidden'); document.getElementById('supplier').value = ''; document.getElementById('product-code').value = '';
+                clearKodenImage();
                 populateSettingsUI(); updateSettings();
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v33', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v35', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
             const s = state.settings;
@@ -656,7 +681,6 @@
                             <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
                             <td class="px-3 py-3"><div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-300">${ageHTML}</div></td>
                             <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
-                            <!-- V33: Changed to output Remaining Pipe (predPipeLen) -->
                             <td class="px-3 py-3 text-center font-mono opacity-60">${predPipeLen.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
@@ -667,7 +691,6 @@
                             <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
                             <td class="px-3 py-3"><div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div></td>
                             <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
-                            <!-- V33: Changed to output Remaining Pipe (predPipeLen) -->
                             <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predPipeLen.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                             <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 text-[10px] py-2 rounded font-bold transition">✔️ เทแล้ว</button></td>
@@ -685,7 +708,6 @@
                         <td class="px-3 py-3 text-center opacity-60 text-xs">${i+1}</td>
                         <td class="px-3 py-3 font-bold"><i class="fas fa-cut mr-1"></i>ตัดออก ${ev.val}m<br><span class="text-[10px] opacity-80 font-normal bg-purple-100 dark:bg-purple-900/30 text-purple-700 px-1 rounded mr-1">≈ ${parseFloat(pcsCut.toFixed(1))} ท่อน</span><span class="text-[10px] opacity-80 font-normal border border-slate-300 dark:border-slate-600 px-1 rounded">${ev.sounding > 0 ? `เทป ${ev.sounding}m` : 'ไม่วัด'}</span></td>
                         <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
-                        <!-- V33: Changed to output Remaining Pipe (predPipeLen) -->
                         <td class="px-3 py-3 text-center font-mono text-blue-600">${predPipeLen.toFixed(2)}</td>
                         <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                         <td class="px-3 py-3 text-center text-[10px] font-bold opacity-80">-- ตัดท่อ --</td>
