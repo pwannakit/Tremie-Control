@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V35 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V37 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V35
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V37
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -51,7 +51,7 @@
                 </button>
 
                 <button onclick="copyReport()" class="bg-[#00B900] hover:bg-[#009900] px-3 py-2 rounded-lg text-white text-sm font-bold shadow transition border border-[#009900]">
-                    <i class="fab fa-line mr-1 text-lg leading-none"></i> แชร์สรุปงาน
+                    <i class="fab fa-line mr-1 text-lg leading-none"></i>สรุปงาน
                 </button>
 
                 <button id="btn-sync" onclick="syncToCloud()" class="bg-sky-500 hover:bg-sky-600 px-3 py-2 rounded-lg text-sm font-bold shadow transition text-white hidden">
@@ -59,19 +59,19 @@
                 </button>
 
                 <button onclick="openAnalyticsModal()" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-chart-pie mr-1"></i> ดูสถิติ
+                    <i class="fas fa-chart-pie mr-1"></i>สถิติ
                 </button>
 
                 <button onclick="openManualModal()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-info-circle mr-1"></i> คู่มือ
+                    <i class="fas fa-info-circle mr-1"></i>คู่มือ
                 </button>
 
                 <input type="file" id="file-input" accept=".json" class="hidden" onchange="importData(event)">
                 <button onclick="document.getElementById('file-input').click()" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-folder-open mr-1"></i> โหลด
+                    <i class="fas fa-folder-open mr-1"></i>
                 </button>
                 <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
-                    <i class="fas fa-save mr-1"></i> เซฟ
+                    <i class="fas fa-save mr-1"></i>
                 </button>
                 <button onclick="resetApp()" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition ml-2">
                     <i class="fas fa-undo mr-1"></i> เริ่มใหม่
@@ -260,7 +260,7 @@
                 </div>
             </div>
 
-            <!-- Visualization (V35 Widened Koden Overlay) -->
+            <!-- Visualization (V37 Auto-transparent Tremie Overlay) -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[350px] flex flex-col items-center justify-center transition-colors relative">
                 <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
                     <input type="file" id="koden-upload" accept="image/*" class="hidden" onchange="loadKodenImage(event)">
@@ -271,14 +271,13 @@
                 </div>
                 <h3 class="text-xs font-bold text-slate-400 mb-6 uppercase">Real-time Visualization</h3>
                 
-                <!-- V35: Changed w-24 max-w-[6rem] to w-48 max-w-[12rem] to double the width -->
-                <div id="viz-container" class="relative w-48 flex-1 w-full max-w-[12rem] border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg mb-6 mt-2 bg-center bg-no-repeat bg-[length:100%_100%] transition-all">
+                <div id="viz-container" class="relative w-full max-w-[6rem] flex-1 border-x-4 border-slate-300 dark:border-slate-600 pile-gradient rounded-b-lg mb-6 mt-2 bg-center bg-no-repeat bg-[length:100%_100%] transition-all duration-500 ease-in-out">
                     <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap">GL(0.00)</div>
                     
                     <svg id="viz-svg" viewBox="0 0 100 500" preserveAspectRatio="none" class="w-full h-full block">
                         <rect id="viz-concrete" x="0" y="500" width="100" height="0" fill="rgba(100, 116, 139, 0.75)" class="transition-all duration-500" />
-                        <rect id="viz-tremie" x="40" y="0" width="20" height="0" fill="#94a3b8" stroke="#1e293b" stroke-width="2" class="transition-all duration-500" />
-                        <line id="viz-tremie-tip" x1="20" y1="0" x2="80" y2="0" stroke="#000" stroke-width="4" class="dark:stroke-white" />
+                        <rect id="viz-tremie" x="40" y="0" width="20" height="0" fill="#94a3b8" stroke="#1e293b" stroke-width="2" class="transition-all duration-500" style="opacity: 1;" />
+                        <line id="viz-tremie-tip" x1="20" y1="0" x2="80" y2="0" stroke="#000" stroke-width="4" class="dark:stroke-white transition-all duration-500" style="opacity: 1;" />
                     </svg>
                     
                     <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 uppercase w-full text-center whitespace-nowrap" id="viz-depth-label"></div>
@@ -333,16 +332,16 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
+                    <span class="font-bold text-sky-500 w-16 shrink-0">V37:</span> 
+                    <span>ปรับท่อ Tremie ให้มีความโปร่งแสง (Opacity 40%) อัตโนมัติเมื่ออัปโหลดรูปกราฟ Koden เพื่อไม่ให้ท่อทึบไปบังรายละเอียดของกราฟตรงกลางหลุม</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <span class="font-bold text-pink-500 w-16 shrink-0">V36:</span> 
+                    <span>ปรับให้กราฟิกสลับความกว้างอัตโนมัติ (ขยายเต็มจอเมื่ออัปโหลดรูปกราฟ Koden) เพื่อรองรับรูปที่มีรายละเอียดสองแกน</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-orange-500 w-16 shrink-0">V35:</span> 
-                    <span>ขยายความกว้างของกราฟิก Real-time Visualization เพิ่มขึ้น 2 เท่า เพื่อให้มองเห็นรายละเอียดกราฟ Koden ที่นำมาซ้อนทับได้ชัดเจนขึ้น</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-purple-500 w-16 shrink-0">V34:</span> 
-                    <span>เพิ่มฟีเจอร์อัปโหลดภาพกราฟ Koden เพื่อนำมาซ้อนทับ (Overlay) ใต้กราฟิก Real-time Visualization สำหรับตรวจสอบระดับคอนกรีตเทียบกับหลุมจริง</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-teal-500 w-16 shrink-0">V33:</span> 
-                    <span>เพิ่มระบบยืนยัน (Confirm) เพื่อป้องกันการเผลอกดสลับคิวรถปูน และเปลี่ยนตารางจาก "ปลายท่อ" เป็นความยาว "ท่อเหลือ"</span>
+                    <span>ขยายความกว้างของกราฟิก Real-time เพิ่มขึ้น</span>
                 </li>
             </ul>
         </div>
@@ -457,7 +456,7 @@
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v35') || localStorage.getItem('tremie_v34') || localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32') || localStorage.getItem('tremie_v31');
+            let saved = localStorage.getItem('tremie_v37') || localStorage.getItem('tremie_v36') || localStorage.getItem('tremie_v35') || localStorage.getItem('tremie_v34') || localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
@@ -478,6 +477,7 @@
             saveAndRender();
         }
 
+        // V37: Set Tremie Opacity when image is loaded
         function loadKodenImage(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -486,8 +486,13 @@
                 const imgUrl = e.target.result;
                 const container = document.getElementById('viz-container');
                 container.style.backgroundImage = `url('${imgUrl}')`;
-                container.classList.remove('pile-gradient'); 
+                container.classList.remove('pile-gradient', 'max-w-[6rem]'); 
+                container.classList.add('max-w-full'); 
                 document.getElementById('btn-clear-koden').classList.remove('hidden');
+
+                // ปรับความโปร่งแสงของท่อ Tremie เมื่อมีรูป Koden
+                document.getElementById('viz-tremie').style.opacity = '0.4';
+                document.getElementById('viz-tremie-tip').style.opacity = '0.4';
             };
             reader.readAsDataURL(file);
         }
@@ -495,9 +500,14 @@
         function clearKodenImage() {
             const container = document.getElementById('viz-container');
             container.style.backgroundImage = 'none';
-            container.classList.add('pile-gradient');
+            container.classList.remove('max-w-full'); 
+            container.classList.add('pile-gradient', 'max-w-[6rem]'); 
             document.getElementById('file-input').value = "";
             document.getElementById('btn-clear-koden').classList.add('hidden');
+
+            // คืนค่าความโปร่งแสงกลับเป็นปกติ
+            document.getElementById('viz-tremie').style.opacity = '1';
+            document.getElementById('viz-tremie-tip').style.opacity = '1';
         }
 
         function suggestCut() {
@@ -530,7 +540,7 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v35', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v37', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
@@ -624,7 +634,7 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v35', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v37', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
             const s = state.settings;
