@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V37 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V39 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V37
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V39
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -51,7 +51,7 @@
                 </button>
 
                 <button onclick="copyReport()" class="bg-[#00B900] hover:bg-[#009900] px-3 py-2 rounded-lg text-white text-sm font-bold shadow transition border border-[#009900]">
-                    <i class="fab fa-line mr-1 text-lg leading-none"></i>สรุปงาน
+                    <i class="fab fa-line mr-1 text-lg leading-none"></i> แชร์สรุปงาน
                 </button>
 
                 <button id="btn-sync" onclick="syncToCloud()" class="bg-sky-500 hover:bg-sky-600 px-3 py-2 rounded-lg text-sm font-bold shadow transition text-white hidden">
@@ -260,7 +260,7 @@
                 </div>
             </div>
 
-            <!-- Visualization (V37 Auto-transparent Tremie Overlay) -->
+            <!-- Visualization -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[350px] flex flex-col items-center justify-center transition-colors relative">
                 <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
                     <input type="file" id="koden-upload" accept="image/*" class="hidden" onchange="loadKodenImage(event)">
@@ -323,7 +323,7 @@
         </div>
     </main>
 
-    <!-- Changelog Section (Collapsible) -->
+    <!-- Changelog Section -->
     <div class="max-w-7xl mx-auto px-4 mt-2 mb-10">
         <button onclick="toggleChangelog()" class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 text-left font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex justify-between items-center outline-none">
             <span><i class="fas fa-history mr-2"></i>บันทึกการแก้ไขเวอร์ชัน (Changelog)</span>
@@ -332,16 +332,12 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-sky-500 w-16 shrink-0">V37:</span> 
-                    <span>ปรับท่อ Tremie ให้มีความโปร่งแสง (Opacity 40%) อัตโนมัติเมื่ออัปโหลดรูปกราฟ Koden เพื่อไม่ให้ท่อทึบไปบังรายละเอียดของกราฟตรงกลางหลุม</span>
+                    <span class="font-bold text-purple-500 w-16 shrink-0">V39:</span> 
+                    <span>แก้ไขบั๊กกดยกเลิกสถานะ "เทแล้ว" ให้กลับมาเป็น "รอเท" โดยระบบจะเคลียร์ค่าเวลาที่บันทึกไว้ออกให้ถูกต้อง ไม่ให้ค้างเวลาเดิมจนทำให้การวิเคราะห์ผิดพลาด</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-pink-500 w-16 shrink-0">V36:</span> 
-                    <span>ปรับให้กราฟิกสลับความกว้างอัตโนมัติ (ขยายเต็มจอเมื่ออัปโหลดรูปกราฟ Koden) เพื่อรองรับรูปที่มีรายละเอียดสองแกน</span>
-                </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-orange-500 w-16 shrink-0">V35:</span> 
-                    <span>ขยายความกว้างของกราฟิก Real-time เพิ่มขึ้น</span>
+                    <span class="font-bold text-rose-500 w-16 shrink-0">V38:</span> 
+                    <span>แก้บั๊ก "Idle Time พุ่งกระฉูด" โดยปรับปรุงเงื่อนไขคำนวณเวลาเทเสร็จแบบข้ามคืนให้รัดกุมยิ่งขึ้น</span>
                 </li>
             </ul>
         </div>
@@ -456,7 +452,7 @@
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v37') || localStorage.getItem('tremie_v36') || localStorage.getItem('tremie_v35') || localStorage.getItem('tremie_v34') || localStorage.getItem('tremie_v33') || localStorage.getItem('tremie_v32');
+            let saved = localStorage.getItem('tremie_v39') || localStorage.getItem('tremie_v38') || localStorage.getItem('tremie_v37') || localStorage.getItem('tremie_v36') || localStorage.getItem('tremie_v35') || localStorage.getItem('tremie_v34');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
@@ -477,7 +473,6 @@
             saveAndRender();
         }
 
-        // V37: Set Tremie Opacity when image is loaded
         function loadKodenImage(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -490,7 +485,6 @@
                 container.classList.add('max-w-full'); 
                 document.getElementById('btn-clear-koden').classList.remove('hidden');
 
-                // ปรับความโปร่งแสงของท่อ Tremie เมื่อมีรูป Koden
                 document.getElementById('viz-tremie').style.opacity = '0.4';
                 document.getElementById('viz-tremie-tip').style.opacity = '0.4';
             };
@@ -505,7 +499,6 @@
             document.getElementById('file-input').value = "";
             document.getElementById('btn-clear-koden').classList.add('hidden');
 
-            // คืนค่าความโปร่งแสงกลับเป็นปกติ
             document.getElementById('viz-tremie').style.opacity = '1';
             document.getElementById('viz-tremie-tip').style.opacity = '1';
         }
@@ -540,7 +533,7 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v37', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v39', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
@@ -569,10 +562,25 @@
             document.getElementById('insert-index').value = "-1"; document.getElementById('cut-suggestion').classList.add('hidden'); saveAndRender();
         }
 
+        // --- V39: Fixed Toggle Pour Status Bug ---
         function togglePourStatus(index) {
             const ev = state.events[index];
-            if (ev.type === 'pour') { ev.isCompleted = !ev.isCompleted; if (ev.isCompleted && !ev.pourTime) { const now = new Date(); ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); } saveAndRender(); }
+            if (ev.type === 'pour') { 
+                ev.isCompleted = !ev.isCompleted; 
+                if (ev.isCompleted) {
+                    if (!ev.pourTime) { 
+                        const now = new Date(); 
+                        ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); 
+                    } 
+                } else {
+                    // หากยกเลิกการเทเสร็จ ให้ล้างค่าเวลาเทเสร็จทิ้งด้วย เพื่อไม่ให้จำค่าเดิมไปคำนวณ
+                    ev.pourTime = null;
+                }
+                saveAndRender(); 
+            }
         }
+        // -----------------------------------------
+
         function deleteEvent(i) { if(confirm('ยืนยันการลบ?')) { state.events.splice(i, 1); saveAndRender(); } }
 
         function moveEventUp(i) {
@@ -634,7 +642,7 @@
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v37', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v39', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
             const s = state.settings;
@@ -748,8 +756,26 @@
                 idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 shadow-md text-center"; idleDisplay.className = "text-2xl md:text-3xl font-bold text-blue-600"; idleDisplay.innerText = "จบงาน"; idleStatus.innerText = `เสร็จสิ้นเวลา ${state.finishTime}`; idleStatus.className = "text-xs font-bold mt-2 text-blue-600";
                 finishBtnContainer.classList.remove('hidden'); finishBtn.className = "w-full bg-white text-slate-500 border py-1.5 mt-2 rounded-lg text-[10px] font-bold shadow-sm"; finishBtn.innerHTML = '<i class="fas fa-undo mr-1"></i> ยกเลิกการจบงาน';
             } else if (hasCompletedPour && lastPourTimeStr) {
-                const now = new Date(); const [lH, lM] = lastPourTimeStr.split(':').map(Number); let lastPDate = new Date(); lastPDate.setHours(lH, lM, 0, 0); if (lastPDate > now) lastPDate.setDate(lastPDate.getDate() - 1);
-                let idleMins = Math.max(0, Math.floor((now - lastPDate) / 60000)); idleDisplay.innerText = formatThaiDuration(idleMins);
+                const now = new Date(); 
+                const [lH, lM] = lastPourTimeStr.split(':').map(Number); 
+                let lastPDate = new Date(); 
+                lastPDate.setHours(lH, lM, 0, 0);
+
+                let idleMins = 0;
+                let diffMins = Math.floor((now - lastPDate) / 60000);
+
+                if (diffMins < 0) {
+                    if (diffMins < -720) {
+                        lastPDate.setDate(lastPDate.getDate() - 1);
+                        idleMins = Math.max(0, Math.floor((now - lastPDate) / 60000));
+                    } else {
+                        idleMins = 0;
+                    }
+                } else {
+                    idleMins = diffMins;
+                }
+
+                idleDisplay.innerText = formatThaiDuration(idleMins);
                 if (idleMins >= 45) { idleCard.className = "bg-red-50 p-4 rounded-xl border border-red-400 shadow-md text-center animate-pulse"; idleDisplay.className = "text-3xl font-bold text-red-600"; idleStatus.innerText = "อันตราย! รีบขยับท่อด่วน"; idleStatus.className = "text-xs font-bold mt-2 text-red-600"; } 
                 else if (idleMins >= 30) { idleCard.className = "bg-orange-50 p-4 rounded-xl border border-orange-400 shadow-md text-center"; idleDisplay.className = "text-3xl font-bold text-orange-600"; idleStatus.innerText = "พิจารณาขยับท่อเล็กน้อย"; idleStatus.className = "text-xs font-bold mt-2 text-orange-600"; } 
                 else { idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border shadow-sm text-center"; idleDisplay.className = "text-3xl font-bold text-emerald-600"; idleStatus.innerText = "ปกติ"; idleStatus.className = "text-xs font-bold mt-2 text-slate-500"; }
