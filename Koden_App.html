@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verticality Analyzer V28.1 - โครงการจตุโชติ</title>
+    <title>Verticality Analyzer V32.3 (Pile Integrity) - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
@@ -18,22 +18,51 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: bold; }
+        .dark .tab-active { border-bottom: 2px solid #60a5fa; color: #60a5fa; }
+        .tab-inactive { color: #64748b; font-weight: normal; }
+        .dark .tab-inactive { color: #94a3b8; }
+        .tab-inactive:hover { color: #475569; }
+        .dark .tab-inactive:hover { color: #cbd5e1; }
+
+        /* Class สำหรับซ่อน/แสดงเฉพาะหน้าจอปกติ */
+        .print-only { display: none; }
+
+        /* ================= PRINT STYLES ================= */
+        @media print {
+            body { background-color: white !important; color: black !important; }
+            .dark { background-color: white !important; color: black !important; }
+            
+            /* ซ่อนส่วนประกอบที่ไม่ต้องการในรายงาน */
+            header, .cursor-pointer, .no-print, button { 
+                display: none !important; 
+            }
+            
+            /* แสดงข้อความบรรยายเฉพาะตอนพิมพ์ */
+            .print-only { display: block !important; }
+
+            /* ลบเงาและขอบให้พิมพ์ออกมาสะอาดตา */
+            .shadow-sm, .shadow-lg, .shadow-md { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+            .bg-slate-800, .dark\:bg-slate-800 { background-color: white !important; color: black !important; }
+            .text-white { color: black !important; }
+            .bg-slate-900, .dark\:bg-slate-900 { background-color: white !important; }
+            
+            .break-inside-avoid { break-inside: avoid; }
+        }
     </style>
 </head>
-<!-- แก้ไข: เพิ่ม dark:bg-slate-900 เพื่อให้พื้นหลังมืดสนิท -->
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen pb-10 text-slate-800 dark:text-slate-200">
 
-    <!-- แก้ไข: ซ่อน Class สีเขียว/แดง เอาไว้เพื่อให้ Tailwind CDN ดึงไปสร้าง CSS เผื่อไว้ให้ JavaScript เรียกใช้ -->
-    <div class="hidden bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 dark:border-emerald-600 bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-600 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400"></div>
+    <div class="hidden bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 dark:border-emerald-600 bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-600 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400 border-orange-400 dark:border-orange-600 text-emerald-500 text-red-500 text-orange-500 animate-pulse text-emerald-600 dark:text-emerald-400 text-red-600 dark:text-red-400"></div>
 
-    <!-- Header -->
     <header class="bg-slate-900 dark:bg-black text-white p-4 shadow-lg mb-6 border-b border-slate-800">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-emerald-400">
-                    <i class="fas fa-bullseye mr-2"></i>Verticality Analyzer V1
+                <h1 class="text-2xl font-bold text-blue-400">
+                    <i class="fas fa-bullseye mr-2"></i>Verticality Analyzer V32.3
                 </h1>
-                <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
+                <p class="text-slate-400 text-sm">ระบบประเมินความเอียงและตรวจสอบความสมบูรณ์เข็ม (Pile Integrity)</p>
             </div>
             <div class="flex gap-2">
                 <button id="btn-theme" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-amber-300 font-bold border border-slate-700 transition">
@@ -46,463 +75,779 @@
                 <button id="btn-export" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
                     <i class="fas fa-save mr-1"></i> เซฟ
                 </button>
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                    <i class="fas fa-print mr-1"></i> พิมพ์รายงาน
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="max-w-7xl mx-auto px-4">
         
-        <!-- Left Panel: Inputs -->
-        <div class="lg:col-span-5 space-y-6">
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h2 class="font-bold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
-                    <i class="fas fa-keyboard mr-2 text-blue-500"></i>ข้อมูลหลุมเจาะและผลทดสอบ
-                </h2>
-                
-                <div class="space-y-4">
-                    <!-- General Settings -->
-                    <div class="grid grid-cols-2 gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
-                            <input type="text" id="inp-pile" placeholder="e.g. OR4-65 No.B3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ความลึกพิจารณา (m)</label>
-                            <input type="number" id="inp-depth" value="60.0" step="0.1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold text-blue-600 dark:text-blue-400">
-                            <p class="text-[9px] text-slate-400 mt-1">*ความลึกจุดที่เกิด Deviation สูงสุด</p>
-                        </div>
-                    </div>
+        <div class="flex gap-6 border-b border-slate-200 dark:border-slate-700 mb-6 cursor-pointer">
+            <div id="tab-std" onclick="switchMode('standard')" class="pb-2 px-2 tab-active transition-all"><i class="fas fa-ruler-combined mr-2"></i>Standard Mode (เกณฑ์รวม)</div>
+            <div id="tab-dl" onclick="switchMode('dogleg')" class="pb-2 px-2 tab-inactive transition-all"><i class="fas fa-route mr-2"></i>Advanced Mode (วิเคราะห์ Dog-leg)</div>
+        </div>
 
-                    <!-- Koden Data -->
-                    <div class="grid grid-cols-2 gap-3 pt-2">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-emerald-600 dark:text-emerald-500 mb-1 uppercase">เกณฑ์มาตรฐานที่ยอมรับได้</label>
-                            <select id="sel-criteria" class="w-full p-2 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none bg-emerald-50 dark:bg-slate-900 font-bold text-emerald-700 dark:text-emerald-400">
-                                <option value="75">1 : 75</option>
-                                <option value="100" selected>1 : 100 (มาตรฐานโครงการ)</option>
-                                <option value="150">1 : 150</option>
-                                <option value="200">1 : 200</option>
-                            </select>
+        <div id="mode-standard" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-5 space-y-6 no-print">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <h2 class="font-bold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
+                        <i class="fas fa-keyboard mr-2 text-blue-500"></i>ข้อมูลหลุมเจาะ
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
+                                <input type="text" id="inp-pile" placeholder="e.g. OR4-65 No.B3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
+                            </div>
+                            <div class="col-span-2">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ความลึกเริ่มต้น (m)</label>
+                                        <input type="number" id="inp-depth-start" placeholder="0.0" value="0.0" step="0.1" class="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ความลึกสิ้นสุด (m)</label>
+                                        <input type="number" id="inp-depth-end" placeholder="60.0" value="60.0" step="0.1" class="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900">
+                                    </div>
+                                </div>
+                                <div class="mt-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded px-3 py-2 flex justify-between items-center shadow-inner">
+                                    <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase"><i class="fas fa-arrows-alt-v mr-1"></i>ช่วงพิจารณา (Interval):</span>
+                                    <span class="font-bold text-blue-700 dark:text-blue-300 text-sm"><span id="out-depth-diff">60.0</span> m</span>
+                                </div>
+                            </div>
+                            <div class="col-span-2 mt-2">
+                                <label class="block text-xs font-bold text-emerald-600 dark:text-emerald-500 mb-1 uppercase">เกณฑ์ความเอียงรวมที่ยอมรับได้</label>
+                                <select id="sel-criteria" class="w-full p-2 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none bg-emerald-50 dark:bg-slate-900 font-bold text-emerald-700 dark:text-emerald-400">
+                                    <option value="75">1 : 75</option>
+                                    <option value="100" selected>1 : 100 (มาตรฐานโครงการ)</option>
+                                    <option value="150">1 : 150</option>
+                                    <option value="200">1 : 200</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">เยื้องแกน X (cm)</label>
-                            <input type="number" id="inp-x" placeholder="เช่น 40" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-400 outline-none font-bold bg-slate-50 dark:bg-slate-900 text-lg">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">เยื้องแกน Y (cm)</label>
-                            <input type="number" id="inp-y" placeholder="เช่น 60" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-400 outline-none font-bold bg-slate-50 dark:bg-slate-900 text-lg">
-                        </div>
-                        <div class="col-span-2 flex items-center justify-between mt-4">
-                            <span class="text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded border border-blue-200 dark:border-blue-800">หน่วยเป็น CM แล้ว</span>
-                            <button id="btn-save" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition text-sm flex items-center">
-                                <i class="fas fa-save mr-2"></i> บันทึกผล
+
+                        <div class="pt-2">
+                            <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-2"><i class="fas fa-border-all mr-2 text-indigo-500"></i>พิกัดเยื้องผนัง 4 ด้าน (Wall Deviation)</h3>
+                            
+                            <div class="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 relative">
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                                    <i class="fas fa-crosshairs text-4xl text-slate-400"></i>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">X-Left (ซ้าย)</label>
+                                    <input type="number" id="inp-xl" placeholder="cm" step="0.5" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none font-bold text-center z-10 relative bg-white dark:bg-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">X-Right (ขวา)</label>
+                                    <input type="number" id="inp-xr" placeholder="cm" step="0.5" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none font-bold text-center z-10 relative bg-white dark:bg-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Y-Top (บน)</label>
+                                    <input type="number" id="inp-yt" placeholder="cm" step="0.5" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none font-bold text-center z-10 relative bg-white dark:bg-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Y-Bot (ล่าง)</label>
+                                    <input type="number" id="inp-yb" placeholder="cm" step="0.5" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none font-bold text-center z-10 relative bg-white dark:bg-slate-800">
+                                </div>
+                            </div>
+                            
+                            <button id="btn-save" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold shadow-md transition text-sm flex items-center justify-center">
+                                <i class="fas fa-save mr-2"></i> บันทึกผลลงตาราง
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Right Panel: Dashboard -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Number Cards -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">ระยะเยื้องศูนย์ลัพธ์ (Resultant)</p>
-                    <p class="text-3xl font-bold text-slate-800 dark:text-white">
-                        <span id="out-res-cm">0.0</span> <span class="text-sm font-normal text-slate-400">cm</span>
-                    </p>
-                    <p class="text-xs text-slate-400 mt-1" id="out-res-m">(0.00 m)</p>
-                </div>
+            <div class="lg:col-span-7 space-y-6">
                 
-                <div id="card-status" class="bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors duration-300">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">สัดส่วนความเอียงจริง (Actual)</p>
-                    <p class="text-3xl font-bold text-slate-800 dark:text-white" id="out-ratio">1 : -</p>
-                    <div id="badge-status" class="mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                        รอข้อมูล
+                <div id="print-text-report" class="print-only mb-6 border-b-2 border-slate-800 pb-4">
+                    <p>ไม่มีข้อมูลการวิเคราะห์</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 no-print">
+                    <div id="card-status" class="col-span-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors duration-300">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">ความเอียง (Verticality)</p>
+                        <p class="text-3xl font-bold text-slate-800 dark:text-white mt-1" id="out-ratio">1 : -</p>
+                        <p class="text-xs font-bold text-blue-500 mt-1">เยื้องศูนย์ <span id="out-res-cm">0.0</span> cm</p>
+                        <div id="badge-status" class="mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">รอข้อมูล</div>
+                    </div>
+
+                    <div id="card-integrity" class="col-span-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors duration-300">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">ความสมบูรณ์ (Integrity)</p>
+                        <p class="text-xl font-bold text-slate-800 dark:text-white mt-1" id="out-d-dia">-</p>
+                        <p class="text-[10px] text-slate-400 mt-1">ตรวจสอบการตีบ/ป่อง</p>
+                        <div id="badge-integrity" class="mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">รอข้อมูล</div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col items-center break-inside-avoid">
+                    <div class="w-full flex justify-between items-center mb-4">
+                        <h2 class="font-bold text-slate-700 dark:text-slate-200 text-sm"><i class="fas fa-shapes mr-2"></i>Cross-Section Visualization</h2>
+                        <div class="flex gap-3 text-[10px] font-bold text-slate-500">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full border border-emerald-400 border-dashed mr-1"></span>แนวทฤษฎี</span>
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 opacity-50 mr-1"></span>แนวผนังจริง</span>
+                        </div>
+                    </div>
+                    <div id="canvas-container" class="relative w-full max-w-[320px] aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <canvas id="targetCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                        <div class="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">+Y (Top)</div>
+                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">-Y (Bottom)</div>
+                        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">+X (Right)</div>
+                        <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">-X (Left)</div>
+                    </div>
+                    
+                    <div class="mt-4 border-t border-slate-100 dark:border-slate-700 pt-3 w-full text-center">
+                        <div class="flex justify-center gap-4 text-xs text-slate-500 font-bold mb-1">
+                            <p>ยอมรับได้ (Allowable): <span id="out-allow" class="text-emerald-600 dark:text-emerald-400 text-sm">0.0</span> cm</p>
+                            <p>เยื้องจริง (Actual): <span id="out-actual-res" class="text-blue-600 dark:text-blue-400 text-sm">0.0</span> cm</p>
+                        </div>
+                        <p id="out-target-status" class="text-xs font-bold text-slate-400 mt-2">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Target Graphic -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col items-center">
-                <div class="w-full flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-slate-700 dark:text-slate-200 text-sm"><i class="fas fa-crosshairs mr-2"></i>Target Visualization</h2>
-                    <div class="flex gap-3 text-[10px] font-bold text-slate-500">
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-400 opacity-50 mr-1"></span>ผ่านเกณฑ์</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-500 mr-1"></span>จุดเยื้องศูนย์</span>
+            <div class="lg:col-span-12 break-inside-avoid no-print">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
+                        <span><i class="fas fa-history mr-2"></i>บันทึกผลการตรวจสอบรวม (Data Log)</span>
+                        <button id="btn-clear" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded shadow transition"><i class="fas fa-trash mr-1"></i> ล้างข้อมูล</button>
                     </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase">
+                                <tr>
+                                    <th class="px-3 py-3">Pile ID</th>
+                                    <th class="px-3 py-3 text-center">Depth Range</th>
+                                    <th class="px-2 py-3 text-center">X-L</th>
+                                    <th class="px-2 py-3 text-center">X-R</th>
+                                    <th class="px-2 py-3 text-center">Y-T</th>
+                                    <th class="px-2 py-3 text-center">Y-B</th>
+                                    <th class="px-3 py-3 text-center text-blue-600 dark:text-blue-400">Res (cm)</th>
+                                    <th class="px-3 py-3 text-center text-blue-600 dark:text-blue-400">Ratio</th>
+                                    <th class="px-3 py-3 text-center">Integrity (Δ Dia)</th>
+                                    <th class="px-3 py-3 text-center">Status</th>
+                                    <th class="px-3 py-3 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                    <div id="table-empty" class="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">ยังไม่มีข้อมูลบันทึก</div>
                 </div>
-                
-                <div id="canvas-container" class="relative w-full max-w-[320px] aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <canvas id="targetCanvas" class="absolute inset-0 w-full h-full"></canvas>
-                    <div class="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">+Y</div>
-                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">-Y</div>
-                    <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">+X</div>
-                    <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">-X</div>
-                </div>
-                <p class="text-xs text-slate-500 font-bold mt-4 text-center">
-                    ระยะเยื้องศูนย์ที่ยอมรับได้: <span id="out-allow" class="text-emerald-600 dark:text-emerald-400 text-sm">0</span> cm
-                </p>
             </div>
         </div>
 
-        <!-- Table Panel -->
-        <div class="lg:col-span-12">
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
-                    <span><i class="fas fa-history mr-2"></i>บันทึกผลการตรวจสอบ (Data Log)</span>
-                    <button id="btn-clear" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded shadow transition"><i class="fas fa-trash mr-1"></i> ล้างข้อมูล</button>
+        <div id="mode-dogleg" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-6 space-y-4 no-print">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <h2 class="font-bold text-purple-600 dark:text-purple-400 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
+                        <i class="fas fa-route mr-2"></i>วิเคราะห์การคดงอ (Dog-leg Severity)
+                    </h2>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">เกณฑ์ Dog-leg ที่ยอมรับได้ (เช่น 1:50)</label>
+                        <select id="sel-dl-criteria" class="w-full p-2 border border-purple-200 dark:border-purple-800 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none bg-purple-50 dark:bg-slate-900 font-bold text-purple-700 dark:text-purple-400" onchange="calculateDogleg()">
+                            <option value="50" selected>1 : 50 (ความโค้งงอแบบรุนแรง)</option>
+                            <option value="75">1 : 75 (ความโค้งงอปานกลาง)</option>
+                            <option value="100">1 : 100 (เข้มงวด)</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+                        <div class="grid grid-cols-12 gap-1 text-[9px] font-bold text-slate-500 uppercase text-center mb-2">
+                            <div class="col-span-3">ความลึก (m)</div>
+                            <div class="col-span-2">X-Left</div>
+                            <div class="col-span-2">X-Right</div>
+                            <div class="col-span-2">Y-Top</div>
+                            <div class="col-span-2">Y-Bot</div>
+                            <div class="col-span-1"></div>
+                        </div>
+                        <div id="dl-inputs-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
+                        <button onclick="addDoglegPoint()" class="w-full mt-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 py-2 rounded border border-slate-300 dark:border-slate-600 border-dashed text-xs font-bold transition">
+                            + เพิ่มระดับความลึก
+                        </button>
+                    </div>
+
+                    <button onclick="calculateDogleg()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold shadow-md transition">
+                        <i class="fas fa-calculator mr-2"></i> คำนวณ Dog-leg
+                    </button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-xs uppercase">
-                            <tr>
-                                <th class="px-4 py-3">Pile ID</th>
-                                <th class="px-4 py-3 text-center">Depth (m)</th>
-                                <th class="px-4 py-3 text-center">Dev X (cm)</th>
-                                <th class="px-4 py-3 text-center">Dev Y (cm)</th>
-                                <th class="px-4 py-3 text-center">Resultant (cm)</th>
-                                <th class="px-4 py-3 text-center">Ratio</th>
-                                <th class="px-4 py-3 text-center">Status</th>
-                                <th class="px-4 py-3 text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
-                    </table>
+            </div>
+
+            <div class="lg:col-span-6 space-y-6">
+                <div id="print-text-dogleg" class="print-only mb-6 border-b-2 border-slate-800 pb-4">
+                    <h2 class="text-xl font-bold mb-2">รายงานวิเคราะห์ความคดงอ (Dog-leg Severity)</h2>
+                    <p id="print-dl-desc">ไม่มีข้อมูล</p>
                 </div>
-                <div id="table-empty" class="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">
-                    ยังไม่มีข้อมูลบันทึก
+
+                <div class="grid grid-cols-2 gap-4 no-print">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2">Max Severity</p>
+                        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="dl-max-ratio">1 : -</p>
+                        <p class="text-xs text-slate-400 mt-1">ณ ช่วงความลึก <span id="dl-max-depth" class="font-bold">-</span> m</p>
+                    </div>
+                    
+                    <div id="dl-card-status" class="bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">สถานะโครงสร้าง (Dog-leg)</p>
+                        <div id="dl-badge-status" class="mt-2 inline-block px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">รอข้อมูลพิกัด ≥ 2 จุด</div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col items-center break-inside-avoid">
+                    <h2 class="w-full font-bold text-slate-700 dark:text-slate-200 text-sm mb-4"><i class="fas fa-bezier-curve mr-2"></i>Center Trajectory (เส้นทางจุดศูนย์กลาง)</h2>
+                    <div id="dl-canvas-container" class="relative w-full max-w-[320px] aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <canvas id="dlCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                        <div class="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">+Y</div>
+                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">-Y</div>
+                        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">+X</div>
+                        <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">-X</div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden break-inside-avoid no-print">
+                    <div class="bg-slate-800 dark:bg-slate-900 text-white px-6 py-3 font-bold text-sm flex justify-between items-center border-b dark:border-slate-700">
+                        <span><i class="fas fa-list mr-2"></i>การประเมินแยกชั้นความลึก</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-[300px] overflow-y-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-2 py-2 text-center bg-slate-100 dark:bg-slate-800">ช่วง (m)</th>
+                                    <th class="px-2 py-2 text-center bg-slate-100 dark:bg-slate-800">C-X</th>
+                                    <th class="px-2 py-2 text-center bg-slate-100 dark:bg-slate-800">C-Y</th>
+                                    <th class="px-2 py-2 text-center bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400">ΔE (cm)</th>
+                                    <th class="px-2 py-2 text-center bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400">Ratio</th>
+                                    <th class="px-2 py-2 text-center bg-slate-100 dark:bg-slate-800">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dl-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <tr><td colspan="6" class="text-center py-6 text-slate-400 text-xs">กรุณาป้อนข้อมูล 4 ผนังและกดคำนวณ</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            let appState = { records: [], currentResult: null };
-            
-            const DOM = {
+        // === Mode Switcher ===
+        function switchMode(mode) {
+            const tabStd = document.getElementById('tab-std');
+            const tabDl = document.getElementById('tab-dl');
+            const modeStd = document.getElementById('mode-standard');
+            const modeDl = document.getElementById('mode-dogleg');
+
+            if(mode === 'standard') {
+                tabStd.className = "pb-2 px-2 tab-active transition-all";
+                tabDl.className = "pb-2 px-2 tab-inactive transition-all";
+                modeStd.classList.remove('hidden');
+                modeDl.classList.add('hidden');
+            } else {
+                tabStd.className = "pb-2 px-2 tab-inactive transition-all";
+                tabDl.className = "pb-2 px-2 tab-active transition-all";
+                modeStd.classList.add('hidden');
+                modeDl.classList.remove('hidden');
+                if(doglegPoints.length === 0) {
+                    addDoglegPoint(0, 0,0,0,0);
+                    addDoglegPoint(3, 0,0,0,0);
+                }
+                setTimeout(drawDlCanvas, 100);
+            }
+        }
+
+        // ======================= STANDARD MODE JS (V32.3) =======================
+        let appState = { records: [], currentResult: null };
+        let DOM = {};
+
+        function initDOM() {
+            DOM = {
                 inpPile: document.getElementById('inp-pile'),
-                inpDepth: document.getElementById('inp-depth'),
+                inpDepthStart: document.getElementById('inp-depth-start'),
+                inpDepthEnd: document.getElementById('inp-depth-end'),
+                outDepthDiff: document.getElementById('out-depth-diff'),
                 selCriteria: document.getElementById('sel-criteria'),
-                inpX: document.getElementById('inp-x'),
-                inpY: document.getElementById('inp-y'),
+                
+                inpXL: document.getElementById('inp-xl'),
+                inpXR: document.getElementById('inp-xr'),
+                inpYT: document.getElementById('inp-yt'),
+                inpYB: document.getElementById('inp-yb'),
                 
                 outResCm: document.getElementById('out-res-cm'),
-                outResM: document.getElementById('out-res-m'),
                 outRatio: document.getElementById('out-ratio'),
                 outAllow: document.getElementById('out-allow'),
+                outDDia: document.getElementById('out-d-dia'),
+                
+                outActualRes: document.getElementById('out-actual-res'),
+                outTargetStatus: document.getElementById('out-target-status'),
                 
                 cardStatus: document.getElementById('card-status'),
                 badgeStatus: document.getElementById('badge-status'),
+                cardIntegrity: document.getElementById('card-integrity'),
+                badgeIntegrity: document.getElementById('badge-integrity'),
                 
                 canvas: document.getElementById('targetCanvas'),
                 canvasContainer: document.getElementById('canvas-container'),
-                
                 tbody: document.getElementById('table-body'),
                 tEmpty: document.getElementById('table-empty'),
-                
+
                 btnSave: document.getElementById('btn-save'),
                 btnClear: document.getElementById('btn-clear'),
                 btnExport: document.getElementById('btn-export'),
                 btnImport: document.getElementById('btn-import'),
                 fileImport: document.getElementById('file-import'),
-                btnTheme: document.getElementById('btn-theme'),
-                themeIcon: document.getElementById('theme-icon')
+                btnTheme: document.getElementById('btn-theme')
             };
+        }
 
-            function toggleTheme() {
-                const isDark = document.documentElement.classList.toggle('dark');
-                DOM.themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-                try { localStorage.setItem('theme_v28', isDark ? 'dark' : 'light'); } catch(e){}
-                drawCanvas();
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            try { localStorage.setItem('theme_v32', isDark ? 'dark' : 'light'); } catch(e){}
+            drawCanvas(); drawDlCanvas();
+        }
+
+        function updatePrintTextReport(r, pileId, integrityText) {
+            if (!r) return;
+            const html = `
+                <h2 class="text-2xl font-bold mb-4">รายงานการตรวจสอบความเอียงและความสมบูรณ์</h2>
+                <div class="grid grid-cols-2 gap-2 text-lg mb-4">
+                    <p><strong>ชื่อเสาเข็ม (Pile ID):</strong> ${pileId}</p>
+                    <p><strong>ช่วงความลึก:</strong> ${r.startM} ถึง ${r.endM} เมตร</p>
+                    <p><strong>เกณฑ์ที่กำหนด:</strong> 1 : ${DOM.selCriteria.value} (ยอมรับได้ ${r.limitCm.toFixed(1)} cm)</p>
+                    <p><strong>ระยะเยื้องศูนย์จริง:</strong> ${r.resCm.toFixed(1)} cm</p>
+                </div>
+                <div class="p-3 border border-slate-300 rounded text-lg">
+                    <p class="mb-2"><strong>สรุปผลการวิเคราะห์:</strong></p>
+                    <ul class="list-disc list-inside ml-2 space-y-1">
+                        <li>ความเอียงโดยรวม (Verticality) คำนวณได้อัตราส่วน <strong>1 : ${r.ratio}</strong> ซึ่งประเมินว่า <strong>${r.isPass ? 'ผ่านเกณฑ์ (PASS)' : 'ไม่ผ่านเกณฑ์ (FAIL)'}</strong></li>
+                        <li>ความสมบูรณ์ของหน้าตัด (Integrity) ตรวจพบว่าอยู่ในลักษณะ <strong>${integrityText}</strong></li>
+                    </ul>
+                </div>
+            `;
+            document.getElementById('print-text-report').innerHTML = html;
+        }
+
+        function calculate() {
+            const startM = parseFloat(DOM.inpDepthStart.value) || 0;
+            const endM = parseFloat(DOM.inpDepthEnd.value) || 0;
+            const depthM = Math.abs(endM - startM);
+            DOM.outDepthDiff.textContent = depthM.toFixed(1);
+
+            const criteria = parseFloat(DOM.selCriteria.value) || 100;
+            let limitCm = (depthM > 0) ? (depthM / criteria) * 100 : 0;
+            DOM.outAllow.textContent = limitCm.toFixed(1);
+
+            const xL = parseFloat(DOM.inpXL.value);
+            const xR = parseFloat(DOM.inpXR.value);
+            const yT = parseFloat(DOM.inpYT.value);
+            const yB = parseFloat(DOM.inpYB.value);
+
+            if (isNaN(depthM) || isNaN(xL) || isNaN(xR) || isNaN(yT) || isNaN(yB) || DOM.inpXL.value.trim()==='') {
+                resetDisplay(); appState.currentResult = null; drawCanvas(); return;
             }
+
+            const dx = (xR - xL) / 2;
+            const dy = (yT - yB) / 2;
+            const resCm = Math.sqrt(dx*dx + dy*dy);
+            const resM = resCm / 100;
+            let ratio = (resM > 0) ? Math.floor(depthM / resM) : 0;
+            const isPass = resCm <= limitCm;
+
+            const dDiaX = xL + xR;
+            const dDiaY = yT + yB;
+            const minDia = Math.min(dDiaX, dDiaY);
+            const maxDia = Math.max(dDiaX, dDiaY);
+
+            appState.currentResult = { xL, xR, yT, yB, dx, dy, limitCm, resCm, ratio, isPass, depthM, startM, endM, dDiaX, dDiaY };
+
+            DOM.outResCm.textContent = resCm.toFixed(1);
+            DOM.outActualRes.textContent = resCm.toFixed(1); 
+            DOM.outRatio.textContent = ratio > 0 ? `1 : ${ratio}` : 'Perfect';
+
+            if (isPass) {
+                DOM.cardStatus.className = "col-span-1 bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-sm text-center flex flex-col justify-center transition-colors";
+                DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-sm";
+                DOM.badgeStatus.innerHTML = "<i class='fas fa-check mr-1'></i> ผ่านเกณฑ์";
+                
+                DOM.outTargetStatus.innerHTML = "<i class='fas fa-check-circle mr-1'></i> ผ่านเกณฑ์โครงการ (PASS)";
+                DOM.outTargetStatus.className = "text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-2";
+            } else {
+                DOM.cardStatus.className = "col-span-1 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-sm text-center flex flex-col justify-center transition-colors animate-pulse";
+                DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white shadow-sm";
+                DOM.badgeStatus.innerHTML = "<i class='fas fa-times mr-1'></i> ไม่ผ่าน (FAIL)";
+                
+                DOM.outTargetStatus.innerHTML = "<i class='fas fa-times-circle mr-1'></i> ไม่ผ่านเกณฑ์เยื้องศูนย์ (FAIL)";
+                DOM.outTargetStatus.className = "text-xs font-bold text-red-600 dark:text-red-400 mt-2 animate-pulse";
+            }
+
+            let intText = "ปกติ (Normal)";
+            let intBadgeClass = "bg-emerald-500 text-white";
+            let intCardClass = "col-span-1 bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-sm text-center flex flex-col justify-center transition-colors";
             
-            if (localStorage.getItem('theme_v28') === 'dark' || (!localStorage.getItem('theme_v28') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                DOM.themeIcon.className = 'fas fa-sun';
+            if (minDia <= -5) {
+                intText = `ตีบเข้า (Necking)`;
+                intBadgeClass = "bg-red-600 text-white";
+                intCardClass = "col-span-1 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-sm text-center flex flex-col justify-center transition-colors animate-pulse";
+            } else if (maxDia >= 15) {
+                intText = `ป่องออก (Bulging)`;
+                intBadgeClass = "bg-orange-500 text-white";
+                intCardClass = "col-span-1 bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border-2 border-orange-400 dark:border-orange-600 shadow-sm text-center flex flex-col justify-center transition-colors";
             }
 
-            function calculate() {
-                const depthStr = DOM.inpDepth.value;
-                const criteriaStr = DOM.selCriteria.value;
-                const xStr = DOM.inpX.value;
-                const yStr = DOM.inpY.value;
+            DOM.outDDia.innerHTML = `X: <span class="${dDiaX<0?'text-red-500':(dDiaX>0?'text-emerald-500':'')}">${dDiaX>0?'+':''}${dDiaX.toFixed(1)}</span> | Y: <span class="${dDiaY<0?'text-red-500':(dDiaY>0?'text-emerald-500':'')}">${dDiaY>0?'+':''}${dDiaY.toFixed(1)}</span>`;
+            DOM.cardIntegrity.className = intCardClass;
+            DOM.badgeIntegrity.className = `mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${intBadgeClass}`;
+            DOM.badgeIntegrity.innerText = intText;
 
-                const depthM = parseFloat(depthStr);
-                const criteria = parseFloat(criteriaStr) || 100;
+            const pileId = DOM.inpPile.value.trim() || 'ไม่ระบุชื่อ';
+            updatePrintTextReport(appState.currentResult, pileId, intText);
+
+            drawCanvas();
+        }
+
+        function resetDisplay() {
+            DOM.outResCm.textContent = "0.0"; DOM.outRatio.textContent = "1 : -";
+            DOM.outDDia.textContent = "-";
+            
+            DOM.outActualRes.textContent = "0.0";
+            DOM.outTargetStatus.textContent = "-";
+            DOM.outTargetStatus.className = "text-xs font-bold text-slate-400 mt-2";
+
+            DOM.cardStatus.className = "col-span-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors";
+            DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
+            DOM.badgeStatus.textContent = "รอข้อมูล";
+            DOM.cardIntegrity.className = "col-span-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors";
+            DOM.badgeIntegrity.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
+            DOM.badgeIntegrity.textContent = "รอข้อมูล";
+            
+            document.getElementById('print-text-report').innerHTML = "<p>ไม่มีข้อมูลการวิเคราะห์</p>";
+        }
+
+        function drawCanvas() {
+            if (!DOM.canvas) return;
+            let w = DOM.canvasContainer.clientWidth || 300; let h = DOM.canvasContainer.clientHeight || 300;
+            DOM.canvas.width = w; DOM.canvas.height = h;
+            const ctx = DOM.canvas.getContext('2d'); const cx = w / 2; const cy = h / 2;
+            ctx.clearRect(0, 0, w, h);
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const colors = { axis: isDark ? '#334155' : '#e2e8f0', nominalStroke: isDark ? '#10b981' : '#059669', actualFill: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)', actualStroke: isDark ? '#3b82f6' : '#2563eb', point: isDark ? '#ef4444' : '#dc2626' };
+
+            ctx.beginPath(); ctx.strokeStyle = colors.axis; ctx.lineWidth = 1; ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+
+            const nominalR = Math.min(cx, cy) * 0.5;
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, nominalR, 0, 2 * Math.PI);
+            ctx.strokeStyle = colors.nominalStroke;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            if (appState.currentResult) {
+                const { xL, xR, yT, yB } = appState.currentResult;
+                const visualScale = nominalR / 50; 
                 
-                let limitCm = 0;
-                if (!isNaN(depthM) && depthM > 0) {
-                    limitCm = (depthM / criteria) * 100;
-                }
-                DOM.outAllow.textContent = limitCm.toFixed(1);
+                const actualXLeft = cx - nominalR - (xL * visualScale);
+                const actualXRight = cx + nominalR + (xR * visualScale);
+                const actualYTop = cy - nominalR - (yT * visualScale);
+                const actualYBot = cy + nominalR + (yB * visualScale);
 
-                const xCm = parseFloat(xStr);
-                const yCm = parseFloat(yStr);
-
-                if (isNaN(depthM) || isNaN(xCm) || isNaN(yCm) || xStr.trim() === '' || yStr.trim() === '') {
-                    resetDisplay();
-                    appState.currentResult = null;
-                    drawCanvas();
-                    return;
-                }
-
-                const resCm = Math.sqrt((xCm * xCm) + (yCm * yCm));
-                const resM = resCm / 100;
-
-                let ratio = 0;
-                if (resM > 0) ratio = Math.floor(depthM / resM);
-
-                const isPass = resCm <= limitCm;
-
-                appState.currentResult = { xCm, yCm, limitCm, resCm, ratio, isPass, depthM };
-
-                DOM.outResCm.textContent = resCm.toFixed(1);
-                DOM.outResM.textContent = `(${resM.toFixed(2)} m)`;
-                DOM.outRatio.textContent = ratio > 0 ? `1 : ${ratio}` : 'Perfect (0)';
-
-                if (isPass) {
-                    DOM.cardStatus.className = "bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-sm text-center flex flex-col justify-center transition-colors";
-                    DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-sm";
-                    DOM.badgeStatus.innerHTML = "<i class='fas fa-check mr-1'></i> ผ่านเกณฑ์ (PASS)";
-                } else {
-                    DOM.cardStatus.className = "bg-red-50 dark:bg-red-900/20 p-5 rounded-xl border-2 border-red-500 dark:border-red-600 shadow-sm text-center flex flex-col justify-center transition-colors animate-pulse";
-                    DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white shadow-sm";
-                    DOM.badgeStatus.innerHTML = "<i class='fas fa-times mr-1'></i> ไม่ผ่าน (FAIL)";
-                }
-
-                drawCanvas();
-            }
-
-            function resetDisplay() {
-                DOM.outResCm.textContent = "0.0";
-                DOM.outResM.textContent = "(0.00 m)";
-                DOM.outRatio.textContent = "1 : -";
-                DOM.cardStatus.className = "bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors";
-                DOM.badgeStatus.className = "mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
-                DOM.badgeStatus.textContent = "รอข้อมูล";
-            }
-
-            function drawCanvas() {
-                if (!DOM.canvas) return;
-                
-                let w = DOM.canvasContainer.clientWidth || 300;
-                let h = DOM.canvasContainer.clientHeight || 300;
-                
-                DOM.canvas.width = w;
-                DOM.canvas.height = h;
-
-                const ctx = DOM.canvas.getContext('2d');
-                const cx = w / 2;
-                const cy = h / 2;
-
-                ctx.clearRect(0, 0, w, h);
-
-                const isDark = document.documentElement.classList.contains('dark');
-                const colors = {
-                    axis: isDark ? '#334155' : '#e2e8f0',
-                    targetFill: isDark ? 'rgba(52, 211, 153, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                    targetStroke: isDark ? '#10b981' : '#059669',
-                    point: isDark ? '#ef4444' : '#dc2626',
-                    line: isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.5)'
-                };
+                const centerActualX = (actualXLeft + actualXRight) / 2;
+                const centerActualY = (actualYTop + actualYBot) / 2;
+                const radiusActualX = Math.abs(actualXRight - actualXLeft) / 2;
+                const radiusActualY = Math.abs(actualYBot - actualYTop) / 2;
 
                 ctx.beginPath();
-                ctx.strokeStyle = colors.axis;
-                ctx.lineWidth = 1;
-                ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
-                ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+                ctx.ellipse(centerActualX, centerActualY, Math.max(1, radiusActualX), Math.max(1, radiusActualY), 0, 0, 2 * Math.PI);
+                ctx.fillStyle = colors.actualFill;
+                ctx.fill();
+                ctx.strokeStyle = colors.actualStroke;
+                ctx.lineWidth = 2;
                 ctx.stroke();
 
-                const limitCm = parseFloat(DOM.outAllow.textContent) || 0;
-                if (limitCm <= 0) return;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(centerActualX, centerActualY);
+                ctx.strokeStyle = colors.point;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
-                const maxRadiusPx = Math.min(cx, cy) * 0.6;
-                const scale = maxRadiusPx / limitCm;
-
-                if (!isNaN(scale) && isFinite(scale) && scale > 0) {
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, limitCm * scale, 0, 2 * Math.PI);
-                    ctx.fillStyle = colors.targetFill;
-                    ctx.fill();
-                    ctx.strokeStyle = colors.targetStroke;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([5, 5]); 
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, (limitCm / 2) * scale, 0, 2 * Math.PI);
-                    ctx.strokeStyle = colors.axis;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-
-                    if (appState.currentResult) {
-                        const pxX = cx + (appState.currentResult.xCm * scale);
-                        const pxY = cy - (appState.currentResult.yCm * scale);
-
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy);
-                        ctx.lineTo(pxX, pxY);
-                        ctx.strokeStyle = colors.line;
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-
-                        ctx.beginPath();
-                        ctx.arc(pxX, pxY, 6, 0, 2 * Math.PI);
-                        ctx.fillStyle = colors.point;
-                        ctx.fill();
-                        ctx.strokeStyle = '#fff';
-                        ctx.lineWidth = 1.5;
-                        ctx.stroke();
-                    }
-                }
+                ctx.beginPath();
+                ctx.arc(centerActualX, centerActualY, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = colors.point;
+                ctx.fill();
             }
+        }
 
-            function saveRecord() {
-                if (!appState.currentResult) {
-                    alert("ข้อมูลไม่ครบถ้วน! กรุณากรอก 'เยื้องแกน X และ Y' ก่อนบันทึก");
-                    return;
-                }
-
-                const pileId = DOM.inpPile.value.trim() || 'Unknown';
-                
-                const record = {
-                    id: Date.now(),
-                    pileId: pileId,
-                    depth: appState.currentResult.depthM,
-                    dx: appState.currentResult.xCm,
-                    dy: appState.currentResult.yCm,
-                    res: appState.currentResult.resCm,
-                    ratio: appState.currentResult.ratio,
-                    isPass: appState.currentResult.isPass
-                };
-
-                appState.records.push(record);
-                saveToLocal();
-                renderTable();
-
-                DOM.inpX.value = '';
-                DOM.inpY.value = '';
-                calculate();
-            }
-
-            function deleteRecord(id) {
-                appState.records = appState.records.filter(r => r.id !== id);
-                saveToLocal();
-                renderTable();
-            }
-
-            function clearRecords() {
-                if(confirm("ลบประวัติการเทสที่บันทึกไว้ทั้งหมดหรือไม่?")) {
-                    appState.records = [];
-                    saveToLocal();
-                    renderTable();
-                }
-            }
-
-            function saveToLocal() {
-                try { localStorage.setItem('verticality_logs_v28', JSON.stringify(appState.records)); } 
-                catch (e) { console.warn("Local storage disabled by browser."); }
-            }
-
-            function renderTable() {
-                DOM.tbody.innerHTML = '';
-                if (appState.records.length === 0) {
-                    DOM.tEmpty.style.display = 'block';
-                    return;
-                }
-                
-                DOM.tEmpty.style.display = 'none';
-                
-                [...appState.records].reverse().forEach(r => {
-                    const statusHtml = r.isPass 
-                        ? `<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">PASS</span>`
-                        : `<span class="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded text-[10px] font-bold">FAIL</span>`;
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="px-4 py-3 font-bold">${r.pileId}</td>
-                        <td class="px-4 py-3 text-center font-mono opacity-80">${r.depth.toFixed(1)}</td>
-                        <td class="px-4 py-3 text-center font-mono opacity-80">${r.dx.toFixed(1)}</td>
-                        <td class="px-4 py-3 text-center font-mono opacity-80">${r.dy.toFixed(1)}</td>
-                        <td class="px-4 py-3 text-center font-bold text-blue-600 dark:text-blue-400">${r.res.toFixed(1)}</td>
-                        <td class="px-4 py-3 text-center font-bold">1:${r.ratio}</td>
-                        <td class="px-4 py-3 text-center">${statusHtml}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button class="btn-del text-red-400 hover:text-red-600 transition" data-id="${r.id}"><i class="fas fa-trash"></i></button>
-                        </td>
-                    `;
-                    DOM.tbody.appendChild(tr);
-                });
-
-                document.querySelectorAll('.btn-del').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
-                        deleteRecord(id);
-                    });
-                });
-            }
-
-            function exportJSON() {
-                if (appState.records.length === 0) return alert("ไม่มีข้อมูลให้เซฟ");
-                const blob = new Blob([JSON.stringify(appState.records, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob); 
-                const a = document.createElement('a');
-                const d = new Date(); 
-                const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-                a.href = url; a.download = `Verticality_${dateStr}.json`; 
-                a.click(); 
-                URL.revokeObjectURL(url);
-            }
-
-            function importJSON(e) {
-                const file = e.target.files[0]; 
-                if (!file) return; 
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    try {
-                        const parsed = JSON.parse(evt.target.result);
-                        if (Array.isArray(parsed)) {
-                            appState.records = parsed;
-                            saveToLocal();
-                            renderTable();
-                            alert("โหลดข้อมูลสำเร็จ!");
-                        } else alert('ไฟล์ไม่ถูกต้อง');
-                    } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); }
-                };
-                reader.readAsText(file); 
-                e.target.value = ''; 
-            }
-
-            DOM.inpDepth.addEventListener('input', calculate);
-            DOM.selCriteria.addEventListener('change', calculate);
-            DOM.inpX.addEventListener('input', calculate);
-            DOM.inpY.addEventListener('input', calculate);
+        // V32.3: ปรับปรุงปุ่มบันทึกไม่ให้ลบข้อมูลทิ้ง
+        function saveRecord() {
+            if (!appState.currentResult) { alert("กรุณากรอกข้อมูลผนังหลุมให้ครบถ้วนก่อนบันทึก"); return; }
+            const r = appState.currentResult;
+            const record = { 
+                id: Date.now(), 
+                pileId: DOM.inpPile.value.trim() || 'Unknown', 
+                depthStart: r.startM, depthEnd: r.endM, depthInterval: r.depthM, 
+                xl: r.xL, xr: r.xR, yt: r.yT, yb: r.yB, 
+                dx: r.dx, dy: r.dy, dDiaX: r.dDiaX, dDiaY: r.dDiaY,
+                res: r.resCm, ratio: r.ratio, isPass: r.isPass 
+            };
+            appState.records.push(record); saveToLocal(); renderTable(); 
             
-            DOM.btnSave.addEventListener('click', saveRecord);
-            DOM.btnClear.addEventListener('click', clearRecords);
-            DOM.btnTheme.addEventListener('click', toggleTheme);
+            // เปลี่ยนสีปุ่มเพื่อให้รู้ว่าบันทึกแล้ว (แทนการล้างค่า)
+            const origText = DOM.btnSave.innerHTML;
+            DOM.btnSave.innerHTML = '<i class="fas fa-check mr-2"></i> บันทึกสำเร็จ!';
+            DOM.btnSave.classList.replace('bg-blue-600', 'bg-emerald-600');
+            DOM.btnSave.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
             
-            DOM.btnExport.addEventListener('click', exportJSON);
-            DOM.btnImport.addEventListener('click', () => DOM.fileImport.click());
-            DOM.fileImport.addEventListener('change', importJSON);
-            
-            window.addEventListener('resize', drawCanvas);
+            setTimeout(() => {
+                DOM.btnSave.innerHTML = origText;
+                DOM.btnSave.classList.replace('bg-emerald-600', 'bg-blue-600');
+                DOM.btnSave.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+            }, 1500);
+        }
 
+        function deleteRecord(id) { appState.records = appState.records.filter(r => r.id !== id); saveToLocal(); renderTable(); }
+        function clearRecords() { if(confirm("ลบประวัติการเทสทั้งหมด?")) { appState.records = []; saveToLocal(); renderTable(); } }
+        function saveToLocal() { try { localStorage.setItem('verticality_logs_v32', JSON.stringify(appState.records)); } catch (e) {} }
+
+        function renderTable() {
+            DOM.tbody.innerHTML = '';
+            if (appState.records.length === 0) { DOM.tEmpty.style.display = 'block'; return; }
+            DOM.tEmpty.style.display = 'none';
+            [...appState.records].reverse().forEach(r => {
+                const statusHtml = r.isPass ? `<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">PASS</span>` : `<span class="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded text-[10px] font-bold">FAIL</span>`;
+                
+                let xl = r.xl !== undefined ? r.xl : '-';
+                let xr = r.xr !== undefined ? r.xr : '-';
+                let yt = r.yt !== undefined ? r.yt : '-';
+                let yb = r.yb !== undefined ? r.yb : '-';
+                
+                let intHtml = "-";
+                if(r.dDiaX !== undefined) {
+                    let minD = Math.min(r.dDiaX, r.dDiaY);
+                    let maxD = Math.max(r.dDiaX, r.dDiaY);
+                    if(minD <= -5) intHtml = `<span class="text-red-500 font-bold text-[10px]">Necking</span>`;
+                    else if(maxD >= 15) intHtml = `<span class="text-orange-500 font-bold text-[10px]">Bulging</span>`;
+                    else intHtml = `<span class="text-emerald-500 font-bold text-[10px]">Normal</span>`;
+                }
+
+                let depthDisplay = (r.depthStart !== undefined) ? `${r.depthStart.toFixed(1)} - ${r.depthEnd.toFixed(1)}<br><span class="text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-slate-800 px-1 rounded">Δ ${r.depthInterval.toFixed(1)}m</span>` : `${r.depth.toFixed(1)}<br><span class="text-[10px] text-slate-400">Old Data</span>`;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-3 py-3 font-bold text-xs">${r.pileId}</td>
+                    <td class="px-3 py-3 text-center font-mono opacity-80 leading-tight text-xs">${depthDisplay}</td>
+                    <td class="px-2 py-3 text-center font-mono text-xs ${xl<0?'text-red-500':(xl>0?'text-emerald-500':'')}">${xl}</td>
+                    <td class="px-2 py-3 text-center font-mono text-xs ${xr<0?'text-red-500':(xr>0?'text-emerald-500':'')}">${xr}</td>
+                    <td class="px-2 py-3 text-center font-mono text-xs ${yt<0?'text-red-500':(yt>0?'text-emerald-500':'')}">${yt}</td>
+                    <td class="px-2 py-3 text-center font-mono text-xs ${yb<0?'text-red-500':(yb>0?'text-emerald-500':'')}">${yb}</td>
+                    <td class="px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 text-xs">${r.res.toFixed(1)}</td>
+                    <td class="px-3 py-3 text-center font-bold text-xs">1:${r.ratio}</td>
+                    <td class="px-3 py-3 text-center">${intHtml}</td>
+                    <td class="px-3 py-3 text-center">${statusHtml}</td>
+                    <td class="px-3 py-3 text-center"><button class="btn-del text-red-400 hover:text-red-600 transition" data-id="${r.id}"><i class="fas fa-trash"></i></button></td>`;
+                DOM.tbody.appendChild(tr);
+            });
+            document.querySelectorAll('.btn-del').forEach(b => b.addEventListener('click', (e) => deleteRecord(parseInt(e.currentTarget.getAttribute('data-id')))));
+        }
+
+        // ======================= ADVANCED MODE JS =======================
+        let doglegPoints = [];
+
+        function renderDlInputs() {
+            const container = document.getElementById('dl-inputs-container');
+            container.innerHTML = '';
+            doglegPoints.forEach((pt, index) => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 gap-1 items-center";
+                row.innerHTML = `
+                    <div class="col-span-3"><input type="number" step="0.1" value="${pt.z}" onchange="updateDlPt(${index}, 'z', this.value)" class="w-full p-1.5 border rounded focus:ring-2 outline-none text-center font-mono text-xs dark:bg-slate-800 dark:border-slate-700"></div>
+                    <div class="col-span-2"><input type="number" step="0.5" value="${pt.xl}" onchange="updateDlPt(${index}, 'xl', this.value)" class="w-full p-1.5 border rounded focus:ring-2 outline-none text-center font-mono text-xs ${pt.xl<0?'text-red-500':(pt.xl>0?'text-emerald-500':'')} dark:bg-slate-800 dark:border-slate-700"></div>
+                    <div class="col-span-2"><input type="number" step="0.5" value="${pt.xr}" onchange="updateDlPt(${index}, 'xr', this.value)" class="w-full p-1.5 border rounded focus:ring-2 outline-none text-center font-mono text-xs ${pt.xr<0?'text-red-500':(pt.xr>0?'text-emerald-500':'')} dark:bg-slate-800 dark:border-slate-700"></div>
+                    <div class="col-span-2"><input type="number" step="0.5" value="${pt.yt}" onchange="updateDlPt(${index}, 'yt', this.value)" class="w-full p-1.5 border rounded focus:ring-2 outline-none text-center font-mono text-xs ${pt.yt<0?'text-red-500':(pt.yt>0?'text-emerald-500':'')} dark:bg-slate-800 dark:border-slate-700"></div>
+                    <div class="col-span-2"><input type="number" step="0.5" value="${pt.yb}" onchange="updateDlPt(${index}, 'yb', this.value)" class="w-full p-1.5 border rounded focus:ring-2 outline-none text-center font-mono text-xs ${pt.yb<0?'text-red-500':(pt.yb>0?'text-emerald-500':'')} dark:bg-slate-800 dark:border-slate-700"></div>
+                    <div class="col-span-1 text-center"><button onclick="removeDlPoint(${index})" class="text-red-400 hover:text-red-600 outline-none"><i class="fas fa-times"></i></button></div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addDoglegPoint(z='', xl='', xr='', yt='', yb='') {
+            let nextZ = z;
+            if(nextZ === '' && doglegPoints.length > 0) {
+                const last = doglegPoints[doglegPoints.length-1];
+                const diff = (doglegPoints.length > 1) ? (last.z - doglegPoints[doglegPoints.length-2].z) : 3;
+                nextZ = parseFloat(last.z) + (diff > 0 ? diff : 3);
+            }
+            doglegPoints.push({z: nextZ, xl: xl||0, xr: xr||0, yt: yt||0, yb: yb||0});
+            renderDlInputs();
+        }
+
+        function updateDlPt(idx, field, val) { doglegPoints[idx][field] = parseFloat(val) || 0; renderDlInputs(); }
+        function removeDlPoint(idx) { doglegPoints.splice(idx, 1); renderDlInputs(); }
+
+        function calculateDogleg() {
+            doglegPoints.sort((a,b) => a.z - b.z);
+            renderDlInputs();
+
+            const tbody = document.getElementById('dl-table-body');
+            tbody.innerHTML = '';
+            const criteria = parseFloat(document.getElementById('sel-dl-criteria').value) || 50;
+
+            if(doglegPoints.length < 2) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400 text-xs">กรุณาป้อนข้อมูล 4 ผนังอย่างน้อย 2 จุดความลึก</td></tr>`;
+                document.getElementById('dl-badge-status').className = "mt-2 inline-block px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
+                document.getElementById('dl-badge-status').innerText = "รอข้อมูลพิกัด ≥ 2 จุด";
+                document.getElementById('dl-card-status').className = "bg-slate-100 dark:bg-slate-800 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col justify-center transition-colors";
+                document.getElementById('print-dl-desc').innerText = "รอข้อมูลพิกัด ≥ 2 จุด";
+                drawDlCanvas();
+                return;
+            }
+
+            let worstRatio = Infinity; let worstDepth = "-"; let allPass = true;
+
+            for(let i=1; i<doglegPoints.length; i++) {
+                const pt1 = doglegPoints[i-1];
+                const pt2 = doglegPoints[i];
+
+                const cx1 = (pt1.xr - pt1.xl) / 2; const cy1 = (pt1.yt - pt1.yb) / 2;
+                const cx2 = (pt2.xr - pt2.xl) / 2; const cy2 = (pt2.yt - pt2.yb) / 2;
+
+                const dZ = Math.abs(pt2.z - pt1.z); 
+                const dX = cx2 - cx1; 
+                const dY = cy2 - cy1; 
+                const dE = Math.sqrt(dX*dX + dY*dY); 
+
+                let ratio = Infinity;
+                if(dE > 0 && dZ > 0) ratio = Math.floor((dZ * 100) / dE); 
+
+                const isPass = (ratio >= criteria || dE === 0);
+                if(!isPass) allPass = false;
+
+                if(ratio < worstRatio && ratio > 0) { worstRatio = ratio; worstDepth = `${pt1.z} - ${pt2.z}`; }
+
+                const statusHtml = isPass ? `<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">PASS</span>` : `<span class="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 px-2 py-1 rounded text-[10px] font-bold animate-pulse">FAIL</span>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-2 py-2 text-center font-bold text-xs">${pt1.z} <i class="fas fa-arrow-right text-[8px] text-slate-400 mx-1"></i> ${pt2.z}</td>
+                    <td class="px-2 py-2 text-center font-mono text-xs opacity-80">${cx2.toFixed(1)}</td>
+                    <td class="px-2 py-2 text-center font-mono text-xs opacity-80">${cy2.toFixed(1)}</td>
+                    <td class="px-2 py-2 text-center font-bold text-purple-600 dark:text-purple-400 text-xs">${dE.toFixed(1)}</td>
+                    <td class="px-2 py-2 text-center font-bold text-xs ${isPass ? '' : 'text-red-500'}">${ratio === Infinity ? '-' : `1:${ratio}`}</td>
+                    <td class="px-2 py-2 text-center">${statusHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            document.getElementById('dl-max-ratio').innerText = worstRatio === Infinity ? "Perfect" : `1 : ${worstRatio}`;
+            document.getElementById('dl-max-depth').innerText = worstDepth;
+
+            let reportStatus = "";
+
+            if (allPass) {
+                document.getElementById('dl-card-status').className = "bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 shadow-sm text-center flex flex-col justify-center transition-colors";
+                document.getElementById('dl-badge-status').className = "mt-2 inline-block px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-sm";
+                document.getElementById('dl-badge-status').innerHTML = "<i class='fas fa-check-circle mr-1'></i> ปลอดภัย (PASS)";
+                reportStatus = "ปลอดภัย (PASS)";
+            } else {
+                document.getElementById('dl-card-status').className = "bg-orange-50 dark:bg-orange-900/20 p-5 rounded-xl border-2 border-orange-400 dark:border-orange-600 shadow-sm text-center flex flex-col justify-center transition-colors animate-pulse";
+                document.getElementById('dl-badge-status').className = "mt-2 inline-block px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-600 text-white shadow-sm";
+                document.getElementById('dl-badge-status').innerHTML = "<i class='fas fa-exclamation-triangle mr-1'></i> ระวัง! พบ Dog-leg";
+                reportStatus = "พบความเสี่ยง Dog-leg (FAIL)";
+            }
+
+            document.getElementById('print-dl-desc').innerHTML = `ความคดงอสูงสุด <strong>1:${worstRatio === Infinity ? '-' : worstRatio}</strong> ณ ช่วงความลึก <strong>${worstDepth}</strong> เมตร<br>สถานะโดยรวม: <strong>${reportStatus}</strong>`;
+
+            drawDlCanvas();
+        }
+
+        function drawDlCanvas() {
+            const canvasContainer = document.getElementById('dl-canvas-container');
+            const canvas = document.getElementById('dlCanvas');
+            if(!canvas) return;
+            
+            let w = canvasContainer.clientWidth || 300; let h = canvasContainer.clientHeight || 300;
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d'); const cx = w / 2; const cy = h / 2;
+            ctx.clearRect(0, 0, w, h);
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const colors = { axis: isDark ? '#334155' : '#e2e8f0', line: isDark ? '#c084fc' : '#9333ea', pointStart: '#10b981', pointEnd: '#ef4444', text: isDark ? '#94a3b8' : '#64748b' };
+
+            ctx.beginPath(); ctx.strokeStyle = colors.axis; ctx.lineWidth = 1; ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+            if(doglegPoints.length < 1) return;
+
+            let maxVal = 10; 
+            const centers = doglegPoints.map(pt => ({ x: (pt.xr - pt.xl)/2, y: (pt.yt - pt.yb)/2, z: pt.z }));
+            centers.forEach(c => {
+                if(Math.abs(c.x) > maxVal) maxVal = Math.abs(c.x);
+                if(Math.abs(c.y) > maxVal) maxVal = Math.abs(c.y);
+            });
+            maxVal = maxVal * 1.2; 
+            const maxRadiusPx = Math.min(cx, cy) * 0.8; 
+            const scale = maxRadiusPx / maxVal;
+
+            ctx.beginPath();
+            centers.forEach((c, i) => {
+                const pxX = cx + (c.x * scale); const pxY = cy - (c.y * scale);
+                if(i === 0) ctx.moveTo(pxX, pxY); else ctx.lineTo(pxX, pxY);
+            });
+            ctx.strokeStyle = colors.line; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke();
+
+            centers.forEach((c, i) => {
+                const pxX = cx + (c.x * scale); const pxY = cy - (c.y * scale);
+                ctx.beginPath(); ctx.arc(pxX, pxY, i===0 ? 6 : (i===centers.length-1 ? 6 : 4), 0, 2 * Math.PI);
+                ctx.fillStyle = i===0 ? colors.pointStart : (i===centers.length-1 ? colors.pointEnd : (isDark?'#f8fafc':'#1e293b')); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.fillStyle = colors.text; ctx.font = "bold 10px Sarabun"; ctx.fillText(` ${c.z}m`, pxX + 8, pxY + 3);
+            });
+        }
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            initDOM();
+
+            if (localStorage.getItem('theme_v32') === 'dark' || (!localStorage.getItem('theme_v32') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = 'fas fa-sun';
+            }
             try {
-                const saved = localStorage.getItem('verticality_logs_v28');
+                let saved = localStorage.getItem('verticality_logs_v32') || localStorage.getItem('verticality_logs_v31') || localStorage.getItem('verticality_logs_v30');
                 if (saved) appState.records = JSON.parse(saved);
             } catch(e) {}
             
-            calculate();
-            renderTable();
-
-            setTimeout(drawCanvas, 100);
+            DOM.inpDepthStart.addEventListener('input', calculate); DOM.inpDepthEnd.addEventListener('input', calculate);
+            DOM.selCriteria.addEventListener('change', calculate); 
+            DOM.inpXL.addEventListener('input', calculate); DOM.inpXR.addEventListener('input', calculate);
+            DOM.inpYT.addEventListener('input', calculate); DOM.inpYB.addEventListener('input', calculate);
+            
+            DOM.btnSave.addEventListener('click', saveRecord); DOM.btnClear.addEventListener('click', clearRecords);
+            DOM.btnTheme.addEventListener('click', toggleTheme);
+            
+            DOM.btnExport.addEventListener('click', () => {
+                if (appState.records.length === 0) return alert("ไม่มีข้อมูลให้เซฟ");
+                const blob = new Blob([JSON.stringify(appState.records, null, 2)], { type: "application/json" });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Verticality_V32_Logs.json`; a.click(); 
+            });
+            
+            DOM.btnImport.addEventListener('click', () => DOM.fileImport.click());
+            DOM.fileImport.addEventListener('change', (e) => {
+                const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try { const parsed = JSON.parse(evt.target.result); if (Array.isArray(parsed)) { appState.records = parsed; saveToLocal(); renderTable(); alert("โหลดข้อมูลสำเร็จ!"); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); }
+                }; reader.readAsText(file); e.target.value = ''; 
+            });
+            
+            window.addEventListener('resize', () => { drawCanvas(); drawDlCanvas(); });
+            calculate(); renderTable(); setTimeout(drawCanvas, 100);
         });
     </script>
 </body>
