@@ -257,8 +257,8 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead class="bg-gray-100 dark:bg-slate-800">
                             <tr>
-                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
-                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">จำนวนผลงานที่ทำได้ (ต้น)</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">Zone / ผู้รับผิดชอบ</th>
+                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">จำนวนผลงานที่ทำได้ (ต้น)</th>
                             </tr>
                         </thead>
                         <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
@@ -281,8 +281,8 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead class="bg-gray-100 dark:bg-slate-800">
                             <tr>
-                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">ลักษณะงาน (โปรเจคย่อย)</th>
-                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">จำนวน</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">ลักษณะงาน (โปรเจคย่อย)</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">จำนวน</th>
                             </tr>
                         </thead>
                         <tbody id="otherWorksTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
@@ -472,7 +472,7 @@
                 },
                 error: function(err) {
                     const tbody = document.getElementById('otherWorksTableBody');
-                    if (tbody) tbody.innerHTML = `<tr><td colspan="2" class="px-6 py-10 text-center text-red-500 font-bold">❌ ไม่สามารถดึงข้อมูลงานอื่นๆ ได้</td></tr>`;
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="2" class="px-6 py-10 text-center text-red-500 font-bold w-full">❌ ไม่สามารถดึงข้อมูลงานอื่นๆ ได้</td></tr>`;
                 }
             });
         }
@@ -503,13 +503,12 @@
             const sortedItems = Object.entries(otherWorks).sort((a, b) => b[1].count - a[1].count);
 
             if (sortedItems.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">ไม่พบข้อมูลงานอื่นๆ</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 w-full">ไม่พบข้อมูลงานอื่นๆ</td></tr>';
                 return;
             }
 
             tbody.innerHTML = '';
             sortedItems.forEach(([jobName, info]) => {
-                // *แก้ไขให้ตัดข้อความหลัง "-" ออกสำหรับป้ายแท็กงานอื่นๆ*
                 const tags = info.projects.map(p => {
                     const shortName = p.split('-')[0].trim();
                     return `<span class="inline-block text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
@@ -517,7 +516,7 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-                        <td class="px-6 py-5">
+                        <td class="px-6 py-5 w-1/2">
                             <div class="flex items-start gap-3">
                                 <span class="text-pink-500 mt-1">📌</span>
                                 <div>
@@ -526,7 +525,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-5 text-center align-top font-bold text-slate-700 dark:text-slate-300 text-lg">
+                        <td class="px-6 py-5 text-center align-top font-bold text-slate-700 dark:text-slate-300 text-lg w-1/2">
                             ${info.count}
                         </td>
                     </tr>
@@ -701,7 +700,6 @@
                     const dayIndex = taskDate.getDay(); 
                     const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
                     
-                    // *แก้ไขให้ตัดข้อความหลัง "-" ออกสำหรับการ์ดบน Kanban*
                     const shortProjName = projName.split('-')[0].trim();
                     
                     document.getElementById(`k-tasks-${dayIndex}`).innerHTML += `
@@ -784,7 +782,6 @@
                     numClass = "font-bold text-orange-600 dark:text-orange-400";
                     
                     if (projects.length > 0) {
-                        // *แก้ไขให้ตัดข้อความหลัง "-" ออกสำหรับป้ายแท็กเข็มแซม*
                         const tags = projects.map(p => {
                             const shortName = p.split('-')[0].trim();
                             return `<span class="inline-block text-[11px] bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700/50 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
@@ -799,11 +796,11 @@
 
                 tbody.innerHTML += `
                     <tr class="${rowClass}">
-                        <td class="px-6 py-4 text-sm ${textClass}">
+                        <td class="px-6 py-4 text-sm ${textClass} w-1/2">
                             ${zone}
                             ${extraHTML}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right align-top w-32">${count.toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right align-top w-1/2">${count.toLocaleString()}</td>
                     </tr>
                 `;
             };
