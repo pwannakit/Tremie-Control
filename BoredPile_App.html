@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bored Pile Dashboard - พี่เอ็กซ์</title>
-    <!-- โหลดฟอนต์ Sarabun -->
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- โหลด Tailwind CSS และเปิดใช้งาน Dark Mode -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,7 +16,6 @@
             }
         }
     </script>
-    <!-- โหลด Chart.js, ChartDataLabels และ PapaParse -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -78,17 +75,31 @@
             padding-bottom: 0;
             border-width: 0;
         }
+
+        /* ----- สไตล์สำหรับพิมพ์รายงาน (Print) ----- */
+        @media print {
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            .dark body, .dark .glass-card { background-color: #ffffff !important; color: #000000 !important; border-color: #e5e7eb !important; }
+            .glass-card { box-shadow: none !important; border: 1px solid #e5e7eb !important; break-inside: avoid; margin-bottom: 24px; }
+            .no-print { display: none !important; }
+            
+            /* ซ่อนการ์ดทั้งใบถ้าเนื้อหาข้างในถูกพับ (collapsed) */
+            .glass-card:has(.collapsed) { display: none !important; }
+            .collapsible-content.collapsed { display: none !important; }
+            
+            canvas { max-width: 100% !important; height: auto !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body class="text-gray-800 bg-slate-50 p-6">
 
-    <!-- Header Section -->
     <div class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
             <h1 class="text-3xl font-bold text-indigo-900 dark:text-indigo-400">🏗️ Dashboard เสาเข็มเจาะ</h1>
-            <p class="text-gray-500 dark:text-gray-400 mt-1">วิเคราะห์ข้อมูลและติดตามงานรายสัปดาห์</p>
+            <p class="text-gray-500 dark:text-gray-400 mt-1 no-print">วิเคราะห์ข้อมูลและติดตามงานรายสัปดาห์</p>
         </div>
-        <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="flex items-center gap-3 w-full md:w-auto no-print">
             <button onclick="toggleSection('data-source-container', 'toggle-data-btn')" id="toggle-data-btn" class="px-4 py-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                 <span>⚙️ ซ่อนการตั้งค่าข้อมูล</span>
             </button>
@@ -98,8 +109,7 @@
         </div>
     </div>
 
-    <!-- Data Source Section -->
-    <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6 collapsible-content">
+    <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6 collapsible-content no-print">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
                 <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
@@ -113,7 +123,7 @@
 
             <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
                 <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-                    <span class="text-yellow-500">📁</span> วิธีที่ 2: อัปโหลดไฟล์ Task.csv (ชัวร์ 100%)
+                    <span class="text-yellow-500">📁</span> วิธีที่ 2: อัปโหลดไฟล์ Task.csv
                 </h3>
                 <input type="file" id="csvFile" accept=".csv" class="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg mb-4 dark:bg-slate-700 dark:text-white outline-none bg-gray-50 file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-gray-200 file:text-gray-700">
                 <button onclick="loadFromFile()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
@@ -127,14 +137,12 @@
         </div>
     </div>
 
-    <!-- Dashboard Content -->
     <div id="dashboardContent" class="max-w-7xl mx-auto hide">
         
-        <!-- 1. KPI Cards -->
         <div class="glass-card p-6 border-l-8 border-blue-500 mb-8">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">🎯 สรุปภาพรวมผลงาน (KPIs)</h3>
-                <button onclick="toggleSection('kpi-content', 'toggle-kpi-btn')" id="toggle-kpi-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                <button onclick="toggleSection('kpi-content', 'toggle-kpi-btn')" id="toggle-kpi-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
                     🔽 ซ่อนเนื้อหา
                 </button>
             </div>
@@ -148,14 +156,14 @@
                         </div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
+                        <h3 id="kpi-month-label" class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
                         <div class="text-4xl md:text-5xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">
                             <span id="kpi-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
                         </div>
                         <div class="absolute -right-4 -top-4 opacity-5 text-emerald-500 text-8xl">📅</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
-                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
+                        <h3 id="kpi-week-label" class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
                         <div class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mt-2">
                             <span id="kpi-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
                         </div>
@@ -166,8 +174,7 @@
             </div>
         </div>
 
-        <!-- 2. ระบบค้นหาชื่อโปรเจค -->
-        <div class="glass-card p-6 mb-8 border-t-4 border-purple-500">
+        <div class="glass-card p-6 mb-8 border-t-4 border-purple-500 no-print">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                 <div>
                     <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🔍 ค้นหาตามชื่อโปรเจค</h3>
@@ -204,8 +211,7 @@
             </div>
         </div>
 
-        <!-- 3. Kanban Board Section -->
-        <div class="glass-card p-6 mb-8 border-t-4 border-indigo-500">
+        <div class="glass-card p-6 mb-8 border-t-4 border-indigo-500 no-print">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 dark:border-slate-700 pb-4">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white">📅 ติดตามงานรายสัปดาห์ (Kanban)</h3>
                 
@@ -233,11 +239,10 @@
             </div>
         </div>
 
-        <!-- 4. Summary Table Section -->
         <div class="glass-card p-6 mb-8 border-t-4 border-cyan-500">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">📋 สรุปจำนวนเสาเข็มแยกตามผู้รับผิดชอบ</h3>
-                <button onclick="toggleSection('zone-content', 'toggle-zone-btn')" id="toggle-zone-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                <button onclick="toggleSection('zone-content', 'toggle-zone-btn')" id="toggle-zone-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
                     🔽 ซ่อนตาราง
                 </button>
             </div>
@@ -258,20 +263,26 @@
             </div>
         </div>
 
-        <!-- 5. Monthly Executive Report Section -->
         <div class="glass-card p-6 mb-8 border-t-4 border-emerald-500">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
                 <div>
                     <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">📊 รายงานสรุปผลงานรายเดือน (Executive Summary)</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">ภาพรวมและเปรียบเทียบผลงานเสาเข็มรายเดือน (ไม่รวมเข็มแซม)</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 no-print">ภาพรวมและเปรียบเทียบผลงานเสาเข็มรายเดือน (ไม่รวมเข็มแซม)</p>
                 </div>
-                <button onclick="toggleSection('monthly-content', 'toggle-monthly-btn')" id="toggle-monthly-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
-                    🔽 ซ่อนเนื้อหา
-                </button>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center gap-2 no-print">
+                        🖨️ พิมพ์รายงาน
+                    </button>
+                    
+                    <button onclick="toggleSection('monthly-content', 'toggle-monthly-btn')" id="toggle-monthly-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                        🔽 ซ่อนเนื้อหา
+                    </button>
+                </div>
             </div>
             
             <div id="monthly-content" class="collapsible-content pt-2">
-                <div class="flex flex-wrap items-center gap-3 mb-4 bg-emerald-50 dark:bg-slate-800/80 p-4 rounded-lg border border-emerald-100 dark:border-slate-700 shadow-sm">
+                <div class="flex flex-wrap items-center gap-3 mb-4 bg-emerald-50 dark:bg-slate-800/80 p-4 rounded-lg border border-emerald-100 dark:border-slate-700 shadow-sm no-print">
                     <label class="text-sm font-bold text-emerald-800 dark:text-emerald-400">⚖️ เปรียบเทียบผลงาน:</label>
                     <select id="compareMonth1" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
                     <span class="text-gray-500 dark:text-gray-400 font-bold text-sm">VS</span>
@@ -296,7 +307,6 @@
 
     </div>
 
-    <!-- Script ควบคุมการทำงาน -->
     <script>
         // เปิดใช้งานปลั๊กอิน DataLabels
         Chart.register(ChartDataLabels);
@@ -305,6 +315,7 @@
         let globalMonthlyData = {}; 
         let monthlyChartInstance = null;
         const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+        const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
         let currentWeekStart, currentWeekEnd, currentMonthKey;
 
@@ -333,16 +344,26 @@
                 return `${year}-${month}-${day}`;
             };
 
+            const formatDateForLabel = (d) => {
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear() + 543;
+                return `${day}/${month}/${year}`;
+            };
+
+            // อัปเดต Label สรุป KPI เดือน/ปี และ วันที่สัปดาห์
+            const monthLabelText = `${monthNames[today.getMonth()]} ${today.getFullYear() + 543}`;
+            document.getElementById('kpi-month-label').innerText = `เดือนปัจจุบัน (${monthLabelText})`;
+            
+            const weekLabelText = `${formatDateForLabel(currentWeekStart)} ถึง ${formatDateForLabel(currentWeekEnd)}`;
+            document.getElementById('kpi-week-label').innerText = `สัปดาห์ปัจจุบัน (${weekLabelText})`;
+
             document.getElementById('startDate').value = formatDateForInput(currentWeekStart);
             document.getElementById('endDate').value = formatDateForInput(currentWeekEnd);
 
-            // --- ส่วนที่แก้ไข: ตั้งค่าลิงก์และสั่งโหลดข้อมูลอัตโนมัติ ---
             const savedUrl = localStorage.getItem('boredPileUrl');
-            
-            // ถ้าเคยบันทึกลิงก์อื่นไว้ก็ใช้ลิงก์นั้น ถ้าไม่มีก็ใช้ DEFAULT_URL
             document.getElementById('sheetUrl').value = savedUrl ? savedUrl : DEFAULT_URL;
             
-            // สั่งโหลดข้อมูลทันที
             loadFromUrl();
         });
 
@@ -403,7 +424,6 @@
                 complete: (res) => handleParseResult(res),
                 error: (err) => {
                     showStatus(`❌ ดึงข้อมูลไม่สำเร็จ โปรดตรวจสอบลิงก์อีกครั้ง`, 'err');
-                    // ถ้าโหลดไม่ผ่าน ให้โชว์เมนูตั้งค่าไว้
                     const container = document.getElementById('data-source-container');
                     if(container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
                 }
@@ -430,7 +450,6 @@
             processData(globalDatabase);
             showStatus('✅ โหลดข้อมูลสำเร็จ!', 'ok');
             
-            // เมื่อโหลดข้อมูลสำเร็จ พับเก็บเมนูตั้งค่าให้อัตโนมัติ เพื่อเข้าสู่โหมดการทำงาน
             setTimeout(() => {
                 const container = document.getElementById('data-source-container');
                 if(!container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
@@ -613,7 +632,6 @@
 
         function prepareMonthlyChart(data) {
             const monthlyCounts = {};
-            const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
             data.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
