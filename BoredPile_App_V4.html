@@ -509,9 +509,11 @@
 
             tbody.innerHTML = '';
             sortedItems.forEach(([jobName, info]) => {
-                const tags = info.projects.map(p => 
-                    `<span class="inline-block text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded shadow-sm m-0.5">${p}</span>`
-                ).join('');
+                // *แก้ไขให้ตัดข้อความหลัง "-" ออกสำหรับป้ายแท็กงานอื่นๆ*
+                const tags = info.projects.map(p => {
+                    const shortName = p.split('-')[0].trim();
+                    return `<span class="inline-block text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                }).join('');
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
@@ -593,8 +595,6 @@
             return new Date(year, month, day, 0, 0, 0, 0);
         }
 
-        // --- เพิ่มฟังก์ชันจัดการชื่อโซนให้ตรงมาตรฐาน ---
-        // *จุดที่มีการแก้ไขชื่อ เข็ม-แซม*
         function getStandardZoneName(rawZone) {
             if (!rawZone) return 'ไม่ระบุ';
             
@@ -632,7 +632,6 @@
                 if (projName) {
                     const zone = getStandardZoneName(rawZone);
                     
-                    // *จุดที่มีการแก้ไขให้เก็บชื่อโปรเจคแยกตาม Zone*
                     if (!zoneCounts[zone]) {
                         zoneCounts[zone] = { count: 0, projects: [] };
                     }
@@ -702,11 +701,8 @@
                     const dayIndex = taskDate.getDay(); 
                     const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
                     
-                    let shortProjName = projName;
-                    const diaIndex = shortProjName.toLowerCase().indexOf('-dia');
-                    if (diaIndex !== -1) {
-                        shortProjName = shortProjName.substring(0, diaIndex).trim();
-                    }
+                    // *แก้ไขให้ตัดข้อความหลัง "-" ออกสำหรับการ์ดบน Kanban*
+                    const shortProjName = projName.split('-')[0].trim();
                     
                     document.getElementById(`k-tasks-${dayIndex}`).innerHTML += `
                         <div class="k-card card-${dayIndex}">
@@ -761,7 +757,6 @@
             });
         });
 
-        // *จุดที่มีการแก้ไขระบบแสดงผลตารางเพื่อดึงแท็กชื่อโปรเจคมาแสดง*
         function renderZoneTable(zoneCounts) {
             const tbody = document.getElementById('zoneTableBody');
             tbody.innerHTML = '';
@@ -789,9 +784,11 @@
                     numClass = "font-bold text-orange-600 dark:text-orange-400";
                     
                     if (projects.length > 0) {
-                        const tags = projects.map(p => 
-                            `<span class="inline-block text-[11px] bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700/50 px-2 py-0.5 rounded shadow-sm m-0.5">${p}</span>`
-                        ).join('');
+                        // *แก้ไขให้ตัดข้อความหลัง "-" ออกสำหรับป้ายแท็กเข็มแซม*
+                        const tags = projects.map(p => {
+                            const shortName = p.split('-')[0].trim();
+                            return `<span class="inline-block text-[11px] bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700/50 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                        }).join('');
                         extraHTML = `<div class="mt-2 flex flex-wrap gap-1">${tags}</div>`;
                     }
                 } 
