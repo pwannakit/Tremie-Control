@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V39 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V40 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -19,11 +19,13 @@
         .row-pending { background-color: #f8fafc; border-left: 4px solid #cbd5e1; opacity: 0.8; }
         .row-completed { background-color: #ffffff; border-left: 4px solid #10b981; }
         .row-cut { background-color: #fffbeb; border-left: 4px solid #f59e0b; }
+        .row-rejected { background-color: #fef2f2; border-left: 4px solid #ef4444; opacity: 0.75; }
         
         .dark .pile-gradient { background: linear-gradient(180deg, #1e293b 0%, #334155 100%); }
         .dark .row-pending { background-color: #1e293b; border-left: 4px solid #475569; opacity: 0.8; color: #cbd5e1; }
         .dark .row-completed { background-color: #0f172a; border-left: 4px solid #059669; color: #f1f5f9; }
         .dark .row-cut { background-color: #422006; border-left: 4px solid #d97706; color: #fde68a; }
+        .dark .row-rejected { background-color: #451a1a; border-left: 4px solid #ef4444; color: #fca5a5; opacity: 0.85; }
         .dark input, .dark select, .dark textarea { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
         
         input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
@@ -36,7 +38,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V39
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V40
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -52,10 +54,6 @@
 
                 <button onclick="copyReport()" class="bg-[#00B900] hover:bg-[#009900] px-3 py-2 rounded-lg text-white text-sm font-bold shadow transition border border-[#009900]">
                     <i class="fab fa-line mr-1 text-lg leading-none"></i> แชร์สรุปงาน
-                </button>
-
-                <button id="btn-sync" onclick="syncToCloud()" class="bg-sky-500 hover:bg-sky-600 px-3 py-2 rounded-lg text-sm font-bold shadow transition text-white hidden">
-                    <i class="fas fa-cloud-upload-alt mr-1"></i> อัปเดต Cloud
                 </button>
 
                 <button onclick="openAnalyticsModal()" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
@@ -332,14 +330,45 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
+                    <span class="font-bold text-blue-500 w-16 shrink-0">V40:</span> 
+                    <span>เพิ่มระบบ "ตีกลับ (Reject)" รถปูน พร้อมระบุสาเหตุ และไม่นำไปคำนวณปริมาตรคอนกรีตรวมหรือสถิติประสิทธิภาพ</span>
+                </li>
+                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
                     <span class="font-bold text-purple-500 w-16 shrink-0">V39:</span> 
                     <span>แก้ไขบั๊กกดยกเลิกสถานะ "เทแล้ว" ให้กลับมาเป็น "รอเท" โดยระบบจะเคลียร์ค่าเวลาที่บันทึกไว้ออกให้ถูกต้อง ไม่ให้ค้างเวลาเดิมจนทำให้การวิเคราะห์ผิดพลาด</span>
                 </li>
-                <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-rose-500 w-16 shrink-0">V38:</span> 
-                    <span>แก้บั๊ก "Idle Time พุ่งกระฉูด" โดยปรับปรุงเงื่อนไขคำนวณเวลาเทเสร็จแบบข้ามคืนให้รัดกุมยิ่งขึ้น</span>
-                </li>
             </ul>
+        </div>
+    </div>
+
+    <!-- Modal พื้นที่สำหรับแก้ไขสาเหตุ Reject -->
+    <div id="reject-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transition-colors">
+            <div class="bg-red-600 p-4 text-white font-bold flex justify-between items-center border-b border-red-700">
+                <span id="reject-modal-title"><i class="fas fa-ban mr-2"></i>ระบุสาเหตุการตีกลับ</span>
+                <button onclick="closeRejectModal()" class="text-red-200 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="reject-index">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">เลือกสาเหตุหลัก หรือพิมพ์ระบุเอง</label>
+                    <select id="reject-reason-preset" onchange="document.getElementById('reject-reason').value = this.value; if(this.value === '') document.getElementById('reject-reason').focus();" class="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-700 text-sm outline-none mb-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200">
+                        <option value="">-- กำหนดเอง --</option>
+                        <option value="Slump ไม่ผ่านเกณฑ์">Slump ไม่ผ่านเกณฑ์</option>
+                        <option value="เวลาหมดอายุ (เกินกำหนด)">เวลาหมดอายุ (เกินกำหนด)</option>
+                        <option value="ปูนเสื่อมสภาพ / เทไม่ออก">ปูนเสื่อมสภาพ / เทไม่ออก</option>
+                        <option value="รถเสีย">รถเสีย</option>
+                        <option value="ส่งผิดไซต์ / ผิดรหัส">ส่งผิดไซต์ / ผิดรหัส</option>
+                    </select>
+                    <input type="text" id="reject-reason" placeholder="ระบุสาเหตุเพิ่มเติม..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-red-400 outline-none bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                </div>
+                
+                <div class="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700 mt-4 flex-wrap">
+                    <button id="btn-confirm-reject" onclick="confirmReject()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg">ยืนยันตีกลับ</button>
+                    <button id="btn-unreject" onclick="unrejectEvent()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg mt-2 hidden"><i class="fas fa-undo mr-1"></i> ยกเลิกการตีกลับ (นำกลับมาเท)</button>
+                    <button onclick="closeRejectModal()" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold py-2 rounded-lg transition-colors">ปิด</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -452,7 +481,7 @@
         let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '' }, notes: '', events: [], isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v39') || localStorage.getItem('tremie_v38') || localStorage.getItem('tremie_v37') || localStorage.getItem('tremie_v36') || localStorage.getItem('tremie_v35') || localStorage.getItem('tremie_v34');
+            let saved = localStorage.getItem('tremie_v40') || localStorage.getItem('tremie_v39') || localStorage.getItem('tremie_v38');
             if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
@@ -484,7 +513,6 @@
                 container.classList.remove('pile-gradient', 'max-w-[6rem]'); 
                 container.classList.add('max-w-full'); 
                 document.getElementById('btn-clear-koden').classList.remove('hidden');
-
                 document.getElementById('viz-tremie').style.opacity = '0.4';
                 document.getElementById('viz-tremie-tip').style.opacity = '0.4';
             };
@@ -498,7 +526,6 @@
             container.classList.add('pile-gradient', 'max-w-[6rem]'); 
             document.getElementById('file-input').value = "";
             document.getElementById('btn-clear-koden').classList.add('hidden');
-
             document.getElementById('viz-tremie').style.opacity = '1';
             document.getElementById('viz-tremie-tip').style.opacity = '1';
         }
@@ -533,13 +560,13 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v39', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v40', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
         function updatePrediction() {
             const soundingVal = parseFloat(document.getElementById('predict-sounding').value); let actualPouredVol = 0;
-            state.events.forEach(ev => { if (ev.type === 'pour' && ev.isCompleted) { actualPouredVol += ev.val; } }); document.getElementById('pred-poured').innerText = actualPouredVol.toFixed(1);
+            state.events.forEach(ev => { if (ev.type === 'pour' && ev.isCompleted && !ev.isRejected) { actualPouredVol += ev.val; } }); document.getElementById('pred-poured').innerText = actualPouredVol.toFixed(1);
             if (isNaN(soundingVal) || soundingVal <= 0) { document.getElementById('pred-exact').innerText = '-'; document.getElementById('pred-padded').innerText = '-'; return; }
             const area = Math.PI * Math.pow(state.settings.diameter / 2, 2); const exactRemaining = soundingVal * area; const paddedRemaining = exactRemaining * 1.15; 
             const totalExact = actualPouredVol + exactRemaining; const totalPadded = actualPouredVol + paddedRemaining;
@@ -549,7 +576,7 @@
         function addPour() {
             const truck = document.getElementById('truck-no').value || '-'; const val = parseFloat(document.getElementById('vol-input').value) || 0;
             const batchTime = document.getElementById('batch-time').value || ''; const arrivalTime = document.getElementById('arr-time').value || ''; const supplier = state.settings.supplier || 'ไม่ระบุ';
-            state.events.push({ type: 'pour', truck, val, supplier, batchTime, arrivalTime, isCompleted: false, pourTime: null });
+            state.events.push({ type: 'pour', truck, val, supplier, batchTime, arrivalTime, isCompleted: false, pourTime: null, isRejected: false, rejectReason: '' });
             document.getElementById('truck-no').value = ''; setNowBatchTime(); setNowArrTime(); saveAndRender();
         }
 
@@ -562,10 +589,9 @@
             document.getElementById('insert-index').value = "-1"; document.getElementById('cut-suggestion').classList.add('hidden'); saveAndRender();
         }
 
-        // --- V39: Fixed Toggle Pour Status Bug ---
         function togglePourStatus(index) {
             const ev = state.events[index];
-            if (ev.type === 'pour') { 
+            if (ev.type === 'pour' && !ev.isRejected) { 
                 ev.isCompleted = !ev.isCompleted; 
                 if (ev.isCompleted) {
                     if (!ev.pourTime) { 
@@ -573,33 +599,71 @@
                         ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); 
                     } 
                 } else {
-                    // หากยกเลิกการเทเสร็จ ให้ล้างค่าเวลาเทเสร็จทิ้งด้วย เพื่อไม่ให้จำค่าเดิมไปคำนวณ
                     ev.pourTime = null;
                 }
                 saveAndRender(); 
             }
         }
-        // -----------------------------------------
+
+        function openRejectModal(i) {
+            const ev = state.events[i];
+            document.getElementById('reject-index').value = i;
+            document.getElementById('reject-reason-preset').value = '';
+            document.getElementById('reject-reason').value = ev.rejectReason || '';
+            
+            const btnConfirm = document.getElementById('btn-confirm-reject');
+            const btnUnreject = document.getElementById('btn-unreject');
+            
+            if (ev.isRejected) {
+                document.getElementById('reject-modal-title').innerHTML = '<i class="fas fa-ban mr-2"></i>แก้ไขสาเหตุการตีกลับ';
+                btnConfirm.innerText = 'บันทึกการแก้ไข';
+                btnUnreject.classList.remove('hidden');
+            } else {
+                document.getElementById('reject-modal-title').innerHTML = '<i class="fas fa-ban mr-2"></i>ยืนยันการตีกลับรถปูน';
+                btnConfirm.innerText = 'ยืนยันตีกลับ';
+                btnUnreject.classList.add('hidden');
+            }
+            document.getElementById('reject-modal').classList.remove('hidden');
+        }
+
+        function closeRejectModal() { document.getElementById('reject-modal').classList.add('hidden'); }
+
+        function confirmReject() {
+            const i = document.getElementById('reject-index').value;
+            const reason = document.getElementById('reject-reason').value || document.getElementById('reject-reason-preset').value;
+            const ev = state.events[i];
+            ev.isRejected = true;
+            ev.rejectReason = reason;
+            ev.isCompleted = false;
+            ev.pourTime = null;
+            saveAndRender();
+            closeRejectModal();
+        }
+
+        function unrejectEvent() {
+            if(confirm('ต้องการยกเลิกการตีกลับ นำรถคันนี้กลับมาในคิวใช่หรือไม่?')) {
+                const i = document.getElementById('reject-index').value;
+                const ev = state.events[i];
+                ev.isRejected = false;
+                ev.rejectReason = '';
+                saveAndRender();
+                closeRejectModal();
+            }
+        }
 
         function deleteEvent(i) { if(confirm('ยืนยันการลบ?')) { state.events.splice(i, 1); saveAndRender(); } }
 
         function moveEventUp(i) {
             if (i > 0) {
                 if(confirm('ยืนยันการเลื่อนคิวนี้ "ขึ้น" เพื่อเทก่อน?')) {
-                    const temp = state.events[i - 1];
-                    state.events[i - 1] = state.events[i];
-                    state.events[i] = temp;
-                    saveAndRender();
+                    const temp = state.events[i - 1]; state.events[i - 1] = state.events[i]; state.events[i] = temp; saveAndRender();
                 }
             }
         }
         function moveEventDown(i) {
             if (i < state.events.length - 1) {
                 if(confirm('ยืนยันการเลื่อนคิวนี้ "ลง" เพื่อเททีหลัง?')) {
-                    const temp = state.events[i + 1];
-                    state.events[i + 1] = state.events[i];
-                    state.events[i] = temp;
-                    saveAndRender();
+                    const temp = state.events[i + 1]; state.events[i + 1] = state.events[i]; state.events[i] = temp; saveAndRender();
                 }
             }
         }
@@ -637,19 +701,23 @@
                 state.events = []; state.notes = ''; state.isFinished = false; state.finishTime = null;
                 document.getElementById('pile-name').value = ''; document.getElementById('predict-sounding').value = '';
                 document.getElementById('cut-suggestion').classList.add('hidden'); document.getElementById('supplier').value = ''; document.getElementById('product-code').value = '';
-                clearKodenImage();
-                populateSettingsUI(); updateSettings();
+                clearKodenImage(); populateSettingsUI(); updateSettings();
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v39', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v40', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
             const s = state.settings;
             if (!s.pileName) { alert('ระบุชื่อหลุมเจาะก่อนสร้างรายงาน'); return; }
             const area = Math.PI * Math.pow(s.diameter / 2, 2); const theoVol = s.depth * area;
-            let actualVol = 0; let firstBatch = null; let lastFinish = null;
-            state.events.forEach(ev => { if (ev.type === 'pour' && ev.isCompleted) { actualVol += ev.val; if(!firstBatch && ev.batchTime) firstBatch = ev.batchTime; if(ev.pourTime) lastFinish = ev.pourTime; } });
+            let actualVol = 0; let firstBatch = null; let lastFinish = null; let rejectedCount = 0;
+            state.events.forEach(ev => { 
+                if (ev.type === 'pour') {
+                    if (ev.isRejected) { rejectedCount++; }
+                    else if (ev.isCompleted) { actualVol += ev.val; if(!firstBatch && ev.batchTime) firstBatch = ev.batchTime; if(ev.pourTime) lastFinish = ev.pourTime; } 
+                }
+            });
             
             let overbreak = theoVol > 0 ? ((actualVol - theoVol) / theoVol * 100).toFixed(1) : 0;
             let overbreakText = overbreak > 0 ? `+${overbreak}% (Overbreak)` : `${overbreak}% (Necking)`;
@@ -658,7 +726,9 @@
             let report = `📋 *สรุปงานเทคอนกรีต เสาเข็มเจาะ*\nโครงการ: ทางพิเศษฉลองรัชส่วนต่อขยาย\nหลุมเจาะ: ${s.pileName}\nขนาด: Ø${s.diameter.toFixed(2)}m x ลึก ${s.depth.toFixed(1)}m\nผู้ผลิต: ${s.supplier || '-'}\n\n⏱️ เวลาเทคันแรก: ${firstBatch || '-'}\n`;
             if (state.isFinished) report += `🏁 เทเสร็จสิ้น: ${state.finishTime}\n\n`; else report += `⏳ สถานะ: ${statusText}\n\n`;
             report += `📊 *สรุปปริมาตรคอนกรีต*\n- ทฤษฎี: ${theoVol.toFixed(1)} m³\n- ใช้จริง: ${actualVol.toFixed(1)} m³\n`;
-            if (state.isFinished) { report += `- คิดเป็น Yield: ${overbreakText}\n\n`; } else { let progress = theoVol > 0 ? ((actualVol / theoVol) * 100).toFixed(1) : 0; report += `- ความคืบหน้า (Progress): ${progress}%\n\n`; }
+            if (state.isFinished) { report += `- คิดเป็น Yield: ${overbreakText}\n`; } else { let progress = theoVol > 0 ? ((actualVol / theoVol) * 100).toFixed(1) : 0; report += `- ความคืบหน้า (Progress): ${progress}%\n`; }
+            if (rejectedCount > 0) { report += `- ❌ ตีกลับรถปูน: ${rejectedCount} คัน\n`; }
+            report += `\n`;
             if(state.notes) { report += `📝 หมายเหตุ:\n${state.notes}\n`; }
             navigator.clipboard.writeText(report).then(() => { alert('✅ คัดลอกข้อความสรุปงานแล้ว\n\n💡 หากต้องการรูปกราฟไปแนบใน LINE ด้วย ให้ไปที่เมนู "ดูสถิติ" แล้วกด "บันทึกรูปภาพ" ครับ'); }).catch(err => { alert('เกิดข้อผิดพลาดในการคัดลอก: ' + err); });
         }
@@ -686,38 +756,72 @@
                 `;
 
                 if (ev.type === 'pour') {
-                    predVol += ev.val; predConcLevelFromBottom = predVol / area; let predDepthTop = depth - predConcLevelFromBottom; let predTipTop = depth - predPipeLen; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
-                    let totalAgeMins = calculateAgeMinutes(ev.batchTime, ev.isCompleted ? ev.pourTime : null); let colorClass = getAgeColor(totalAgeMins); let arrTimeDisplay = ev.arrivalTime ? ev.arrivalTime : '?';
-                    let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b class="text-blue-500">${arrTimeDisplay}</b> | `;
-                    if (ev.isCompleted) { ageHTML += `เสร็จ: <b>${ev.pourTime||'?'}</b><br><span class="text-[10px] ${colorClass} mt-0.5 inline-block"><i class="fas fa-clock"></i> รวม ${formatAgeString(totalAgeMins)}</span>`; } 
-                    else { ageHTML += `<span class="text-[10px] ${colorClass} mt-0.5 inline-block animate-pulse"><i class="fas fa-clock"></i> ผ่านไป ${formatAgeString(totalAgeMins)}</span>`; }
-                    if (ev.isCompleted) { actualVol += ev.val; actualConcLevelFromBottom = actualVol / area; lastPourTimeStr = ev.pourTime; hasCompletedPour = true; }
+                    let isRej = ev.isRejected;
+                    let extraBtns = `<button onclick="openRejectModal(${i})" class="${isRej ? 'text-red-500 hover:text-red-700' : 'text-slate-400 hover:text-red-500'} mr-2 transition-colors" title="${isRej ? 'แก้ไข/ยกเลิกตีกลับ' : 'ตีกลับรถปูน'}"><i class="fas fa-ban"></i></button>`;
 
-                    if (!ev.isCompleted) {
-                        row.className = "row-pending";
-                        rowHtml = `
-                            <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
-                            <td class="px-3 py-3"><div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-300">${ageHTML}</div></td>
-                            <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-mono opacity-60">${predPipeLen.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
-                        `;
+                    let arrTimeDisplay = ev.arrivalTime ? ev.arrivalTime : '?';
+                    let totalAgeMins = calculateAgeMinutes(ev.batchTime, ev.isCompleted ? ev.pourTime : null); 
+                    let colorClass = getAgeColor(totalAgeMins); 
+                    let predDepthTop, predEmbed;
+
+                    if (!isRej) {
+                        predVol += ev.val; predConcLevelFromBottom = predVol / area; 
+                        predDepthTop = depth - predConcLevelFromBottom; predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
+                        
+                        let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b class="text-blue-500">${arrTimeDisplay}</b> | `;
+                        if (ev.isCompleted) { 
+                            ageHTML += `เสร็จ: <b>${ev.pourTime||'?'}</b><br><span class="text-[10px] ${colorClass} mt-0.5 inline-block"><i class="fas fa-clock"></i> รวม ${formatAgeString(totalAgeMins)}</span>`; 
+                            actualVol += ev.val; actualConcLevelFromBottom = actualVol / area; lastPourTimeStr = ev.pourTime; hasCompletedPour = true;
+                        } else { 
+                            ageHTML += `<span class="text-[10px] ${colorClass} mt-0.5 inline-block animate-pulse"><i class="fas fa-clock"></i> ผ่านไป ${formatAgeString(totalAgeMins)}</span>`; 
+                        }
+
+                        if (!ev.isCompleted) {
+                            row.className = "row-pending";
+                            rowHtml = `
+                                <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
+                                <td class="px-3 py-3"><div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-300">${ageHTML}</div></td>
+                                <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-mono opacity-60">${predPipeLen.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">⏳ กดเมื่อเทเสร็จ</button></td>
+                            `;
+                        } else {
+                            row.className = "row-completed";
+                            rowHtml = `
+                                <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
+                                <td class="px-3 py-3"><div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div></td>
+                                <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predPipeLen.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 text-[10px] py-2 rounded font-bold transition">✔️ เทแล้ว</button></td>
+                            `;
+                        }
                     } else {
-                        row.className = "row-completed";
+                        // isRejected == true
+                        let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b>${arrTimeDisplay}</b><br><span class="text-red-500 font-bold mt-0.5 inline-block"><i class="fas fa-times-circle"></i> ตีกลับคอนกรีต: ${ev.rejectReason || 'ไม่ระบุสาเหตุ'}</span>`;
+                        row.className = "row-rejected";
                         rowHtml = `
-                            <td class="px-3 py-3 text-center text-slate-400 text-xs">${i+1}</td>
-                            <td class="px-3 py-3"><div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div><div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div></td>
-                            <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predPipeLen.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 text-[10px] py-2 rounded font-bold transition">✔️ เทแล้ว</button></td>
+                            <td class="px-3 py-3 text-center text-red-400 text-xs">${i+1}</td>
+                            <td class="px-3 py-3"><div class="font-medium text-slate-500 dark:text-slate-400 line-through">เบอร์ <b>${ev.truck}</b> <span class="text-xs ml-1">+${ev.val.toFixed(1)} m³</span></div><div class="text-[10px] mt-1 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded border border-red-200 dark:border-red-800 inline-block text-red-700 dark:text-red-400">${ageHTML}</div></td>
+                            <td class="px-3 py-3 text-center font-mono opacity-40">-</td>
+                            <td class="px-3 py-3 text-center font-mono opacity-40">-</td>
+                            <td class="px-3 py-3 text-center font-mono font-bold opacity-40">-</td>
+                            <td class="px-3 py-3 text-center"><span class="w-full inline-block bg-red-200 dark:bg-red-800/50 text-red-700 dark:text-red-300 text-[10px] py-2 rounded font-bold cursor-not-allowed">❌ ถูกตีกลับ</span></td>
                         `;
                     }
+                    
+                    rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap">
+                        ${moveBtns}
+                        ${extraBtns}
+                        <button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-2 transition-colors" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 transition-colors" title="ลบ"><i class="fas fa-trash"></i></button>
+                    </td>`;
+                    
                     insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: รถ ${ev.truck}</option>`;
                 } else {
                     if (ev.sounding > 0) { predConcLevelFromBottom = depth - ev.sounding; predVol = predConcLevelFromBottom * area; }
-                    predPipeLen -= ev.val; let predDepthTop = depth - predConcLevelFromBottom; let predTipTop = depth - predPipeLen; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
+                    predPipeLen -= ev.val; let predDepthTop = depth - predConcLevelFromBottom; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
                     if (ev.sounding > 0) { actualConcLevelFromBottom = depth - ev.sounding; actualVol = actualConcLevelFromBottom * area; }
                     actualPipeLen -= ev.val;
                     let pcsCut = 0; if (!isTopPieceRemoved) { pcsCut = 1 + (ev.val - topLen) / secLen; isTopPieceRemoved = true; } else { pcsCut = ev.val / secLen; }
@@ -730,14 +834,13 @@
                         <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
                         <td class="px-3 py-3 text-center text-[10px] font-bold opacity-80">-- ตัดท่อ --</td>
                     `;
+                    rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap">
+                        ${moveBtns}
+                        <button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-2 transition-colors" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 transition-colors" title="ลบ"><i class="fas fa-trash"></i></button>
+                    </td>`;
                     insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: ตัดท่อ ${ev.val}m</option>`;
                 }
-                
-                rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap">
-                    ${moveBtns}
-                    <button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-2 transition-colors" title="แก้ไข"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 transition-colors" title="ลบ"><i class="fas fa-trash"></i></button>
-                </td>`;
                 
                 row.innerHTML = rowHtml; logBody.appendChild(row);
             });
@@ -768,12 +871,8 @@
                     if (diffMins < -720) {
                         lastPDate.setDate(lastPDate.getDate() - 1);
                         idleMins = Math.max(0, Math.floor((now - lastPDate) / 60000));
-                    } else {
-                        idleMins = 0;
-                    }
-                } else {
-                    idleMins = diffMins;
-                }
+                    } else { idleMins = 0; }
+                } else { idleMins = diffMins; }
 
                 idleDisplay.innerText = formatThaiDuration(idleMins);
                 if (idleMins >= 45) { idleCard.className = "bg-red-50 p-4 rounded-xl border border-red-400 shadow-md text-center animate-pulse"; idleDisplay.className = "text-3xl font-bold text-red-600"; idleStatus.innerText = "อันตราย! รีบขยับท่อด่วน"; idleStatus.className = "text-xs font-bold mt-2 text-red-600"; } 
@@ -806,7 +905,8 @@
         function closeAnalyticsModal() { document.getElementById('analytics-modal').classList.add('hidden'); }
         
         function renderCharts() {
-            let validPours = state.events.filter(e => e.type === 'pour' && e.isCompleted && e.batchTime && e.arrivalTime && e.pourTime);
+            // V40: ไม่นำรถปูนที่ถูก Reject มาคิดประสิทธิภาพ
+            let validPours = state.events.filter(e => e.type === 'pour' && e.isCompleted && !e.isRejected && e.batchTime && e.arrivalTime && e.pourTime);
             let chartData = validPours.map((e, index) => { let transitMins = getMinsDiff(e.batchTime, e.arrivalTime) || 0; let siteMins = getMinsDiff(e.arrivalTime, e.pourTime) || 0; let totalMins = transitMins + siteMins; let [bH, bM] = e.batchTime.split(':').map(Number); return { id: e.truck, no: `คันที่ ${index+1}`, supplier: e.supplier || 'Unk', batchTimeHour: bH + (bM/60), transit: transitMins, site: siteMins, total: totalMins }; });
             
             ['chart-stacked', 'chart-scatter', 'chart-bar'].forEach(id => { if (activeCharts[id]) activeCharts[id].destroy(); });
