@@ -257,11 +257,38 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead class="bg-gray-100 dark:bg-slate-800">
                             <tr>
-                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
-                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">จำนวนผลงานที่ทำได้ (ต้น)</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">Zone / ผู้รับผิดชอบ</th>
+                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">จำนวนผลงานที่ทำได้ (ต้น)</th>
                             </tr>
                         </thead>
                         <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 mb-8 border-t-4 border-pink-500">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🛠️ สรุปงานอื่นๆ (Other Works)</h3>
+                <button onclick="toggleSection('other-works-content', 'toggle-other-works-btn')" id="toggle-other-works-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                    🔽 ซ่อนตาราง
+                </button>
+            </div>
+            
+            <div id="other-works-content" class="collapsible-content">
+                <div class="rounded-lg border border-gray-200 dark:border-slate-700 w-full overflow-x-auto mt-2">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                        <thead class="bg-gray-100 dark:bg-slate-800">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">ลักษณะงาน (โปรเจคย่อย)</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">จำนวน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="otherWorksTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
+                            <tr>
+                                <td colspan="2" class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">กำลังโหลดข้อมูลงานอื่นๆ... ⏳</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -326,6 +353,9 @@
 
         // --- ลิงก์ฐานข้อมูลเริ่มต้น (Default URL) ---
         const DEFAULT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_d3Oxo9_vdxQGl2R1aIT8U-2RarYs_Iy2MANCwBi9Dnop58DvSD7tTiRlNf-vRhYupbxeCG4V_Mwc/pub?gid=921370860&single=true&output=csv";
+        
+        // --- ลิงก์ฐานข้อมูลงานอื่นๆ (Other Works) ---
+        const OTHER_WORKS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQM1NHMI4D0HT6SUYWji9HjRdLY55muSNvQ-jPe56F4GYHdBd2e33IiJJEpk0fkw82OznDLNFCvnQ66/pub?gid=921370860&single=true&output=csv";
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
@@ -369,7 +399,9 @@
             const savedUrl = localStorage.getItem('boredPileUrl');
             document.getElementById('sheetUrl').value = savedUrl ? savedUrl : DEFAULT_URL;
             
+            // โหลดข้อมูลทั้งสองส่วนพร้อมกัน
             loadFromUrl();
+            loadOtherWorksData();
         });
 
         function toggleSection(contentId, btnId) {
@@ -428,6 +460,84 @@
             else if(type === 'ok') st.classList.add('bg-green-100', 'text-green-800', 'dark:bg-green-900/40', 'dark:text-green-400');
             else st.classList.add('bg-gray-100', 'text-gray-800', 'dark:bg-gray-800', 'dark:text-gray-300'); 
         }
+
+        // --- ส่วนดึงข้อมูล Other Works ---
+        function loadOtherWorksData() {
+            Papa.parse(OTHER_WORKS_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    renderOtherWorksTable(results.data);
+                },
+                error: function(err) {
+                    const tbody = document.getElementById('otherWorksTableBody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="2" class="px-6 py-10 text-center text-red-500 font-bold w-full">❌ ไม่สามารถดึงข้อมูลงานอื่นๆ ได้</td></tr>`;
+                }
+            });
+        }
+
+        function renderOtherWorksTable(data) {
+            const tbody = document.getElementById('otherWorksTableBody');
+            if(!tbody) return;
+            const otherWorks = {};
+
+            data.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const jobType = row['ผู้รับผิดชอบ'] || '';
+                const typeLower = jobType.toLowerCase();
+
+                if (projName && jobType && 
+                    !typeLower.includes('sonic') && 
+                    !typeLower.includes('grout') && 
+                    !typeLower.includes('defective')) { 
+                    
+                    if (!otherWorks[jobType]) {
+                        otherWorks[jobType] = { count: 0, projects: [] };
+                    }
+                    otherWorks[jobType].count++;
+                    otherWorks[jobType].projects.push(projName);
+                }
+            });
+
+            const sortedItems = Object.entries(otherWorks).sort((a, b) => b[1].count - a[1].count);
+
+            if (sortedItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 w-full">ไม่พบข้อมูลงานอื่นๆ</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            sortedItems.forEach(([jobName, info]) => {
+                const tags = info.projects.map(p => {
+                    // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
+                    let shortName = p;
+                    const diaIndex = shortName.toLowerCase().indexOf('-dia');
+                    if (diaIndex !== -1) {
+                        shortName = shortName.substring(0, diaIndex).trim();
+                    }
+                    return `<span class="inline-block text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                }).join('');
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                        <td class="px-6 py-5 w-1/2">
+                            <div class="flex items-start gap-3">
+                                <span class="text-pink-500 mt-1">📌</span>
+                                <div>
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 mb-2 text-base">${jobName}</div>
+                                    <div class="flex flex-wrap">${tags}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-center align-top font-bold text-slate-700 dark:text-slate-300 text-lg w-1/2">
+                            ${info.count}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        // -------------------------------
 
         function loadFromUrl() {
             const url = document.getElementById('sheetUrl').value.trim();
@@ -489,14 +599,12 @@
             return new Date(year, month, day, 0, 0, 0, 0);
         }
 
-        // --- เพิ่มฟังก์ชันจัดการชื่อโซนให้ตรงมาตรฐาน ---
         function getStandardZoneName(rawZone) {
             if (!rawZone) return 'ไม่ระบุ';
             
-            // ลบเว้นวรรคทั้งหมดและแปลงเป็นพิมพ์ใหญ่เพื่อให้ตรวจสอบง่าย
             const text = String(rawZone).toUpperCase().replace(/\s+/g, '');
 
-            if (text.includes("แซม")) return "เข็ม-แซม";
+            if (text.includes("แซม")) return "เข็ม-แซม (Re-Drilling Pile)";
             
             if (text.includes("ZONE1")) return "Zone 1";
             if (text.includes("ZONE2")) return "Zone 2";
@@ -513,7 +621,6 @@
             if (text.includes("OR7")) return "Ramp-OR7";
             if (text.includes("SR1")) return "Ramp-SR1";
 
-            // ถ้าไม่ตรงกับเงื่อนไขใดเลย ให้คืนค่าเดิมกลับไป
             return rawZone;
         }
 
@@ -527,10 +634,16 @@
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
                 if (projName) {
-                    // แปลงชื่อที่ได้จาก Database ให้เป็นชื่อมาตรฐานก่อนนำไปนับ
                     const zone = getStandardZoneName(rawZone);
                     
-                    zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
+                    if (!zoneCounts[zone]) {
+                        zoneCounts[zone] = { count: 0, projects: [] };
+                    }
+                    zoneCounts[zone].count++;
+                    
+                    if (zone.includes("เข็ม-แซม")) {
+                        zoneCounts[zone].projects.push(projName);
+                    }
 
                     if (!zone.includes("เข็ม-แซม")) {
                         totalPiles++; 
@@ -592,6 +705,7 @@
                     const dayIndex = taskDate.getDay(); 
                     const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
                     
+                    // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
                     let shortProjName = projName;
                     const diaIndex = shortProjName.toLowerCase().indexOf('-dia');
                     if (diaIndex !== -1) {
@@ -655,28 +769,41 @@
             const tbody = document.getElementById('zoneTableBody');
             tbody.innerHTML = '';
             
-            // 1. กำหนดลำดับที่ต้องการให้แสดงผลเสมอ
             const definedOrder = [
                 "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7",
                 "Ramp-N01", "Ramp-OR3", "Ramp-OR4", "Ramp-OR6", "Ramp-OR7", "Ramp-SR1",
-                "เข็ม-แซม"
+                "เข็ม-แซม (Re-Drilling Pile)" 
             ];
 
             const displayedZones = new Set();
 
-            // ฟังก์ชันย่อยสำหรับสร้างแถวตาราง
-            const renderRow = (zone, count) => {
+            const renderRow = (zone, dataObj) => {
+                let count = dataObj ? dataObj.count : 0;
+                let projects = dataObj ? dataObj.projects : [];
+
                 let rowClass = "hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors";
                 let textClass = "text-gray-700 dark:text-gray-300 font-medium";
                 let numClass = "font-bold text-indigo-600 dark:text-indigo-400";
+                let extraHTML = "";
                 
-                // สไตล์พิเศษสำหรับ เข็ม-แซม
                 if (zone.includes("เข็ม-แซม")) {
                     rowClass = "bg-orange-50 dark:bg-orange-900/20";
                     textClass = "text-orange-700 dark:text-orange-400 font-bold";
                     numClass = "font-bold text-orange-600 dark:text-orange-400";
+                    
+                    if (projects.length > 0) {
+                        const tags = projects.map(p => {
+                            // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
+                            let shortName = p;
+                            const diaIndex = shortName.toLowerCase().indexOf('-dia');
+                            if (diaIndex !== -1) {
+                                shortName = shortName.substring(0, diaIndex).trim();
+                            }
+                            return `<span class="inline-block text-[11px] bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700/50 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                        }).join('');
+                        extraHTML = `<div class="mt-2 flex flex-wrap gap-1">${tags}</div>`;
+                    }
                 } 
-                // สไตล์พิเศษสำหรับ Zone ที่ค่าเป็น 0 
                 else if (count === 0) {
                     textClass = "text-gray-400 dark:text-gray-500";
                     numClass = "font-medium text-gray-400 dark:text-gray-500";
@@ -684,26 +811,27 @@
 
                 tbody.innerHTML += `
                     <tr class="${rowClass}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm ${textClass}">${zone}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right">${count.toLocaleString()}</td>
+                        <td class="px-6 py-4 text-sm ${textClass} w-1/2">
+                            ${zone}
+                            ${extraHTML}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right align-top w-1/2">${count.toLocaleString()}</td>
                     </tr>
                 `;
             };
 
-            // 2. แสดงผลตามรายชื่อที่ล็อคไว้
             definedOrder.forEach(zone => {
-                const count = zoneCounts[zone] || 0;
+                const dataObj = zoneCounts[zone];
                 displayedZones.add(zone);
-                renderRow(zone, count);
+                renderRow(zone, dataObj);
             });
 
-            // 3. จัดการ Zone อื่นๆ ที่อาจจะหลงมาในฐานข้อมูล (ที่อยู่นอกเหนือจากรายชื่อด้านบน)
             const remainingZones = Object.entries(zoneCounts)
                 .filter(([zone]) => !displayedZones.has(zone))
-                .sort((a, b) => b[1] - a[1]); // เรียงจากมากไปน้อย
+                .sort((a, b) => b[1].count - a[1].count); 
 
-            remainingZones.forEach(([zone, count]) => {
-                renderRow(zone, count);
+            remainingZones.forEach(([zone, dataObj]) => {
+                renderRow(zone, dataObj);
             });
         }
 
@@ -716,7 +844,6 @@
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
                 if (projName && dateStr) {
-                    // กรองชื่อเป็นมาตรฐานด้วยฟังก์ชันใหม่ที่นี่ด้วย
                     const zone = getStandardZoneName(rawZone);
                     
                     if (!zone.includes("เข็ม-แซม")) {
