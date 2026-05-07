@@ -485,6 +485,7 @@
             data.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
                 const jobType = row['ผู้รับผิดชอบ'] || '';
+                const finishDate = row['วันที่เสร็จงานจริงๆ']; // ดึงข้อมูลวันที่เสร็จงาน
                 const typeLower = jobType.toLowerCase();
 
                 if (projName && jobType && 
@@ -496,7 +497,10 @@
                         otherWorks[jobType] = { count: 0, projects: [] };
                     }
                     otherWorks[jobType].count++;
-                    otherWorks[jobType].projects.push(projName);
+                    
+                    // บันทึกทั้งชื่อโปรเจค และสถานะว่ามีวันที่เสร็จหรือไม่
+                    const hasDate = !!finishDate && finishDate.toString().trim() !== '';
+                    otherWorks[jobType].projects.push({ name: projName, isCompleted: hasDate });
                 }
             });
 
@@ -510,13 +514,18 @@
             tbody.innerHTML = '';
             sortedItems.forEach(([jobName, info]) => {
                 const tags = info.projects.map(p => {
-                    // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
-                    let shortName = p;
+                    let shortName = p.name;
                     const diaIndex = shortName.toLowerCase().indexOf('-dia');
                     if (diaIndex !== -1) {
                         shortName = shortName.substring(0, diaIndex).trim();
                     }
-                    return `<span class="inline-block text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                    
+                    // ตรวจสอบสถานะการเสร็จงาน เพื่อกำหนดคลาสสี (สีส้ม=เสร็จแล้ว, สีเทา=ยังไม่เสร็จ)
+                    const colorClass = p.isCompleted 
+                        ? "bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50"
+                        : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600";
+                        
+                    return `<span class="inline-block text-[11px] ${colorClass} border px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
                 }).join('');
 
                 tbody.innerHTML += `
@@ -705,7 +714,6 @@
                     const dayIndex = taskDate.getDay(); 
                     const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
                     
-                    // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
                     let shortProjName = projName;
                     const diaIndex = shortProjName.toLowerCase().indexOf('-dia');
                     if (diaIndex !== -1) {
@@ -793,7 +801,6 @@
                     
                     if (projects.length > 0) {
                         const tags = projects.map(p => {
-                            // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
                             let shortName = p;
                             const diaIndex = shortName.toLowerCase().indexOf('-dia');
                             if (diaIndex !== -1) {
