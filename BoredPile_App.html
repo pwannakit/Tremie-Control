@@ -281,13 +281,15 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead class="bg-gray-100 dark:bg-slate-800">
                             <tr>
-                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">ลักษณะงาน (โปรเจคย่อย)</th>
-                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">จำนวน</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-2/5">ลักษณะงาน (โปรเจคย่อย)</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/5">ทั้งหมด</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider w-1/5">แล้วเสร็จ</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-red-500 dark:text-red-400 uppercase tracking-wider w-1/5">คงเหลือ</th>
                             </tr>
                         </thead>
                         <tbody id="otherWorksTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
                             <tr>
-                                <td colspan="2" class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">กำลังโหลดข้อมูลงานอื่นๆ... ⏳</td>
+                                <td colspan="4" class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">กำลังโหลดข้อมูลงานอื่นๆ... ⏳</td>
                             </tr>
                         </tbody>
                     </table>
@@ -472,7 +474,7 @@
                 },
                 error: function(err) {
                     const tbody = document.getElementById('otherWorksTableBody');
-                    if (tbody) tbody.innerHTML = `<tr><td colspan="2" class="px-6 py-10 text-center text-red-500 font-bold w-full">❌ ไม่สามารถดึงข้อมูลงานอื่นๆ ได้</td></tr>`;
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-red-500 font-bold w-full">❌ ไม่สามารถดึงข้อมูลงานอื่นๆ ได้</td></tr>`;
                 }
             });
         }
@@ -485,6 +487,7 @@
             data.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
                 const jobType = row['ผู้รับผิดชอบ'] || '';
+                const finishDate = row['วันที่เสร็จงานจริงๆ'];
                 const typeLower = jobType.toLowerCase();
 
                 if (projName && jobType && 
@@ -493,35 +496,48 @@
                     !typeLower.includes('defective')) { 
                     
                     if (!otherWorks[jobType]) {
-                        otherWorks[jobType] = { count: 0, projects: [] };
+                        otherWorks[jobType] = { count: 0, completed: 0, remaining: 0, projects: [] };
                     }
                     otherWorks[jobType].count++;
-                    otherWorks[jobType].projects.push(projName);
+                    
+                    // เช็คว่ามีวันที่เสร็จหรือไม่ เพื่อแยกนับ Completed / Remaining
+                    const hasDate = !!finishDate && finishDate.toString().trim() !== '';
+                    if (hasDate) {
+                        otherWorks[jobType].completed++;
+                    } else {
+                        otherWorks[jobType].remaining++;
+                    }
+
+                    otherWorks[jobType].projects.push({ name: projName, isCompleted: hasDate });
                 }
             });
 
             const sortedItems = Object.entries(otherWorks).sort((a, b) => b[1].count - a[1].count);
 
             if (sortedItems.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 w-full">ไม่พบข้อมูลงานอื่นๆ</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 w-full">ไม่พบข้อมูลงานอื่นๆ</td></tr>';
                 return;
             }
 
             tbody.innerHTML = '';
             sortedItems.forEach(([jobName, info]) => {
                 const tags = info.projects.map(p => {
-                    // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
-                    let shortName = p;
+                    let shortName = p.name;
                     const diaIndex = shortName.toLowerCase().indexOf('-dia');
                     if (diaIndex !== -1) {
                         shortName = shortName.substring(0, diaIndex).trim();
                     }
-                    return `<span class="inline-block text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                    
+                    const colorClass = p.isCompleted 
+                        ? "bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50"
+                        : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600";
+                        
+                    return `<span class="inline-block text-[11px] ${colorClass} border px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
                 }).join('');
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-                        <td class="px-6 py-5 w-1/2">
+                        <td class="px-6 py-5 w-2/5">
                             <div class="flex items-start gap-3">
                                 <span class="text-pink-500 mt-1">📌</span>
                                 <div>
@@ -530,8 +546,14 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-5 text-center align-top font-bold text-slate-700 dark:text-slate-300 text-lg w-1/2">
+                        <td class="px-6 py-5 text-center align-top font-bold text-slate-700 dark:text-slate-300 text-lg w-1/5">
                             ${info.count}
+                        </td>
+                        <td class="px-6 py-5 text-center align-top font-bold text-emerald-600 dark:text-emerald-400 text-lg w-1/5">
+                            ${info.completed > 0 ? info.completed : '-'}
+                        </td>
+                        <td class="px-6 py-5 text-center align-top font-bold text-red-500 dark:text-red-400 text-lg w-1/5">
+                            ${info.remaining > 0 ? info.remaining : '-'}
                         </td>
                     </tr>
                 `;
@@ -705,7 +727,6 @@
                     const dayIndex = taskDate.getDay(); 
                     const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
                     
-                    // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
                     let shortProjName = projName;
                     const diaIndex = shortProjName.toLowerCase().indexOf('-dia');
                     if (diaIndex !== -1) {
@@ -793,7 +814,1055 @@
                     
                     if (projects.length > 0) {
                         const tags = projects.map(p => {
-                            // *เปลี่ยนจากตัดด้วย '-' เป็นตัดด้วย '-dia'*
+                            let shortName = p;
+                            const diaIndex = shortName.toLowerCase().indexOf('-dia');
+                            if (diaIndex !== -1) {
+                                shortName = shortName.substring(0, diaIndex).trim();
+                            }
+                            return `<span class="inline-block text-[11px] bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700/50 px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                        }).join('');
+                        extraHTML = `<div class="mt-2 flex flex-wrap gap-1">${tags}</div>`;
+                    }
+                } 
+                else if (count === 0) {
+                    textClass = "text-gray-400 dark:text-gray-500";
+                    numClass = "font-medium text-gray-400 dark:text-gray-500";
+                }
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td class="px-6 py-4 text-sm ${textClass} w-1/2">
+                            ${zone}
+                            ${extraHTML}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right align-top w-1/2">${count.toLocaleString()}</td>
+                    </tr>
+                `;
+            };
+
+            definedOrder.forEach(zone => {
+                const dataObj = zoneCounts[zone];
+                displayedZones.add(zone);
+                renderRow(zone, dataObj);
+            });
+
+            const remainingZones = Object.entries(zoneCounts)
+                .filter(([zone]) => !displayedZones.has(zone))
+                .sort((a, b) => b[1].count - a[1].count); 
+
+            remainingZones.forEach(([zone, dataObj]) => {
+                renderRow(zone, dataObj);
+            });
+        }
+
+        function prepareMonthlyChart(data) {
+            const monthlyCounts = {};
+
+            data.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const rawZone = row['ผู้รับผิดชอบ'] || '';
+                const dateStr = row['วันที่เสร็จงานจริงๆ'];
+
+                if (projName && dateStr) {
+                    const zone = getStandardZoneName(rawZone);
+                    
+                    if (!zone.includes("เข็ม-แซม")) {
+                        const dateObj = parseThaiDate(dateStr);
+                        if (dateObj) {
+                            const y = dateObj.getFullYear();
+                            const m = dateObj.getMonth();
+                            const sortKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+                            const displayLabel = `${monthNames[m]} ${y + 543}`; 
+
+                            if (!monthlyCounts[sortKey]) {
+                                monthlyCounts[sortKey] = { label: displayLabel, count: 0 };
+                            }
+                            monthlyCounts[sortKey].count++;
+                        }
+                    }
+                }
+            });
+
+            globalMonthlyData = monthlyCounts; 
+            
+            const sortedKeys = Object.keys(monthlyCounts).sort();
+            const select1 = document.getElementById('compareMonth1');
+            const select2 = document.getElementById('compareMonth2');
+            
+            select1.innerHTML = '';
+            select2.innerHTML = '';
+            
+            sortedKeys.forEach(key => {
+                const opt1 = document.createElement('option');
+                opt1.value = key; opt1.text = monthlyCounts[key].label;
+                select1.appendChild(opt1);
+                
+                const opt2 = document.createElement('option');
+                opt2.value = key; opt2.text = monthlyCounts[key].label;
+                select2.appendChild(opt2);
+            });
+
+            if(sortedKeys.length > 1) {
+                select2.selectedIndex = sortedKeys.length - 1; 
+                select1.selectedIndex = sortedKeys.length - 2; 
+            }
+
+            drawMonthlyChart(globalMonthlyData);
+        }
+
+        function compareMonths() {
+            const m1 = document.getElementById('compareMonth1').value;
+            const m2 = document.getElementById('compareMonth2').value;
+            if(!m1 || !m2) return;
+            
+            const filteredData = {};
+            const keys = [m1, m2].sort();
+            
+            if(globalMonthlyData[keys[0]]) filteredData[keys[0]] = globalMonthlyData[keys[0]];
+            if(keys[0] !== keys[1] && globalMonthlyData[keys[1]]) filteredData[keys[1]] = globalMonthlyData[keys[1]];
+            
+            drawMonthlyChart(filteredData);
+        }
+
+        function resetMonthlyChart() {
+            drawMonthlyChart(globalMonthlyData);
+        }
+
+        function generateSummaryText(dataObj) {
+            const summaryDiv = document.getElementById('monthlySummaryReport');
+            const keys = Object.keys(dataObj).sort(); 
+
+            if (keys.length === 0) {
+                summaryDiv.innerHTML = '<span class="text-gray-500">ไม่พบข้อมูลสำหรับสร้างรายงานสรุป</span>';
+                return;
+            }
+
+            if (keys.length === 1) {
+                const k = keys[0];
+                summaryDiv.innerHTML = `💡 <b>ข้อสรุป:</b> ข้อมูลที่แสดงมีเพียงเดือนเดียวคือ <b>${dataObj[k].label}</b> โดยมีปริมาณผลงานเสร็จสิ้นทั้งสิ้น <b class="text-emerald-600 dark:text-emerald-400 text-2xl">${dataObj[k].count}</b> ต้น`;
+                return;
+            }
+
+            const lastData = dataObj[keys[keys.length - 1]];
+            const prevData = dataObj[keys[keys.length - 2]];
+
+            const diff = lastData.count - prevData.count;
+            const isIncrease = diff > 0;
+            const isEqual = diff === 0;
+            
+            let trendText, colorClass;
+            if(isIncrease) {
+                trendText = "เพิ่มขึ้น 📈";
+                colorClass = "text-emerald-600 dark:text-emerald-400";
+            } else if (isEqual) {
+                trendText = "คงที่ ➖";
+                colorClass = "text-yellow-600 dark:text-yellow-400";
+            } else {
+                trendText = "ลดลง 📉";
+                colorClass = "text-red-600 dark:text-red-400";
+            }
+            
+            const diffAbs = Math.abs(diff);
+            let percentText = "";
+            if (prevData.count > 0) {
+                const percent = ((diffAbs / prevData.count) * 100).toFixed(2);
+                percentText = `คิดเป็น <b>${percent}%</b>`;
+            } else {
+                percentText = `(เดือนก่อนหน้าไม่มีผลงาน)`;
+            }
+
+            summaryDiv.innerHTML = `
+                📝 <b>รายงานสรุปสำหรับผู้บริหาร:</b> <br>
+                ผลการดำเนินงานเดือน <b>${lastData.label}</b> สามารถทำผลงานได้ <b class="text-xl">${lastData.count}</b> ต้น 
+                เมื่อนำมาเปรียบเทียบกับเดือน <b>${prevData.label}</b> (ที่ทำได้ ${prevData.count} ต้น) <br>
+                พบว่าปริมาณงาน <b class="${colorClass} text-xl">${trendText} จำนวน ${diffAbs} ต้น</b> ${isEqual ? '' : percentText}
+            `;
+        }
+
+        function drawMonthlyChart(dataObj) {
+            generateSummaryText(dataObj);
+
+            const sortedKeys = Object.keys(dataObj).sort();
+            const labels = sortedKeys.map(key => dataObj[key].label);
+            const counts = sortedKeys.map(key => dataObj[key].count);
+
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            if(monthlyChartInstance) monthlyChartInstance.destroy();
+
+            const isDark = document.documentElement.classList.contains('dark');
+
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนผลงานเสาเข็มดำเนินการแล้ว (ต้น)',
+                        data: counts,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)', 
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: isDark ? '#cbd5e1' : '#475569', font: { family: 'Sarabun', size: 14 } }
+                        },
+                        tooltip: { titleFont: { family: 'Sarabun' }, bodyFont: { family: 'Sarabun' } },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: isDark ? '#f8fafc' : '#334155',
+                            font: {
+                                family: 'Sarabun',
+                                weight: 'bold',
+                                size: 16
+                            },
+                            formatter: function(value) {
+                                return value > 0 ? value : '';
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 30
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Sarabun' } },
+                            grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Sarabun', size: 13 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bored Pile Dashboard - พี่เอ็กซ์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s;
+        }
+        .dark .glass-card { 
+            background: rgba(30, 41, 59, 0.95); 
+            border-color: rgba(51, 65, 85, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .dark body { background-color: #0f172a; }
+        
+        .hide { display: none !important; }
+        
+        /* สไตล์ Kanban */
+        .kanban-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 20px; }
+        .k-col { background: #f1f5f9; border-radius: 12px; padding: 10px; min-height: 400px; transition: 0.3s; }
+        .dark .k-col { background: #1e293b; }
+        .k-header { text-align: center; font-weight: bold; color: white; padding: 10px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .k-card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
+        .dark .k-card { background: #334155; color: #f8fafc; border-color: #475569; }
+        .k-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        /* สีประจำวัน */
+        .day-1 { background: #f1c40f; color: #5c4000; } .card-1 { border-left-color: #f1c40f; }
+        .day-2 { background: #e84393; } .card-2 { border-left-color: #e84393; }
+        .day-3 { background: #2ecc71; color: #004d26; } .card-3 { border-left-color: #2ecc71; }
+        .day-4 { background: #e67e22; } .card-4 { border-left-color: #e67e22; }
+        .day-5 { background: #3498db; } .card-5 { border-left-color: #3498db; }
+        .day-6 { background: #9b59b6; } .card-6 { border-left-color: #9b59b6; }
+        .day-0 { background: #e74c3c; } .card-0 { border-left-color: #e74c3c; }
+
+        @media (max-width: 1024px) { .kanban-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) { .kanban-grid { grid-template-columns: 1fr; } }
+        
+        /* Transition สำหรับระบบซ่อน/แสดง ตารางต่างๆ */
+        .collapsible-content {
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, margin 0.4s ease-in-out, padding 0.4s ease-in-out;
+            overflow: hidden;
+            max-height: 2500px;
+            opacity: 1;
+        }
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+        }
+
+        /* ----- สไตล์สำหรับพิมพ์รายงาน (Print) ----- */
+        @media print {
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            .dark body, .dark .glass-card { background-color: #ffffff !important; color: #000000 !important; border-color: #e5e7eb !important; }
+            .glass-card { box-shadow: none !important; border: 1px solid #e5e7eb !important; break-inside: avoid; margin-bottom: 24px; }
+            
+            /* ซ่อนเมนู ปุ่ม และช่องค้นหา */
+            .no-print { display: none !important; }
+            
+            /* ซ่อนการ์ดที่ถูกพับเก็บไว้แบบชัวร์ 100% ผ่านคลาสที่คุมด้วย JS */
+            .hide-on-print { display: none !important; }
+            
+            /* กรณีเบราว์เซอร์รองรับ :has() ให้ซ่อนอีกชั้นเพื่อความชัวร์ */
+            .glass-card:has(.collapsed) { display: none !important; }
+            
+            .collapsible-content { max-height: none !important; opacity: 1 !important; overflow: visible !important; }
+            canvas { max-width: 100% !important; height: auto !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body class="text-gray-800 bg-slate-50 p-6">
+
+    <div class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-indigo-900 dark:text-indigo-400">🏗️ Dashboard เสาเข็มเจาะ</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1 no-print">วิเคราะห์ข้อมูลและติดตามงานรายสัปดาห์</p>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto no-print">
+            <button onclick="toggleSection('data-source-container', 'toggle-data-btn')" id="toggle-data-btn" class="px-4 py-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                <span>⚙️ ซ่อนการตั้งค่าข้อมูล</span>
+            </button>
+            <button onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border border-gray-200 dark:border-slate-700 text-xl" title="สลับโหมดมืด/สว่าง">
+                <span id="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="data-source-container" class="max-w-7xl mx-auto mb-8 glass-card p-6 collapsible-content no-print">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
+                <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                    <span class="text-blue-500">🌐</span> วิธีที่ 1: ดึงข้อมูลผ่านลิงก์ Google Sheets
+                </h3>
+                <input type="text" id="sheetUrl" placeholder="วางลิงก์ที่ลงท้ายด้วย output=csv ที่นี่..." class="w-full p-3 border border-gray-300 dark:border-slate-600 rounded-lg mb-4 dark:bg-slate-700 dark:text-white outline-none focus:border-blue-500">
+                <button onclick="loadFromUrl()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    🚀 ดึงข้อมูลจากลิงก์
+                </button>
+            </div>
+
+            <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 bg-white dark:bg-slate-800/50">
+                <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                    <span class="text-yellow-500">📁</span> วิธีที่ 2: อัปโหลดไฟล์ Task.csv
+                </h3>
+                <input type="file" id="csvFile" accept=".csv" class="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg mb-4 dark:bg-slate-700 dark:text-white outline-none bg-gray-50 file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-gray-200 file:text-gray-700">
+                <button onclick="loadFromFile()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    📥 ดึงข้อมูลจากไฟล์
+                </button>
+            </div>
+        </div>
+        
+        <div id="loading-status" class="mt-4 text-center p-3 rounded-lg font-bold hide">
+            รอรับคำสั่งครับพี่เอ็กซ์...
+        </div>
+    </div>
+
+    <div id="dashboardContent" class="max-w-7xl mx-auto hide">
+        
+        <div class="glass-card p-6 border-l-8 border-blue-500 mb-8">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">🎯 สรุปภาพรวมผลงาน (KPIs)</h3>
+                <button onclick="toggleSection('kpi-content', 'toggle-kpi-btn')" id="toggle-kpi-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                    🔽 ซ่อนเนื้อหา
+                </button>
+            </div>
+            
+            <div id="kpi-content" class="collapsible-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center">
+                        <h3 class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">รวมทั้งหมด</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-blue-600 dark:text-blue-400 mt-2">
+                            <span id="kpi-total">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
+                        <h3 id="kpi-month-label" class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">เดือนปัจจุบัน</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">
+                            <span id="kpi-month">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                        </div>
+                        <div class="absolute -right-4 -top-4 opacity-5 text-emerald-500 text-8xl">📅</div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm text-center relative overflow-hidden">
+                        <h3 id="kpi-week-label" class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1 text-xs md:text-sm">สัปดาห์ปัจจุบัน</h3>
+                        <div class="text-4xl md:text-5xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                            <span id="kpi-week">0</span> <span class="text-xl text-gray-500 dark:text-gray-400 font-normal">ต้น</span>
+                        </div>
+                        <div class="absolute -right-4 -top-4 opacity-5 text-purple-500 text-8xl">🗓️</div>
+                    </div>
+                </div>
+                <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-4">*ตัวเลขภาพรวมได้ทำการหักลบ "เข็ม-แซม" ออกแล้วเพื่อให้แสดงเฉพาะผลงานหลัก</p>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 mb-8 border-t-4 border-purple-500">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🔍 ค้นหาตามชื่อโปรเจค</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 no-print">พิมพ์ชื่อโปรเจคเพื่อดูวันที่เสร็จงานและหมายเหตุ</p>
+                </div>
+                <button onclick="toggleSection('search-content', 'toggle-search-btn')" id="toggle-search-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                    🔽 ซ่อนเนื้อหา
+                </button>
+            </div>
+            
+            <div id="search-content" class="collapsible-content">
+                <div class="mb-6 mt-2 no-print">
+                    <input type="text" id="searchInput" class="w-full p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg dark:bg-slate-800 dark:text-white focus:border-purple-500 outline-none transition-all" placeholder="ตัวอย่างเช่น: 81L/2 ...">
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-700" style="max-height: 400px;">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                        <thead class="bg-purple-50 dark:bg-slate-800 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">ชื่อโปรเจค</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-1/4">วันที่เสร็จงานจริงๆ</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider w-2/4">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="searchTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">
+                                    👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 mb-8 border-t-4 border-indigo-500">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 dark:border-slate-700 pb-4">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white">📅 ติดตามงานรายสัปดาห์ (Kanban)</h3>
+                
+                <div class="flex items-center gap-3 no-print">
+                    <button onclick="toggleSection('kanban-content', 'toggle-kanban-btn')" id="toggle-kanban-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm">
+                        🔽 ซ่อนเนื้อหา
+                    </button>
+                </div>
+            </div>
+
+            <div id="kanban-content" class="collapsible-content">
+                <div class="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-800 p-3 px-4 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm w-fit mb-4 no-print">
+                    <label class="text-gray-600 dark:text-gray-300 font-medium text-sm">🗓️ ดูงานตั้งแต่:</label>
+                    <input type="date" id="startDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500 text-sm">
+                    <label class="text-gray-600 dark:text-gray-300 font-medium text-sm">ถึง</label>
+                    <input type="date" id="endDate" class="p-1 border rounded dark:bg-slate-700 dark:text-white dark:border-slate-600 outline-none focus:border-indigo-500 text-sm">
+                    <button onclick="filterKanban()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-1.5 rounded-md font-bold transition-colors text-sm">ค้นหา</button>
+                </div>
+
+                <div id="kanban-status" class="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 p-3 rounded-lg text-center font-bold mb-4 border border-green-200 dark:border-green-800 no-print">
+                    ✅ โปรดระบุวันที่และกดค้นหาเพื่อแสดงข้อมูล
+                </div>
+
+                <div class="kanban-grid" id="kanban-board"></div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 mb-8 border-t-4 border-cyan-500">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">📋 สรุปจำนวนเสาเข็มแยกตามผู้รับผิดชอบ</h3>
+                <button onclick="toggleSection('zone-content', 'toggle-zone-btn')" id="toggle-zone-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                    🔽 ซ่อนตาราง
+                </button>
+            </div>
+            
+            <div id="zone-content" class="collapsible-content">
+                <div class="rounded-lg border border-gray-200 dark:border-slate-700 w-full overflow-x-auto mt-2">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                        <thead class="bg-gray-100 dark:bg-slate-800">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">Zone / ผู้รับผิดชอบ</th>
+                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/2">จำนวนผลงานที่ทำได้ (ต้น)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 mb-8 border-t-4 border-pink-500">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🛠️ สรุปงานอื่นๆ (Other Works)</h3>
+                <button onclick="toggleSection('other-works-content', 'toggle-other-works-btn')" id="toggle-other-works-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                    🔽 ซ่อนตาราง
+                </button>
+            </div>
+            
+            <div id="other-works-content" class="collapsible-content">
+                <div class="rounded-lg border border-gray-200 dark:border-slate-700 w-full overflow-x-auto mt-2">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                        <thead class="bg-gray-100 dark:bg-slate-800">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-2/5">ลักษณะงาน (โปรเจคย่อย)</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/5">ทั้งหมด</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider w-1/5">แล้วเสร็จ</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-red-500 dark:text-red-400 uppercase tracking-wider w-1/5">คงเหลือ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="otherWorksTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">กำลังโหลดข้อมูลงานอื่นๆ... ⏳</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 mb-8 border-t-4 border-emerald-500">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2 border-b border-gray-100 dark:border-slate-700 pb-3">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">📊 รายงานสรุปผลงานรายเดือน (Executive Summary)</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 no-print">ภาพรวมและเปรียบเทียบผลงานเสาเข็มรายเดือน (ไม่รวมเข็มแซม)</p>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center gap-2 no-print">
+                        🖨️ พิมพ์รายงาน
+                    </button>
+                    
+                    <button onclick="toggleSection('monthly-content', 'toggle-monthly-btn')" id="toggle-monthly-btn" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-slate-600 flex items-center gap-1 shadow-sm no-print">
+                        🔽 ซ่อนเนื้อหา
+                    </button>
+                </div>
+            </div>
+            
+            <div id="monthly-content" class="collapsible-content pt-2">
+                <div class="flex flex-wrap items-center gap-3 mb-4 bg-emerald-50 dark:bg-slate-800/80 p-4 rounded-lg border border-emerald-100 dark:border-slate-700 shadow-sm no-print">
+                    <label class="text-sm font-bold text-emerald-800 dark:text-emerald-400">⚖️ เปรียบเทียบผลงาน:</label>
+                    <select id="compareMonth1" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
+                    <span class="text-gray-500 dark:text-gray-400 font-bold text-sm">VS</span>
+                    <select id="compareMonth2" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600 text-sm outline-none focus:border-emerald-500"></select>
+                    
+                    <button onclick="compareMonths()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm">
+                        เปรียบเทียบ
+                    </button>
+                    <button onclick="resetMonthlyChart()" class="bg-slate-400 hover:bg-slate-500 text-white px-4 py-2 rounded-md font-bold text-sm transition-colors shadow-sm ml-auto">
+                        แสดงทั้งหมด
+                    </button>
+                </div>
+
+                <div id="monthlySummaryReport" class="mb-6 p-5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-700 border border-emerald-100 dark:border-slate-600 shadow-sm text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
+                </div>
+                
+                <div class="w-full relative" style="height: 380px;">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // เปิดใช้งานปลั๊กอิน DataLabels
+        Chart.register(ChartDataLabels);
+
+        let globalDatabase = [];
+        let globalMonthlyData = {}; 
+        let monthlyChartInstance = null;
+        const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+        const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+        let currentWeekStart, currentWeekEnd, currentMonthKey;
+
+        // --- ลิงก์ฐานข้อมูลเริ่มต้น (Default URL) ---
+        const DEFAULT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_d3Oxo9_vdxQGl2R1aIT8U-2RarYs_Iy2MANCwBi9Dnop58DvSD7tTiRlNf-vRhYupbxeCG4V_Mwc/pub?gid=921370860&single=true&output=csv";
+        
+        // --- ลิงก์ฐานข้อมูลงานอื่นๆ (Other Works) ---
+        const OTHER_WORKS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQM1NHMI4D0HT6SUYWji9HjRdLY55muSNvQ-jPe56F4GYHdBd2e33IiJJEpk0fkw82OznDLNFCvnQ66/pub?gid=921370860&single=true&output=csv";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+            const currentDay = today.getDay(); 
+            const diffToMonday = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+            
+            currentWeekStart = new Date(today);
+            currentWeekStart.setDate(diffToMonday);
+            currentWeekStart.setHours(0, 0, 0, 0);
+            
+            currentWeekEnd = new Date(currentWeekStart);
+            currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+            currentWeekEnd.setHours(23, 59, 59, 999);
+
+            const formatDateForInput = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const formatDateForLabel = (d) => {
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear() + 543;
+                return `${day}/${month}/${year}`;
+            };
+
+            // แสดงข้อความ เดือน/ปี และ ช่วงสัปดาห์ปัจจุบัน
+            const monthLabelText = `${monthNames[today.getMonth()]} ${today.getFullYear() + 543}`;
+            document.getElementById('kpi-month-label').innerText = `เดือนปัจจุบัน (${monthLabelText})`;
+            
+            const weekLabelText = `${formatDateForLabel(currentWeekStart)} ถึง ${formatDateForLabel(currentWeekEnd)}`;
+            document.getElementById('kpi-week-label').innerText = `สัปดาห์ปัจจุบัน (${weekLabelText})`;
+
+            document.getElementById('startDate').value = formatDateForInput(currentWeekStart);
+            document.getElementById('endDate').value = formatDateForInput(currentWeekEnd);
+
+            const savedUrl = localStorage.getItem('boredPileUrl');
+            document.getElementById('sheetUrl').value = savedUrl ? savedUrl : DEFAULT_URL;
+            
+            // โหลดข้อมูลทั้งสองส่วนพร้อมกัน
+            loadFromUrl();
+            loadOtherWorksData();
+        });
+
+        function toggleSection(contentId, btnId) {
+            const container = document.getElementById(contentId);
+            const btn = document.getElementById(btnId);
+            
+            container.classList.toggle('collapsed');
+
+            // --- ควบคุมการซ่อนการ์ดทั้งใบเวลาพิมพ์ ---
+            const parentCard = container.closest('.glass-card');
+            if (parentCard) {
+                if (container.classList.contains('collapsed')) {
+                    parentCard.classList.add('hide-on-print');
+                } else {
+                    parentCard.classList.remove('hide-on-print');
+                }
+            }
+            
+            if(container.classList.contains('collapsed')) {
+                const btnText = btn.innerHTML.includes('ตาราง') ? '▶️ แสดงตาราง' : '▶️ แสดงเนื้อหา';
+                btn.innerHTML = btnText;
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
+                btn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
+            } else {
+                const btnText = btn.innerHTML.includes('ตาราง') ? '🔽 ซ่อนตาราง' : '🔽 ซ่อนเนื้อหา';
+                btn.innerHTML = btnText;
+                btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-300', 'dark:bg-slate-800', 'dark:text-slate-300');
+                btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-slate-700');
+            }
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const icon = document.getElementById('theme-icon');
+            const isDark = html.classList.contains('dark');
+            icon.textContent = isDark ? '☀️' : '🌙';
+
+            if (monthlyChartInstance) {
+                monthlyChartInstance.options.plugins.legend.labels.color = isDark ? '#cbd5e1' : '#475569';
+                monthlyChartInstance.options.plugins.datalabels.color = isDark ? '#f8fafc' : '#334155';
+                monthlyChartInstance.options.scales.x.ticks.color = isDark ? '#94a3b8' : '#64748b';
+                monthlyChartInstance.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#64748b';
+                monthlyChartInstance.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                monthlyChartInstance.update();
+            }
+        }
+
+        function showStatus(msg, type) {
+            const st = document.getElementById('loading-status');
+            st.classList.remove('hide');
+            st.innerHTML = msg;
+            st.className = 'mt-4 text-center p-3 rounded-lg font-bold ';
+            if(type === 'load') st.classList.add('bg-blue-100', 'text-blue-800', 'dark:bg-blue-900/40', 'dark:text-blue-400');
+            else if(type === 'err') st.classList.add('bg-red-100', 'text-red-800', 'dark:bg-red-900/40', 'dark:text-red-400');
+            else if(type === 'ok') st.classList.add('bg-green-100', 'text-green-800', 'dark:bg-green-900/40', 'dark:text-green-400');
+            else st.classList.add('bg-gray-100', 'text-gray-800', 'dark:bg-gray-800', 'dark:text-gray-300'); 
+        }
+
+        // --- ส่วนดึงข้อมูล Other Works ---
+        function loadOtherWorksData() {
+            Papa.parse(OTHER_WORKS_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    renderOtherWorksTable(results.data);
+                },
+                error: function(err) {
+                    const tbody = document.getElementById('otherWorksTableBody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-red-500 font-bold w-full">❌ ไม่สามารถดึงข้อมูลงานอื่นๆ ได้</td></tr>`;
+                }
+            });
+        }
+
+        function renderOtherWorksTable(data) {
+            const tbody = document.getElementById('otherWorksTableBody');
+            if(!tbody) return;
+            const otherWorks = {};
+
+            data.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const jobType = row['ผู้รับผิดชอบ'] || '';
+                const finishDate = row['วันที่เสร็จงานจริงๆ'];
+                const typeLower = jobType.toLowerCase();
+
+                if (projName && jobType && 
+                    !typeLower.includes('sonic') && 
+                    !typeLower.includes('grout') && 
+                    !typeLower.includes('defective')) { 
+                    
+                    if (!otherWorks[jobType]) {
+                        otherWorks[jobType] = { count: 0, completed: 0, remaining: 0, projects: [] };
+                    }
+                    otherWorks[jobType].count++;
+                    
+                    // เช็คว่ามีวันที่เสร็จหรือไม่ เพื่อแยกนับ Completed / Remaining
+                    const hasDate = !!finishDate && finishDate.toString().trim() !== '';
+                    if (hasDate) {
+                        otherWorks[jobType].completed++;
+                    } else {
+                        otherWorks[jobType].remaining++;
+                    }
+
+                    otherWorks[jobType].projects.push({ name: projName, isCompleted: hasDate });
+                }
+            });
+
+            const sortedItems = Object.entries(otherWorks).sort((a, b) => b[1].count - a[1].count);
+
+            if (sortedItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 w-full">ไม่พบข้อมูลงานอื่นๆ</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            sortedItems.forEach(([jobName, info]) => {
+                const tags = info.projects.map(p => {
+                    let shortName = p.name;
+                    const diaIndex = shortName.toLowerCase().indexOf('-dia');
+                    if (diaIndex !== -1) {
+                        shortName = shortName.substring(0, diaIndex).trim();
+                    }
+                    
+                    const colorClass = p.isCompleted 
+                        ? "bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50"
+                        : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600";
+                        
+                    return `<span class="inline-block text-[11px] ${colorClass} border px-2 py-0.5 rounded shadow-sm m-0.5">${shortName}</span>`;
+                }).join('');
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                        <td class="px-6 py-5 w-2/5">
+                            <div class="flex items-start gap-3">
+                                <span class="text-pink-500 mt-1">📌</span>
+                                <div>
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 mb-2 text-base">${jobName}</div>
+                                    <div class="flex flex-wrap">${tags}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-center align-top font-bold text-slate-700 dark:text-slate-300 text-lg w-1/5">
+                            ${info.count}
+                        </td>
+                        <td class="px-6 py-5 text-center align-top font-bold text-emerald-600 dark:text-emerald-400 text-lg w-1/5">
+                            ${info.completed > 0 ? info.completed : '-'}
+                        </td>
+                        <td class="px-6 py-5 text-center align-top font-bold text-red-500 dark:text-red-400 text-lg w-1/5">
+                            ${info.remaining > 0 ? info.remaining : '-'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        // -------------------------------
+
+        function loadFromUrl() {
+            const url = document.getElementById('sheetUrl').value.trim();
+            if(!url) { showStatus('❌ กรุณาวางลิงก์ก่อนครับ', 'err'); return; }
+            localStorage.setItem('boredPileUrl', url);
+            showStatus('กำลังดึงข้อมูลจากฐานข้อมูล... ⏳', 'load');
+            Papa.parse(url, {
+                download: true, header: true, skipEmptyLines: true,
+                complete: (res) => handleParseResult(res),
+                error: (err) => {
+                    showStatus(`❌ ดึงข้อมูลไม่สำเร็จ โปรดตรวจสอบลิงก์อีกครั้ง`, 'err');
+                    const container = document.getElementById('data-source-container');
+                    if(container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
+                }
+            });
+        }
+
+        function loadFromFile() {
+            const file = document.getElementById('csvFile').files[0];
+            if(!file) { showStatus('❌ กรุณาเลือกไฟล์ก่อนครับ', 'err'); return; }
+            showStatus('กำลังอ่านไฟล์... ⏳', 'load');
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: (res) => handleParseResult(res),
+                error: (err) => showStatus(`❌ อ่านไฟล์ไม่สำเร็จ: ${err}`, 'err')
+            });
+        }
+
+        function handleParseResult(res) {
+            if(!res.data || res.data.length === 0) { showStatus('❌ ไม่พบข้อมูลในไฟล์ หรือลิงก์ผิดพลาด', 'err'); return; }
+            if(JSON.stringify(res.data[0]).includes('<!DOCTYPE html>')) {
+                 showStatus('❌ ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (โปรดตรวจสอบสิทธิ์การเข้าถึง)', 'err'); return;
+            }
+            globalDatabase = res.data;
+            processData(globalDatabase);
+            showStatus('✅ โหลดข้อมูลสำเร็จ!', 'ok');
+            
+            setTimeout(() => {
+                const container = document.getElementById('data-source-container');
+                if(!container.classList.contains('collapsed')) toggleSection('data-source-container', 'toggle-data-btn');
+            }, 800);
+        }
+
+        function parseThaiDate(dateStr) {
+            if (!dateStr) return null;
+            let str = dateStr.toString().trim().replace(/"/g, '');
+            let parts = str.split(/[\/\- ]+/); 
+            if (parts.length < 3) return null;
+            let day = parseInt(parts[0], 10);
+            let monthStr = parts[1].trim();
+            let year = parseInt(parts[2], 10);
+            if (year < 100) year += 2000;
+            if (year > 2500) year -= 543;
+            
+            const thaiMonths = { 'ม.ค.': 0, 'ก.พ.': 1, 'มี.ค.': 2, 'เม.ย.': 3, 'พ.ค.': 4, 'มิ.ย.': 5, 'ก.ค.': 6, 'ส.ค.': 7, 'ก.ย.': 8, 'ต.ค.': 9, 'พ.ย.': 10, 'ธ.ค.': 11 };
+            let month = thaiMonths[monthStr] !== undefined ? thaiMonths[monthStr] : (parseInt(monthStr, 10) - 1); 
+            if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+            
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+
+        function getStandardZoneName(rawZone) {
+            if (!rawZone) return 'ไม่ระบุ';
+            
+            const text = String(rawZone).toUpperCase().replace(/\s+/g, '');
+
+            if (text.includes("แซม")) return "เข็ม-แซม (Re-Drilling Pile)";
+            
+            if (text.includes("ZONE1")) return "Zone 1";
+            if (text.includes("ZONE2")) return "Zone 2";
+            if (text.includes("ZONE3")) return "Zone 3";
+            if (text.includes("ZONE4")) return "Zone 4";
+            if (text.includes("ZONE5")) return "Zone 5";
+            if (text.includes("ZONE6")) return "Zone 6";
+            if (text.includes("ZONE7")) return "Zone 7";
+            
+            if (text.includes("N01")) return "Ramp-N01";
+            if (text.includes("OR3")) return "Ramp-OR3";
+            if (text.includes("OR4")) return "Ramp-OR4";
+            if (text.includes("OR6")) return "Ramp-OR6";
+            if (text.includes("OR7")) return "Ramp-OR7";
+            if (text.includes("SR1")) return "Ramp-SR1";
+
+            return rawZone;
+        }
+
+        function processData(data) {
+            let totalPiles = 0, currentMonthPiles = 0, currentWeekPiles = 0;
+            const zoneCounts = {};
+
+            data.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const rawZone = row['ผู้รับผิดชอบ'] || 'ไม่ระบุ';
+                const dateStr = row['วันที่เสร็จงานจริงๆ'];
+
+                if (projName) {
+                    const zone = getStandardZoneName(rawZone);
+                    
+                    if (!zoneCounts[zone]) {
+                        zoneCounts[zone] = { count: 0, projects: [] };
+                    }
+                    zoneCounts[zone].count++;
+                    
+                    if (zone.includes("เข็ม-แซม")) {
+                        zoneCounts[zone].projects.push(projName);
+                    }
+
+                    if (!zone.includes("เข็ม-แซม")) {
+                        totalPiles++; 
+                        if(dateStr) {
+                            const taskDate = parseThaiDate(dateStr);
+                            if(taskDate) {
+                                const mKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}`;
+                                if (mKey === currentMonthKey) currentMonthPiles++;
+                                if (taskDate >= currentWeekStart && taskDate <= currentWeekEnd) currentWeekPiles++;
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('kpi-total').innerText = totalPiles.toLocaleString();
+            document.getElementById('kpi-month').innerText = currentMonthPiles.toLocaleString();
+            document.getElementById('kpi-week').innerText = currentWeekPiles.toLocaleString();
+
+            renderZoneTable(zoneCounts);
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchTableBody').innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์</td></tr>`;
+            
+            filterKanban();
+            prepareMonthlyChart(data);
+
+            document.getElementById('dashboardContent').classList.remove('hide');
+        }
+
+        function filterKanban() {
+            const startVal = document.getElementById('startDate').value; 
+            const endVal = document.getElementById('endDate').value;
+            if(!startVal || !endVal) return;
+
+            const [sYear, sMonth, sDay] = startVal.split('-');
+            const startDate = new Date(parseInt(sYear), parseInt(sMonth) - 1, parseInt(sDay), 0, 0, 0, 0);
+
+            const [eYear, eMonth, eDay] = endVal.split('-');
+            const endDate = new Date(parseInt(eYear), parseInt(eMonth) - 1, parseInt(eDay), 23, 59, 59, 999);
+
+            const board = document.getElementById('kanban-board');
+            board.innerHTML = '';
+            const columns = [1, 2, 3, 4, 5, 6, 0]; 
+            
+            columns.forEach(dayIdx => {
+                board.innerHTML += `<div class="k-col"><div class="k-header day-${dayIdx}">${days[dayIdx]}</div><div id="k-tasks-${dayIdx}"></div></div>`;
+            });
+
+            let foundCount = 0;
+            globalDatabase.forEach(row => {
+                const projName = row['ชื่อโปรเจค'];
+                const dateStr = row['วันที่เสร็จงานจริงๆ'];
+                if (!projName || !dateStr) return;
+
+                const taskDate = parseThaiDate(dateStr);
+                if (taskDate && taskDate >= startDate && taskDate <= endDate) {
+                    foundCount++;
+                    const dayIndex = taskDate.getDay(); 
+                    const displayDate = taskDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+                    
+                    let shortProjName = projName;
+                    const diaIndex = shortProjName.toLowerCase().indexOf('-dia');
+                    if (diaIndex !== -1) {
+                        shortProjName = shortProjName.substring(0, diaIndex).trim();
+                    }
+                    
+                    document.getElementById(`k-tasks-${dayIndex}`).innerHTML += `
+                        <div class="k-card card-${dayIndex}">
+                            <div class="font-bold text-sm mb-1 text-gray-800 dark:text-gray-100">📌 ${shortProjName}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">📅 ${displayDate}</div>
+                        </div>`;
+                }
+            });
+
+            const banner = document.getElementById('kanban-status');
+            if(foundCount > 0) {
+                banner.className = "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 p-3 rounded-lg text-center font-bold mb-4 border border-green-200 dark:border-green-800 no-print";
+                banner.innerHTML = `✅ ดึงข้อมูลสำเร็จ! พบงานเสร็จสิ้นจำนวน ${foundCount} ต้น`;
+            } else {
+                banner.className = "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400 p-3 rounded-lg text-center font-bold mb-4 border border-red-200 dark:border-red-800 no-print";
+                banner.innerHTML = `❌ ไม่พบข้อมูลเสาเข็มที่เสร็จสิ้นในช่วงวันที่เลือก`;
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const keyword = e.target.value.toLowerCase().trim();
+            const tbody = document.getElementById('searchTableBody');
+            
+            if (keyword === '') {
+                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400 dark:text-gray-500 font-medium">👆 พิมพ์ชื่อโปรเจคในช่องด้านบนเพื่อแสดงผลลัพธ์</td></tr>`;
+                return;
+            }
+
+            const results = globalDatabase.filter(row => {
+                const name = row['ชื่อโปรเจค'] || '';
+                return name.toLowerCase().includes(keyword);
+            });
+
+            if (results.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-red-500 dark:text-red-400 font-medium">❌ ไม่พบข้อมูลเสาเข็ม: "${keyword}"</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            results.slice(0, 100).forEach(row => {
+                const projName = row['ชื่อโปรเจค'] || '-';
+                const actualDate = row['วันที่เสร็จงานจริงๆ'] || '-';
+                const remark = row['หมายเหตุ'] || '-'; 
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-700 dark:text-purple-400">📌 ${projName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">📅 ${actualDate}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">${remark}</td>
+                    </tr>
+                `;
+            });
+        });
+
+        function renderZoneTable(zoneCounts) {
+            const tbody = document.getElementById('zoneTableBody');
+            tbody.innerHTML = '';
+            
+            const definedOrder = [
+                "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7",
+                "Ramp-N01", "Ramp-OR3", "Ramp-OR4", "Ramp-OR6", "Ramp-OR7", "Ramp-SR1",
+                "เข็ม-แซม (Re-Drilling Pile)" 
+            ];
+
+            const displayedZones = new Set();
+
+            const renderRow = (zone, dataObj) => {
+                let count = dataObj ? dataObj.count : 0;
+                let projects = dataObj ? dataObj.projects : [];
+
+                let rowClass = "hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors";
+                let textClass = "text-gray-700 dark:text-gray-300 font-medium";
+                let numClass = "font-bold text-indigo-600 dark:text-indigo-400";
+                let extraHTML = "";
+                
+                if (zone.includes("เข็ม-แซม")) {
+                    rowClass = "bg-orange-50 dark:bg-orange-900/20";
+                    textClass = "text-orange-700 dark:text-orange-400 font-bold";
+                    numClass = "font-bold text-orange-600 dark:text-orange-400";
+                    
+                    if (projects.length > 0) {
+                        const tags = projects.map(p => {
                             let shortName = p;
                             const diaIndex = shortName.toLowerCase().indexOf('-dia');
                             if (diaIndex !== -1) {
