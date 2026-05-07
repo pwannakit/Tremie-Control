@@ -378,7 +378,7 @@
             
             container.classList.toggle('collapsed');
 
-            // --- ส่วนที่เพิ่มใหม่: ควบคุมการซ่อนการ์ดทั้งใบเวลาพิมพ์ ---
+            // --- ควบคุมการซ่อนการ์ดทั้งใบเวลาพิมพ์ ---
             const parentCard = container.closest('.glass-card');
             if (parentCard) {
                 if (container.classList.contains('collapsed')) {
@@ -489,16 +489,47 @@
             return new Date(year, month, day, 0, 0, 0, 0);
         }
 
+        // --- เพิ่มฟังก์ชันจัดการชื่อโซนให้ตรงมาตรฐาน ---
+        function getStandardZoneName(rawZone) {
+            if (!rawZone) return 'ไม่ระบุ';
+            
+            // ลบเว้นวรรคทั้งหมดและแปลงเป็นพิมพ์ใหญ่เพื่อให้ตรวจสอบง่าย
+            const text = String(rawZone).toUpperCase().replace(/\s+/g, '');
+
+            if (text.includes("แซม")) return "เข็ม-แซม";
+            
+            if (text.includes("ZONE1")) return "Zone 1";
+            if (text.includes("ZONE2")) return "Zone 2";
+            if (text.includes("ZONE3")) return "Zone 3";
+            if (text.includes("ZONE4")) return "Zone 4";
+            if (text.includes("ZONE5")) return "Zone 5";
+            if (text.includes("ZONE6")) return "Zone 6";
+            if (text.includes("ZONE7")) return "Zone 7";
+            
+            if (text.includes("N01")) return "Ramp-N01";
+            if (text.includes("OR3")) return "Ramp-OR3";
+            if (text.includes("OR4")) return "Ramp-OR4";
+            if (text.includes("OR6")) return "Ramp-OR6";
+            if (text.includes("OR7")) return "Ramp-OR7";
+            if (text.includes("SR1")) return "Ramp-SR1";
+
+            // ถ้าไม่ตรงกับเงื่อนไขใดเลย ให้คืนค่าเดิมกลับไป
+            return rawZone;
+        }
+
         function processData(data) {
             let totalPiles = 0, currentMonthPiles = 0, currentWeekPiles = 0;
             const zoneCounts = {};
 
             data.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
-                const zone = row['ผู้รับผิดชอบ'] || 'ไม่ระบุ';
+                const rawZone = row['ผู้รับผิดชอบ'] || 'ไม่ระบุ';
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
                 if (projName) {
+                    // แปลงชื่อที่ได้จาก Database ให้เป็นชื่อมาตรฐานก่อนนำไปนับ
+                    const zone = getStandardZoneName(rawZone);
+                    
                     zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
 
                     if (!zone.includes("เข็ม-แซม")) {
@@ -623,17 +654,32 @@
         function renderZoneTable(zoneCounts) {
             const tbody = document.getElementById('zoneTableBody');
             tbody.innerHTML = '';
-            const sortedZones = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1]);
+            
+            // 1. กำหนดลำดับที่ต้องการให้แสดงผลเสมอ
+            const definedOrder = [
+                "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7",
+                "Ramp-N01", "Ramp-OR3", "Ramp-OR4", "Ramp-OR6", "Ramp-OR7", "Ramp-SR1",
+                "เข็ม-แซม"
+            ];
 
-            sortedZones.forEach(([zone, count]) => {
+            const displayedZones = new Set();
+
+            // ฟังก์ชันย่อยสำหรับสร้างแถวตาราง
+            const renderRow = (zone, count) => {
                 let rowClass = "hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors";
                 let textClass = "text-gray-700 dark:text-gray-300 font-medium";
                 let numClass = "font-bold text-indigo-600 dark:text-indigo-400";
                 
+                // สไตล์พิเศษสำหรับ เข็ม-แซม
                 if (zone.includes("เข็ม-แซม")) {
                     rowClass = "bg-orange-50 dark:bg-orange-900/20";
                     textClass = "text-orange-700 dark:text-orange-400 font-bold";
                     numClass = "font-bold text-orange-600 dark:text-orange-400";
+                } 
+                // สไตล์พิเศษสำหรับ Zone ที่ค่าเป็น 0 
+                else if (count === 0) {
+                    textClass = "text-gray-400 dark:text-gray-500";
+                    numClass = "font-medium text-gray-400 dark:text-gray-500";
                 }
 
                 tbody.innerHTML += `
@@ -642,6 +688,22 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right">${count.toLocaleString()}</td>
                     </tr>
                 `;
+            };
+
+            // 2. แสดงผลตามรายชื่อที่ล็อคไว้
+            definedOrder.forEach(zone => {
+                const count = zoneCounts[zone] || 0;
+                displayedZones.add(zone);
+                renderRow(zone, count);
+            });
+
+            // 3. จัดการ Zone อื่นๆ ที่อาจจะหลงมาในฐานข้อมูล (ที่อยู่นอกเหนือจากรายชื่อด้านบน)
+            const remainingZones = Object.entries(zoneCounts)
+                .filter(([zone]) => !displayedZones.has(zone))
+                .sort((a, b) => b[1] - a[1]); // เรียงจากมากไปน้อย
+
+            remainingZones.forEach(([zone, count]) => {
+                renderRow(zone, count);
             });
         }
 
@@ -650,21 +712,26 @@
 
             data.forEach(row => {
                 const projName = row['ชื่อโปรเจค'];
-                const zone = row['ผู้รับผิดชอบ'] || '';
+                const rawZone = row['ผู้รับผิดชอบ'] || '';
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
-                if (projName && dateStr && !zone.includes("เข็ม-แซม")) {
-                    const dateObj = parseThaiDate(dateStr);
-                    if (dateObj) {
-                        const y = dateObj.getFullYear();
-                        const m = dateObj.getMonth();
-                        const sortKey = `${y}-${String(m + 1).padStart(2, '0')}`;
-                        const displayLabel = `${monthNames[m]} ${y + 543}`; 
+                if (projName && dateStr) {
+                    // กรองชื่อเป็นมาตรฐานด้วยฟังก์ชันใหม่ที่นี่ด้วย
+                    const zone = getStandardZoneName(rawZone);
+                    
+                    if (!zone.includes("เข็ม-แซม")) {
+                        const dateObj = parseThaiDate(dateStr);
+                        if (dateObj) {
+                            const y = dateObj.getFullYear();
+                            const m = dateObj.getMonth();
+                            const sortKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+                            const displayLabel = `${monthNames[m]} ${y + 543}`; 
 
-                        if (!monthlyCounts[sortKey]) {
-                            monthlyCounts[sortKey] = { label: displayLabel, count: 0 };
+                            if (!monthlyCounts[sortKey]) {
+                                monthlyCounts[sortKey] = { label: displayLabel, count: 0 };
+                            }
+                            monthlyCounts[sortKey].count++;
                         }
-                        monthlyCounts[sortKey].count++;
                     }
                 }
             });
