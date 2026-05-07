@@ -487,8 +487,12 @@
                 const jobType = row['ผู้รับผิดชอบ'] || '';
                 const typeLower = jobType.toLowerCase();
 
-                // โลจิก: ถ้าไม่ใช่ Sonic และไม่ใช่ Grout ให้ถือว่าเป็น Other Works
-                if (projName && jobType && !typeLower.includes('sonic') && !typeLower.includes('grout')) {
+                // โลจิก: กรองข้อมูลที่ไม่ใช่ Sonic, Grout และไม่รวม Defective-Pile
+                if (projName && jobType && 
+                    !typeLower.includes('sonic') && 
+                    !typeLower.includes('grout') && 
+                    !typeLower.includes('defective')) { 
+                    
                     if (!otherWorks[jobType]) {
                         otherWorks[jobType] = { count: 0, projects: [] };
                     }
