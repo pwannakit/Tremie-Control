@@ -258,7 +258,7 @@
                         <thead class="bg-gray-100 dark:bg-slate-800">
                             <tr>
                                 <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zone / ผู้รับผิดชอบ</th>
-                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">จำนวนผลงานที่ทำได้ (ต้น)</th>
+                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">จำนวนผลงานที่ทำได้ (ต้น)</th>
                             </tr>
                         </thead>
                         <tbody id="zoneTableBody" class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
@@ -487,7 +487,6 @@
                 const jobType = row['ผู้รับผิดชอบ'] || '';
                 const typeLower = jobType.toLowerCase();
 
-                // โลจิก: กรองข้อมูลที่ไม่ใช่ Sonic, Grout และไม่รวม Defective-Pile
                 if (projName && jobType && 
                     !typeLower.includes('sonic') && 
                     !typeLower.includes('grout') && 
@@ -501,7 +500,6 @@
                 }
             });
 
-            // เรียงลำดับจากมากไปน้อย
             const sortedItems = Object.entries(otherWorks).sort((a, b) => b[1].count - a[1].count);
 
             if (sortedItems.length === 0) {
@@ -596,13 +594,13 @@
         }
 
         // --- เพิ่มฟังก์ชันจัดการชื่อโซนให้ตรงมาตรฐาน ---
+        // *จุดที่มีการแก้ไขชื่อ เข็ม-แซม*
         function getStandardZoneName(rawZone) {
             if (!rawZone) return 'ไม่ระบุ';
             
-            // ลบเว้นวรรคทั้งหมดและแปลงเป็นพิมพ์ใหญ่เพื่อให้ตรวจสอบง่าย
             const text = String(rawZone).toUpperCase().replace(/\s+/g, '');
 
-            if (text.includes("แซม")) return "เข็ม-แซม";
+            if (text.includes("แซม")) return "เข็ม-แซม (Re-Drilling Pile)";
             
             if (text.includes("ZONE1")) return "Zone 1";
             if (text.includes("ZONE2")) return "Zone 2";
@@ -619,7 +617,6 @@
             if (text.includes("OR7")) return "Ramp-OR7";
             if (text.includes("SR1")) return "Ramp-SR1";
 
-            // ถ้าไม่ตรงกับเงื่อนไขใดเลย ให้คืนค่าเดิมกลับไป
             return rawZone;
         }
 
@@ -633,10 +630,17 @@
                 const dateStr = row['วันที่เสร็จงานจริงๆ'];
 
                 if (projName) {
-                    // กรองชื่อเป็นมาตรฐานด้วยฟังก์ชันใหม่
                     const zone = getStandardZoneName(rawZone);
                     
-                    zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
+                    // *จุดที่มีการแก้ไขให้เก็บชื่อโปรเจคแยกตาม Zone*
+                    if (!zoneCounts[zone]) {
+                        zoneCounts[zone] = { count: 0, projects: [] };
+                    }
+                    zoneCounts[zone].count++;
+                    
+                    if (zone.includes("เข็ม-แซม")) {
+                        zoneCounts[zone].projects.push(projName);
+                    }
 
                     if (!zone.includes("เข็ม-แซม")) {
                         totalPiles++; 
@@ -757,6 +761,7 @@
             });
         });
 
+        // *จุดที่มีการแก้ไขระบบแสดงผลตารางเพื่อดึงแท็กชื่อโปรเจคมาแสดง*
         function renderZoneTable(zoneCounts) {
             const tbody = document.getElementById('zoneTableBody');
             tbody.innerHTML = '';
@@ -764,20 +769,31 @@
             const definedOrder = [
                 "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7",
                 "Ramp-N01", "Ramp-OR3", "Ramp-OR4", "Ramp-OR6", "Ramp-OR7", "Ramp-SR1",
-                "เข็ม-แซม"
+                "เข็ม-แซม (Re-Drilling Pile)" 
             ];
 
             const displayedZones = new Set();
 
-            const renderRow = (zone, count) => {
+            const renderRow = (zone, dataObj) => {
+                let count = dataObj ? dataObj.count : 0;
+                let projects = dataObj ? dataObj.projects : [];
+
                 let rowClass = "hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors";
                 let textClass = "text-gray-700 dark:text-gray-300 font-medium";
                 let numClass = "font-bold text-indigo-600 dark:text-indigo-400";
+                let extraHTML = "";
                 
                 if (zone.includes("เข็ม-แซม")) {
                     rowClass = "bg-orange-50 dark:bg-orange-900/20";
                     textClass = "text-orange-700 dark:text-orange-400 font-bold";
                     numClass = "font-bold text-orange-600 dark:text-orange-400";
+                    
+                    if (projects.length > 0) {
+                        const tags = projects.map(p => 
+                            `<span class="inline-block text-[11px] bg-orange-100 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700/50 px-2 py-0.5 rounded shadow-sm m-0.5">${p}</span>`
+                        ).join('');
+                        extraHTML = `<div class="mt-2 flex flex-wrap gap-1">${tags}</div>`;
+                    }
                 } 
                 else if (count === 0) {
                     textClass = "text-gray-400 dark:text-gray-500";
@@ -786,24 +802,27 @@
 
                 tbody.innerHTML += `
                     <tr class="${rowClass}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm ${textClass}">${zone}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right">${count.toLocaleString()}</td>
+                        <td class="px-6 py-4 text-sm ${textClass}">
+                            ${zone}
+                            ${extraHTML}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${numClass} text-right align-top w-32">${count.toLocaleString()}</td>
                     </tr>
                 `;
             };
 
             definedOrder.forEach(zone => {
-                const count = zoneCounts[zone] || 0;
+                const dataObj = zoneCounts[zone];
                 displayedZones.add(zone);
-                renderRow(zone, count);
+                renderRow(zone, dataObj);
             });
 
             const remainingZones = Object.entries(zoneCounts)
                 .filter(([zone]) => !displayedZones.has(zone))
-                .sort((a, b) => b[1] - a[1]); 
+                .sort((a, b) => b[1].count - a[1].count); 
 
-            remainingZones.forEach(([zone, count]) => {
-                renderRow(zone, count);
+            remainingZones.forEach(([zone, dataObj]) => {
+                renderRow(zone, dataObj);
             });
         }
 
