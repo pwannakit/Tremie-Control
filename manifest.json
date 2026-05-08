@@ -1,0 +1,17 @@
+{
+  "name": "Tremie Crotrol V40",
+  "short_name": "PileAnalyzer",
+  "description": "ระบบบันทึกการเทปูน และตัดท่อ Tremie",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "https://pwannakit.github.io/Tremie_Control/icon_pic.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
