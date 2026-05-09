@@ -26,7 +26,7 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response; // คืนค่าจาก Cache
         }
-        return fetch(event.request); // ดึงจาก Network
+        return fetch(event.request); // ดึงจาก Network 
       })
   );
 });
