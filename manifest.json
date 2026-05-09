@@ -1,14 +1,21 @@
 {
-  "name": "Tremie Control V40",
-  "short_name": "TremieV40",
-  "description": "ระบบควบคุมงานคอนกรีตเสาเข็มเจาะ โครงการจตุโชติ",
-  "start_url": "index.html",
+  "name": "Tremie Control V44",
+  "short_name": "Tremie",
+  "description": "ระบบควบคุมและบันทึกการเทคอนกรีตเสาเข็มเจาะ",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#1e293b",
   "theme_color": "#1e293b",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://pwannakit.github.io/Tremie-Control/icon_pic.png",
+      "src": "icon_pic.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon_pic.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
