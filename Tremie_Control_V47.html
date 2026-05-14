@@ -974,7 +974,28 @@
                 else { idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border text-center flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-emerald-600"; idleStatus.innerText = "ปกติ"; }
                 finishBtnContainer.classList.remove('hidden');
             } else { idleDisplay.innerText = "- นาที"; idleStatus.innerText = "รอคันแรก"; finishBtnContainer.classList.add('hidden'); }
+            // คำนวณ Progress / Overbreak
+            const theoTotalVol = depth * area; 
+            let yieldHtml = "";
+            if (actualVol === 0) { 
+                yieldHtml = `Progress: 0%`; 
+            } else if (state.isFinished) { 
+                let overbreak = ((actualVol - theoTotalVol) / theoTotalVol) * 100; 
+                if (overbreak > 0) yieldHtml = `OB: <span class="text-red-500 font-bold">+${overbreak.toFixed(1)}%</span>`; 
+                else yieldHtml = `Yield: <span class="text-orange-500 font-bold">${(100+overbreak).toFixed(1)}%</span>`; 
+            } else { 
+                let progress = (actualVol / theoTotalVol) * 100; 
+                yieldHtml = `Progress: <span class="text-blue-500 font-bold">${progress.toFixed(1)}%</span>`; 
+            }
+            document.getElementById('yield-status').innerHTML = yieldHtml;
 
+            // คำนวณจำนวนท่อนที่เหลือ
+            let remainingPcs = 0;
+            if (actualPipeLen > 0) {
+                if (!isTopPieceRemoved) { remainingPcs = 1 + Math.max(0, (actualPipeLen - topLen) / secLen); } 
+                else { remainingPcs = actualPipeLen / secLen; }
+            }
+            document.getElementById('actual-pipe-pcs').innerHTML = `เหลือ ≈ ${remainingPcs.toFixed(1)} ท่อน`;
             let actualEmbed = actualConcLevelFromBottom - (depth - actualPipeLen);
             document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs">m³</span>`; 
             document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs">m</span>`; 
