@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tremie Control System V47 - โครงการจตุโชติ</title>
+    <title>Tremie Control System V44 - โครงการจตุโชติ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -32,6 +32,7 @@
         .dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
     </style>
     
+    <!-- เชื่อมต่อ Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,7 +44,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-blue-400">
-                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V47
+                    <i class="fas fa-bore-hole mr-2"></i>Tremie Control V44
                 </h1>
                 <p class="text-slate-400 text-sm">โครงการทางพิเศษฉลองรัชส่วนต่อขยาย (ช่วงจตุโชติ - ถ.ลำลูกกา)</p>
             </div>
@@ -65,8 +66,8 @@
                     <i class="fas fa-chart-pie mr-1"></i>
                 </button>
 
-                <button onclick="openManualModal()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition" title="เกณฑ์การแจ้งเตือน">
-                    <i class="fas fa-cog mr-1"></i>
+                <button onclick="openManualModal()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-sm font-bold shadow transition">
+                    <i class="fas fa-info-circle mr-1"></i>
                 </button>
 
                 <input type="file" id="file-input" accept=".json" class="hidden" onchange="importData(event)">
@@ -95,27 +96,27 @@
                 
                 <div id="setup-content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4 transition-all duration-300">
                     <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-[9px]">ชื่อหลุมเจาะ (Pile ID)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">ชื่อหลุมเจาะ (Pile ID)</label>
                         <input type="text" id="pile-name" placeholder="P1-01" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none font-bold">
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-[9px]">เส้นผ่านศูนย์กลาง (m)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">เส้นผ่านศูนย์กลาง (m)</label>
                         <input type="number" id="diameter" value="1.2" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-[9px]">ความลึกหลุม (m)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">ความลึกหลุม (m)</label>
                         <input type="number" id="depth" value="62.0" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-[9px]">ท่อ Tremie (m)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">ท่อ Tremie (m)</label>
                         <input type="number" id="init-tremie" value="61.5" step="0.1" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-blue-500 text-[9px]">ท่อนมาตรฐาน (m)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-blue-500">ท่อนมาตรฐาน (m)</label>
                         <input type="number" id="sec-len" value="3.0" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold">
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-purple-500 text-[9px]">ท่อนเศษ (m)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase text-purple-500">ท่อนบนสุด/เศษ (m)</label>
                         <input type="number" id="top-len" value="1.5" step="0.5" onchange="updateSettings()" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-slate-800 text-purple-700 dark:text-purple-400 font-bold">
                     </div>
 
@@ -154,6 +155,7 @@
                             <div class="col-span-1">
                                 <div class="flex justify-between items-center mb-1">
                                     <label class="block text-[10px] font-bold text-amber-500 uppercase">เวลาผลิต</label>
+                                    <button type="button" onclick="setNowBatchTime()" class="text-[9px] bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 dark:hover:bg-amber-800 px-1 py-0.5 rounded transition shadow-sm border border-amber-200 dark:border-amber-700 outline-none">Now</button>
                                 </div>
                                 <input type="time" id="batch-time" class="w-full p-2 border rounded-lg focus:ring-2 outline-none border-amber-200 dark:border-amber-700 text-sm">
                             </div>
@@ -231,6 +233,7 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-3">
+                <!-- Card เริ่มงาน -->
                 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-center gap-2 mb-1">
@@ -244,6 +247,7 @@
                     </button>
                 </div>
 
+                <!-- Card เวลารอ (Idle Time) -->
                 <div id="idle-tracker-card" class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center transition-colors flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-center gap-2 mb-1">
@@ -279,6 +283,7 @@
                 </div>
             </div>
 
+            <!-- Visualization -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[350px] flex flex-col items-center justify-center transition-colors relative">
                 <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
                     <input type="file" id="koden-upload" accept="image/*" class="hidden" onchange="loadKodenImage(event)">
@@ -308,6 +313,7 @@
                     <i class="fas fa-calculator mr-2"></i> สรุปยอดสั่งปูน / ประมาณการ
                 </h3>
                 
+                <!-- ซ่อนช่องกรอกระยะหย่อนเทป เพื่อไม่กระทบสูตรคำนวณเดิมเบื้องหลัง -->
                 <input type="number" id="predict-sounding" class="hidden" value="">
 
                 <div class="flex gap-2 mb-4 relative z-10">
@@ -327,12 +333,12 @@
                         <span class="font-bold text-amber-400"><span id="total-waiting-vol">-</span> m³</span>
                     </div>
                     
-                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-1 pt-2 text-slate-400">
-                        <span>เทไปแล้วจริง:</span>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-1 pt-2">
+                        <span class="text-slate-400">เทไปแล้วจริง:</span>
                         <span class="font-bold text-slate-100"><span id="pred-poured">0.0</span> m³</span>
                     </div>
-                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-1 text-slate-400">
-                        <span>ยอดรวมพอดีหลุม:</span>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-1">
+                        <span class="text-slate-400">ยอดรวมพอดีหลุม:</span>
                         <span class="font-bold text-blue-200"><span id="pred-exact">-</span> m³</span>
                     </div>
                     <div class="flex justify-between items-center pt-1">
@@ -352,6 +358,7 @@
         </div>
     </main>
 
+    <!-- Changelog Section -->
     <div class="max-w-7xl mx-auto px-4 mt-2 mb-10">
         <button onclick="toggleChangelog()" class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 text-left font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex justify-between items-center outline-none">
             <span><i class="fas fa-history mr-2"></i>บันทึกการแก้ไขเวอร์ชัน (Changelog)</span>
@@ -360,17 +367,18 @@
         <div id="changelog-content" class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-2 transition-all">
             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <li class="flex items-start">
-                    <span class="font-bold text-teal-500 w-16 shrink-0">V47:</span> 
-                    <span>ปรับปรุงปุ่ม "Now" ในเมนูต่อคิวรถปูน โดยให้แสดงเฉพาะเวลาถึงไซต์ และเมื่อกดจะตั้งเวลาผลิตย้อนหลัง 30 นาทีอัตโนมัติ</span>
+                    <span class="font-bold text-blue-500 w-16 shrink-0">V44:</span> 
+                    <span>ปรับปรุงเมนู "ประมาณการยอดสั่งปูนรวม" เพิ่มช่องกรอกยอดสั่งปูน และเพิ่มการแสดงผล ยอดรวมปูนในหน่วยงาน กับ ยอดรวมรอปูน</span>
                 </li>
                 <li class="flex items-start border-t border-slate-100 dark:border-slate-700 pt-3">
-                    <span class="font-bold text-indigo-500 w-16 shrink-0">V46:</span> 
-                    <span>ย้ายแผง "ตั้งค่าเกณฑ์แจ้งเตือน" (Thresholds) เข้าไปรวมไว้ในหน้าต่าง "เกณฑ์และเงื่อนไขการทำงาน" (รูปเฟือง) เพื่อลดความซับซ้อนของเมนูตั้งค่าหลัก</span>
+                    <span class="font-bold text-orange-500 w-16 shrink-0">V43:</span> 
+                    <span>เปลี่ยนข้อความปุ่มในเมนูสถานะจาก "กดเมื่อเทเสร็จ" เป็น "เทเสร็จ" เพื่อความกระชับและสบายตา</span>
                 </li>
             </ul>
         </div>
     </div>
 
+    <!-- Modal พื้นที่สำหรับแก้ไขสาเหตุ Reject -->
     <div id="reject-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transition-colors">
             <div class="bg-red-600 p-4 text-white font-bold flex justify-between items-center border-b border-red-700">
@@ -401,6 +409,7 @@
         </div>
     </div>
 
+    <!-- Analytics Modal -->
     <div id="analytics-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
         <div id="analytics-modal-container" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden transition-colors flex flex-col h-[90vh]">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
@@ -437,6 +446,7 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
     <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transition-colors">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700">
@@ -466,57 +476,15 @@
         </div>
     </div>
     
+    <!-- Manual Modal -->
     <div id="manual-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-colors flex flex-col max-h-[90vh]">
             <div class="bg-slate-800 dark:bg-slate-900 p-4 text-white font-bold flex justify-between items-center border-b border-slate-700 shrink-0">
                 <span><i class="fas fa-book mr-2"></i>เกณฑ์และเงื่อนไขการทำงาน</span><button onclick="closeManualModal()" class="text-slate-300 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-6 space-y-5 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
-                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-ruler-vertical text-blue-500 mr-2"></i>1. ระยะฝังท่อทรีมี่</h4><ul class="space-y-1 mt-2">
-                    <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">≥ <span id="man-embed-safe"></span> m</span> ปลอดภัย</li>
-                    <li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">> <span id="man-embed-max"></span> m</span> ระวัง!</li>
-                    <li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< <span id="man-embed-danger"></span> m</span> อันตราย!</li>
-                </ul></div>
-                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-clock text-amber-500 mr-2"></i>2. อายุคอนกรีต (Batch Age)</h4><ul class="space-y-1 mt-2">
-                    <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-24 inline-block">< <span id="man-age-warn"></span> ชม.</span> ปกติ</li>
-                    <li><span class="text-orange-500 dark:text-orange-400 font-bold w-24 inline-block"><span id="man-age-range"></span> ชม.</span> ระวัง!</li>
-                    <li><span class="text-red-600 dark:text-red-400 font-bold w-24 inline-block">> <span id="man-age-danger"></span> ชม.</span> อันตราย!</li>
-                </ul></div>
-                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-stopwatch text-indigo-500 mr-2"></i>3. เวลารอคันถัดไป (Idle Time)</h4><ul class="space-y-1 mt-2">
-                    <li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-24 inline-block">< <span id="man-idle-warn"></span> นาที</span> ปกติ</li>
-                    <li><span class="text-orange-500 dark:text-orange-400 font-bold w-24 inline-block">≥ <span id="man-idle-warn2"></span> นาที</span> พิจารณาขยับท่อ</li>
-                    <li><span class="text-red-600 dark:text-red-400 font-bold w-24 inline-block">≥ <span id="man-idle-danger"></span> นาที</span> อันตราย!</li>
-                </ul></div>
-
-                <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                    <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider"><i class="fas fa-cog mr-2"></i>ปรับแต่งเกณฑ์การแจ้งเตือน</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[9px] font-bold text-emerald-600 uppercase">Embed ปลอดภัย (m)</label>
-                            <input type="number" id="crit-embed-safe" step="0.1" onchange="updateSettings(); openManualModal();" class="w-full p-1.5 border rounded-lg text-sm font-bold text-emerald-600">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-orange-600 uppercase">Embed สูงสุด (m)</label>
-                            <input type="number" id="crit-embed-max" step="0.1" onchange="updateSettings(); openManualModal();" class="w-full p-1.5 border rounded-lg text-sm font-bold text-orange-600">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-orange-600 uppercase">เตือนอายุคอนกรีต (นาที)</label>
-                            <input type="number" id="crit-age-warn" step="5" onchange="updateSettings(); openManualModal();" class="w-full p-1.5 border rounded-lg text-sm font-bold text-orange-600">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-red-600 uppercase">อันตรายอายุคอนกรีต(นาที)</label>
-                            <input type="number" id="crit-age-danger" step="5" onchange="updateSettings(); openManualModal();" class="w-full p-1.5 border rounded-lg text-sm font-bold text-red-600">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-orange-600 uppercase">รอนาน-เตือน (นาที)</label>
-                            <input type="number" id="crit-idle-warn" step="5" onchange="updateSettings(); openManualModal();" class="w-full p-1.5 border rounded-lg text-sm font-bold text-orange-600">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-red-600 uppercase">รอนาน-อันตราย (นาที)</label>
-                            <input type="number" id="crit-idle-danger" step="5" onchange="updateSettings(); openManualModal();" class="w-full p-1.5 border rounded-lg text-sm font-bold text-red-600">
-                        </div>
-                    </div>
-                </div>
+                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-ruler-vertical text-blue-500 mr-2"></i>1. ระยะฝังท่อทรีมี่</h4><ul class="space-y-1 mt-2"><li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">≥ 3.0 m</span> ปลอดภัย</li><li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">> 6.0 m</span> ระวัง!</li><li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">< 3.0 m</span> อันตราย!</li></ul></div>
+                <div><h4 class="font-bold text-slate-800 dark:text-white mb-1 border-b pb-1 dark:border-slate-700"><i class="fas fa-clock text-amber-500 mr-2"></i>2. อายุคอนกรีต (Batch Age)</h4><ul class="space-y-1 mt-2"><li><span class="text-emerald-600 dark:text-emerald-400 font-bold w-20 inline-block">< 1.5 ชม.</span> ปกติ</li><li><span class="text-orange-500 dark:text-orange-400 font-bold w-20 inline-block">1.5 - 2.0 ชม.</span> ระวัง!</li><li><span class="text-red-600 dark:text-red-400 font-bold w-20 inline-block">> 2.0 ชม.</span> อันตราย!</li></ul></div>
             </div>
             <div class="p-4 border-t border-slate-200 dark:border-slate-700 shrink-0 bg-slate-50 dark:bg-slate-900">
                 <button onclick="closeManualModal()" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 rounded-lg transition-colors">ปิดหน้าต่าง</button>
@@ -539,100 +507,36 @@
         function toggleSetup() { const content = document.getElementById('setup-content'); const icon = document.getElementById('setup-toggle-icon'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.replace('fa-chevron-down', 'fa-chevron-up'); } else { content.classList.add('hidden'); icon.classList.replace('fa-chevron-up', 'fa-chevron-down'); } }
         function toggleChangelog() { const content = document.getElementById('changelog-content'); const icon = document.getElementById('changelog-icon'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.replace('fa-chevron-down', 'fa-chevron-up'); } else { content.classList.add('hidden'); icon.classList.replace('fa-chevron-up', 'fa-chevron-down'); } }
         function updateSupplier() { const supp = document.getElementById('supplier').value; const codeInput = document.getElementById('product-code'); const data = { 'CPAC': '35BAA4AB32 Slump 15-20 cm.', 'M Concrete': 'TP3520BBF100 Slump 18-23 cm.', 'TPI': '836313 Slump 18-23 cm.', 'Qmix': 'ZBDQ1K017P Slump 15-20 cm.', 'INSEE': '84369401 Slump 18-23 cm.' }; if(data[supp]) codeInput.value = data[supp]; else codeInput.value = ''; updateSettings(); }
-        
-        function setNowArrTime() { 
-            const now = new Date(); 
-            document.getElementById('arr-time').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); 
-            const batch = new Date(now.getTime() - 30 * 60000);
-            document.getElementById('batch-time').value = batch.getHours().toString().padStart(2, '0') + ':' + batch.getMinutes().toString().padStart(2, '0');
-        }
-
+        function setNowBatchTime() { const now = new Date(); document.getElementById('batch-time').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }
+        function setNowArrTime() { const now = new Date(); document.getElementById('arr-time').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); }
         function getMinsDiff(startStr, endStr) { if (!startStr || !endStr) return null; let [sH, sM] = startStr.split(':').map(Number); let [eH, eM] = endStr.split(':').map(Number); let diff = (eH * 60 + eM) - (sH * 60 + sM); if (diff < 0) diff += 24 * 60; return diff; }
         function calculateAgeMinutes(batchTimeStr, pourTimeStr) { return getMinsDiff(batchTimeStr, pourTimeStr); }
         function formatAgeString(mins) { if (mins === null || isNaN(mins)) return '-'; const h = Math.floor(mins / 60); const m = mins % 60; return h > 0 ? `${h}h ${m}m` : `${m}m`; }
         function formatThaiDuration(mins) { if (mins === null || isNaN(mins)) return '- นาที'; const h = Math.floor(mins / 60); const m = mins % 60; if (h > 0) return m > 0 ? `${h} ชั่วโมง ${m} นาที` : `${h} ชั่วโมง`; return `${m} นาที`; }
-        
-        function getAgeColor(mins) { 
-            if (mins === null || isNaN(mins)) return "text-slate-400"; 
-            if (mins >= state.thresholds.ageDanger) return "text-red-600 dark:text-red-400 font-bold animate-pulse"; 
-            if (mins >= state.thresholds.ageWarn) return "text-amber-500 dark:text-amber-400 font-bold"; 
-            return "text-emerald-600 dark:text-emerald-400 font-bold"; 
-        }
+        function getAgeColor(mins) { if (mins === null || isNaN(mins)) return "text-slate-400"; if (mins >= 120) return "text-red-600 dark:text-red-400 font-bold animate-pulse"; if (mins >= 90) return "text-amber-500 dark:text-amber-400 font-bold"; return "text-emerald-600 dark:text-emerald-400 font-bold"; }
 
-        let defaultThresholds = {
-            embedSafe: 3.0,
-            embedMax: 6.0,
-            ageWarn: 90,
-            ageDanger: 120,
-            idleWarn: 30,
-            idleDanger: 45
-        };
-
-        let state = { 
-            settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '', totalOrdered: '' }, 
-            thresholds: {...defaultThresholds},
-            notes: '', events: [], isStarted: false, startTime: null, isFinished: false, finishTime: null 
-        };
+        let state = { settings: { pileName: '', diameter: 1.2, depth: 62.0, initTremie: 61.5, secLen: 3.0, topLen: 1.5, supplier: '', productCode: '', totalOrdered: '' }, notes: '', events: [], isStarted: false, startTime: null, isFinished: false, finishTime: null };
 
         function init() {
-            let saved = localStorage.getItem('tremie_v47') || localStorage.getItem('tremie_v46') || localStorage.getItem('tremie_v45');
-            if (saved) { 
-                try { 
-                    const parsed = JSON.parse(saved); 
-                    state.settings = { ...state.settings, ...parsed.settings }; 
-                    state.thresholds = { ...defaultThresholds, ...(parsed.thresholds || {}) };
-                    state.events = parsed.events || []; 
-                    state.notes = parsed.notes || ''; 
-                    state.isStarted = parsed.isStarted || false; 
-                    state.startTime = parsed.startTime || null; 
-                    state.isFinished = parsed.isFinished || false; 
-                    state.finishTime = parsed.finishTime || null; 
-                } catch(e) {} 
-            }
+            let saved = localStorage.getItem('tremie_v44') || localStorage.getItem('tremie_v43') || localStorage.getItem('tremie_v42');
+            if (saved) { try { const parsed = JSON.parse(saved); state.settings = { ...state.settings, ...parsed.settings }; state.events = parsed.events || []; state.notes = parsed.notes || ''; state.isStarted = parsed.isStarted || false; state.startTime = parsed.startTime || null; state.isFinished = parsed.isFinished || false; state.finishTime = parsed.finishTime || null; } catch(e) {} }
             populateSettingsUI(); render(); setInterval(render, 60000); 
         }
 
         function populateSettingsUI() {
-            document.getElementById('pile-name').value = state.settings.pileName || ''; 
-            document.getElementById('diameter').value = state.settings.diameter;
-            document.getElementById('depth').value = state.settings.depth; 
-            document.getElementById('init-tremie').value = state.settings.initTremie;
-            document.getElementById('sec-len').value = state.settings.secLen || 3.0; 
-            document.getElementById('top-len').value = state.settings.topLen || 1.5;
-            document.getElementById('supplier').value = state.settings.supplier || ''; 
-            document.getElementById('product-code').value = state.settings.productCode || '';
-            document.getElementById('total-ordered-vol').value = state.settings.totalOrdered || '';
-            document.getElementById('work-notes').value = state.notes || '';
-            
-            document.getElementById('crit-embed-safe').value = state.thresholds.embedSafe;
-            document.getElementById('crit-embed-max').value = state.thresholds.embedMax;
-            document.getElementById('crit-age-warn').value = state.thresholds.ageWarn;
-            document.getElementById('crit-age-danger').value = state.thresholds.ageDanger;
-            document.getElementById('crit-idle-warn').value = state.thresholds.idleWarn;
-            document.getElementById('crit-idle-danger').value = state.thresholds.idleDanger;
-
-            setNowArrTime();
+            document.getElementById('pile-name').value = state.settings.pileName || ''; document.getElementById('diameter').value = state.settings.diameter;
+            document.getElementById('depth').value = state.settings.depth; document.getElementById('init-tremie').value = state.settings.initTremie;
+            document.getElementById('sec-len').value = state.settings.secLen || 3.0; document.getElementById('top-len').value = state.settings.topLen || 1.5;
+            document.getElementById('supplier').value = state.settings.supplier || ''; document.getElementById('product-code').value = state.settings.productCode || '';
+            document.getElementById('work-notes').value = state.notes || ''; document.getElementById('total-ordered-vol').value = state.settings.totalOrdered || ''; setNowBatchTime(); setNowArrTime();
         }
 
         function updateSettings() {
-            state.settings.pileName = document.getElementById('pile-name').value || ''; 
-            state.settings.diameter = parseFloat(document.getElementById('diameter').value) || 0;
-            state.settings.depth = parseFloat(document.getElementById('depth').value) || 0; 
-            state.settings.initTremie = parseFloat(document.getElementById('init-tremie').value) || 0;
-            state.settings.secLen = parseFloat(document.getElementById('sec-len').value) || 3.0; 
-            state.settings.topLen = parseFloat(document.getElementById('top-len').value) || 1.5;
-            state.settings.supplier = document.getElementById('supplier').value || ''; 
-            state.settings.productCode = document.getElementById('product-code').value || '';
-            let ord = parseFloat(document.getElementById('total-ordered-vol').value); 
-            state.settings.totalOrdered = isNaN(ord) ? '' : ord;
-
-            state.thresholds.embedSafe = parseFloat(document.getElementById('crit-embed-safe').value) || 3.0;
-            state.thresholds.embedMax = parseFloat(document.getElementById('crit-embed-max').value) || 6.0;
-            state.thresholds.ageWarn = parseInt(document.getElementById('crit-age-warn').value) || 90;
-            state.thresholds.ageDanger = parseInt(document.getElementById('crit-age-danger').value) || 120;
-            state.thresholds.idleWarn = parseInt(document.getElementById('crit-idle-warn').value) || 30;
-            state.thresholds.idleDanger = parseInt(document.getElementById('crit-idle-danger').value) || 45;
-
+            state.settings.pileName = document.getElementById('pile-name').value || ''; state.settings.diameter = parseFloat(document.getElementById('diameter').value) || 0;
+            state.settings.depth = parseFloat(document.getElementById('depth').value) || 0; state.settings.initTremie = parseFloat(document.getElementById('init-tremie').value) || 0;
+            state.settings.secLen = parseFloat(document.getElementById('sec-len').value) || 3.0; state.settings.topLen = parseFloat(document.getElementById('top-len').value) || 1.5;
+            state.settings.supplier = document.getElementById('supplier').value || ''; state.settings.productCode = document.getElementById('product-code').value || '';
+            let ord = parseFloat(document.getElementById('total-ordered-vol').value); state.settings.totalOrdered = isNaN(ord) ? '' : ord;
             saveAndRender();
         }
 
@@ -665,20 +569,10 @@
         }
 
         function suggestCut() {
-            const soundingStr = document.getElementById('sounding-input').value; 
-            const sugDiv = document.getElementById('cut-suggestion'); 
-            const insertIdx = parseInt(document.getElementById('insert-index').value);
-            if (!soundingStr) { sugDiv.classList.add('hidden'); return; } 
-            const sounding = parseFloat(soundingStr); 
-            if (isNaN(sounding) || sounding <= 0) { sugDiv.classList.add('hidden'); return; }
-            
-            let actualPipeLen = state.settings.initTremie; 
-            const secLen = state.settings.secLen || 3.0; 
-            const topLen = state.settings.topLen || 1.5; 
-            const minEmbed = state.thresholds.embedSafe;
-            
-            const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; 
-            let isTopPieceRemoved = false;
+            const soundingStr = document.getElementById('sounding-input').value; const sugDiv = document.getElementById('cut-suggestion'); const insertIdx = parseInt(document.getElementById('insert-index').value);
+            if (!soundingStr) { sugDiv.classList.add('hidden'); return; } const sounding = parseFloat(soundingStr); if (isNaN(sounding) || sounding <= 0) { sugDiv.classList.add('hidden'); return; }
+            let actualPipeLen = state.settings.initTremie; const secLen = state.settings.secLen || 3.0; const topLen = state.settings.topLen || 1.5; const minEmbed = Math.max(secLen, 3.0); 
+            const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; let isTopPieceRemoved = false;
             for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { actualPipeLen -= state.events[i].val; isTopPieceRemoved = true; } }
             let currentEmbed = actualPipeLen - sounding;
             if (currentEmbed < minEmbed) {
@@ -704,22 +598,27 @@
             if (!isNaN(pcs) && pcs > 0) { let topPieceAlreadyRemoved = false; const limit = insertIdx === -1 ? state.events.length : insertIdx + 1; for (let i = 0; i < limit; i++) { if (state.events[i].type === 'remove') { topPieceAlreadyRemoved = true; break; } } let calculatedMeters = 0; if (!topPieceAlreadyRemoved) { calculatedMeters = topLen + ((pcs - 1) * secLen); } else { calculatedMeters = pcs * secLen; } if (calculatedMeters < 0) calculatedMeters = 0; inputM.value = calculatedMeters.toFixed(2); } else { inputM.value = ''; }
         }
 
-        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v47', JSON.stringify(state)); }
+        function saveNotes() { state.notes = document.getElementById('work-notes').value; localStorage.setItem('tremie_v44', JSON.stringify(state)); }
         function exportData() { saveNotes(); const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const pName = state.settings.pileName || 'UnknownPile'; const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); a.href = url; a.download = `Tremie_${pName}_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); }
         function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const parsed = JSON.parse(e.target.result); if (parsed.settings && Array.isArray(parsed.events)) { state = parsed; populateSettingsUI(); saveAndRender(); alert(`โหลดสำเร็จ!`); } else { alert('โครงสร้างไฟล์ไม่ถูกต้อง'); } } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); } }; reader.readAsText(file); event.target.value = ''; }
 
         function updatePrediction() {
+            // ค่าที่ซ่อนไว้เพื่อคำนวณเบื้องหลัง
             const soundingVal = parseFloat(document.getElementById('predict-sounding').value); 
             let actualPouredVol = 0;
             let totalOnsiteVol = 0;
+            
             state.events.forEach(ev => { 
                 if (ev.type === 'pour' && !ev.isRejected) { 
-                    totalOnsiteVol += ev.val; 
+                    totalOnsiteVol += ev.val; // รวมยอดปูนทุกคันที่ไม่ถูกตีกลับ
                     if (ev.isCompleted) { actualPouredVol += ev.val; } 
                 } 
             }); 
+            
             document.getElementById('pred-poured').innerText = actualPouredVol.toFixed(1);
             document.getElementById('total-onsite-vol').innerText = totalOnsiteVol.toFixed(1);
+
+            // คำนวณยอดรอปูน (Total Ordered - Total On-site)
             const totalOrderedStr = document.getElementById('total-ordered-vol').value;
             const totalOrdered = parseFloat(totalOrderedStr);
             if (!isNaN(totalOrdered) && totalOrdered > 0) {
@@ -728,6 +627,7 @@
             } else {
                 document.getElementById('total-waiting-vol').innerText = '-';
             }
+
             if (isNaN(soundingVal) || soundingVal <= 0) { 
                 document.getElementById('pred-exact').innerText = '-'; 
                 document.getElementById('pred-padded').innerText = '-'; 
@@ -738,6 +638,7 @@
             const paddedRemaining = exactRemaining * 1.15; 
             const totalExact = actualPouredVol + exactRemaining; 
             const totalPadded = actualPouredVol + paddedRemaining;
+            
             document.getElementById('pred-exact').innerText = totalExact.toFixed(1); 
             document.getElementById('pred-padded').innerText = totalPadded.toFixed(1);
         }
@@ -746,7 +647,7 @@
             const truck = document.getElementById('truck-no').value || '-'; const val = parseFloat(document.getElementById('vol-input').value) || 0;
             const batchTime = document.getElementById('batch-time').value || ''; const arrivalTime = document.getElementById('arr-time').value || ''; const supplier = state.settings.supplier || 'ไม่ระบุ';
             state.events.push({ type: 'pour', truck, val, supplier, batchTime, arrivalTime, isCompleted: false, pourTime: null, isRejected: false, rejectReason: '' });
-            document.getElementById('truck-no').value = ''; setNowArrTime(); saveAndRender();
+            document.getElementById('truck-no').value = ''; setNowBatchTime(); setNowArrTime(); saveAndRender();
         }
 
         function submitRemove() {
@@ -762,8 +663,14 @@
             const ev = state.events[index];
             if (ev.type === 'pour' && !ev.isRejected) { 
                 ev.isCompleted = !ev.isCompleted; 
-                if (ev.isCompleted) { if (!ev.pourTime) { const now = new Date(); ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); } } 
-                else { ev.pourTime = null; }
+                if (ev.isCompleted) {
+                    if (!ev.pourTime) { 
+                        const now = new Date(); 
+                        ev.pourTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); 
+                    } 
+                } else {
+                    ev.pourTime = null;
+                }
                 saveAndRender(); 
             }
         }
@@ -773,8 +680,10 @@
             document.getElementById('reject-index').value = i;
             document.getElementById('reject-reason-preset').value = '';
             document.getElementById('reject-reason').value = ev.rejectReason || '';
+            
             const btnConfirm = document.getElementById('btn-confirm-reject');
             const btnUnreject = document.getElementById('btn-unreject');
+            
             if (ev.isRejected) {
                 document.getElementById('reject-modal-title').innerHTML = '<i class="fas fa-ban mr-2"></i>แก้ไขสาเหตุการตีกลับ';
                 btnConfirm.innerText = 'บันทึกการแก้ไข';
@@ -793,22 +702,37 @@
             const i = document.getElementById('reject-index').value;
             const reason = document.getElementById('reject-reason').value || document.getElementById('reject-reason-preset').value;
             const ev = state.events[i];
-            ev.isRejected = true; ev.rejectReason = reason; ev.isCompleted = false; ev.pourTime = null;
-            saveAndRender(); closeRejectModal();
+            ev.isRejected = true;
+            ev.rejectReason = reason;
+            ev.isCompleted = false;
+            ev.pourTime = null;
+            saveAndRender();
+            closeRejectModal();
         }
 
         function unrejectEvent() {
             if(confirm('ต้องการยกเลิกการตีกลับ นำรถคันนี้กลับมาในคิวใช่หรือไม่?')) {
                 const i = document.getElementById('reject-index').value;
                 const ev = state.events[i];
-                ev.isRejected = false; ev.rejectReason = '';
-                saveAndRender(); closeRejectModal();
+                ev.isRejected = false;
+                ev.rejectReason = '';
+                saveAndRender();
+                closeRejectModal();
             }
         }
 
         function deleteEvent(i) { if(confirm('ยืนยันการลบ?')) { state.events.splice(i, 1); saveAndRender(); } }
-        function moveEventUp(i) { if (i > 0) { const temp = state.events[i - 1]; state.events[i - 1] = state.events[i]; state.events[i] = temp; saveAndRender(); } }
-        function moveEventDown(i) { if (i < state.events.length - 1) { const temp = state.events[i + 1]; state.events[i + 1] = state.events[i]; state.events[i] = temp; saveAndRender(); } }
+
+        function moveEventUp(i) {
+            if (i > 0) {
+                const temp = state.events[i - 1]; state.events[i - 1] = state.events[i]; state.events[i] = temp; saveAndRender();
+            }
+        }
+        function moveEventDown(i) {
+            if (i < state.events.length - 1) {
+                const temp = state.events[i + 1]; state.events[i + 1] = state.events[i]; state.events[i] = temp; saveAndRender();
+            }
+        }
 
         function openEditModal(i) {
             const ev = state.events[i]; document.getElementById('edit-index').value = i;
@@ -831,67 +755,87 @@
         }
 
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
-        function openManualModal() { 
-            document.getElementById('man-embed-safe').innerText = state.thresholds.embedSafe.toFixed(1);
-            document.getElementById('man-embed-max').innerText = state.thresholds.embedMax.toFixed(1);
-            document.getElementById('man-embed-danger').innerText = state.thresholds.embedSafe.toFixed(1);
-            
-            document.getElementById('man-age-warn').innerText = (state.thresholds.ageWarn/60).toFixed(1);
-            document.getElementById('man-age-range').innerText = (state.thresholds.ageWarn/60).toFixed(1) + " - " + (state.thresholds.ageDanger/60).toFixed(1);
-            document.getElementById('man-age-danger').innerText = (state.thresholds.ageDanger/60).toFixed(1);
-            
-            document.getElementById('man-idle-warn').innerText = state.thresholds.idleWarn;
-            document.getElementById('man-idle-warn2').innerText = state.thresholds.idleWarn;
-            document.getElementById('man-idle-danger').innerText = state.thresholds.idleDanger;
-
-            document.getElementById('manual-modal').classList.remove('hidden'); 
-        }
+        function openManualModal() { document.getElementById('manual-modal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manual-modal').classList.add('hidden'); }
         
         function toggleStartJob() {
-            if (state.isStarted) { if (confirm('ต้องการยกเลิกเวลาเริ่มงานใช่หรือไม่?')) { state.isStarted = false; state.startTime = null; saveAndRender(); } } 
-            else { const now = new Date(); state.startTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); state.isStarted = true; saveAndRender(); }
+            if (state.isStarted) { 
+                if (confirm('ต้องการยกเลิกเวลาเริ่มงานใช่หรือไม่?')) { 
+                    state.isStarted = false; state.startTime = null; saveAndRender(); 
+                } 
+            } else { 
+                const now = new Date(); 
+                state.startTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); 
+                state.isStarted = true; 
+                saveAndRender(); 
+            }
         }
 
         function editStartTime() {
             if (!state.isStarted) return;
             let newTime = prompt("แก้ไขเวลาเริ่มงาน (HH:MM):", state.startTime);
-            if (newTime && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(newTime)) { let [h, m] = newTime.split(':'); state.startTime = h.padStart(2, '0') + ':' + m; saveAndRender(); }
+            if (newTime && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(newTime)) {
+                let [h, m] = newTime.split(':');
+                state.startTime = h.padStart(2, '0') + ':' + m;
+                saveAndRender();
+            } else if (newTime !== null) {
+                alert("รูปแบบเวลาไม่ถูกต้อง กรุณาระบุเป็น HH:MM (เช่น 08:30)");
+            }
         }
         
         function toggleFinishJob() {
             if (state.isFinished) { if (confirm('ยกเลิกการจบงาน?')) { state.isFinished = false; state.finishTime = null; saveAndRender(); } } 
-            else { if (confirm('ยืนยันจบงาน?')) { state.isFinished = true; const now = new Date(); state.finishTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); saveAndRender(); } }
+            else { if (confirm('ยืนยันจบงาน? (แอปจะคำนวณ Overbreak ให้)')) { state.isFinished = true; const now = new Date(); state.finishTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'); saveAndRender(); } }
         }
 
         function editFinishTime() {
             if (!state.isFinished) return;
             let newTime = prompt("แก้ไขเวลาจบงาน (HH:MM):", state.finishTime);
-            if (newTime && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(newTime)) { let [h, m] = newTime.split(':'); state.finishTime = h.padStart(2, '0') + ':' + m; saveAndRender(); }
+            if (newTime && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(newTime)) {
+                let [h, m] = newTime.split(':');
+                state.finishTime = h.padStart(2, '0') + ':' + m;
+                saveAndRender();
+            } else if (newTime !== null) {
+                alert("รูปแบบเวลาไม่ถูกต้อง กรุณาระบุเป็น HH:MM (เช่น 15:45)");
+            }
         }
 
         function resetApp() {
             if(confirm('ต้องการเริ่มหลุมใหม่ ข้อมูลการเทจะหายทั้งหมด?')) {
                 state.events = []; state.notes = ''; state.isFinished = false; state.finishTime = null; state.isStarted = false; state.startTime = null;
-                state.settings.totalOrdered = '';
                 document.getElementById('pile-name').value = ''; document.getElementById('predict-sounding').value = '';
+                document.getElementById('cut-suggestion').classList.add('hidden'); document.getElementById('supplier').value = ''; document.getElementById('product-code').value = '';
                 document.getElementById('total-ordered-vol').value = '';
                 clearKodenImage(); populateSettingsUI(); updateSettings();
             }
         }
 
-        function saveAndRender() { localStorage.setItem('tremie_v47', JSON.stringify(state)); render(); updatePrediction(); }
+        function saveAndRender() { localStorage.setItem('tremie_v44', JSON.stringify(state)); render(); updatePrediction(); }
 
         function copyReport() {
-            const s = state.settings; if (!s.pileName) { alert('ระบุชื่อหลุมเจาะก่อนสร้างรายงาน'); return; }
+            const s = state.settings;
+            if (!s.pileName) { alert('ระบุชื่อหลุมเจาะก่อนสร้างรายงาน'); return; }
             const area = Math.PI * Math.pow(s.diameter / 2, 2); const theoVol = s.depth * area;
             let actualVol = 0; let rejectedCount = 0;
-            state.events.forEach(ev => { if (ev.type === 'pour') { if (ev.isRejected) { rejectedCount++; } else if (ev.isCompleted) { actualVol += ev.val; } } });
+            state.events.forEach(ev => { 
+                if (ev.type === 'pour') {
+                    if (ev.isRejected) { rejectedCount++; }
+                    else if (ev.isCompleted) { actualVol += ev.val; } 
+                }
+            });
+            
             let overbreak = theoVol > 0 ? ((actualVol - theoVol) / theoVol * 100).toFixed(1) : 0;
-            let report = `📋 *สรุปงานเทคอนกรีต เสาเข็มเจาะ*\nโครงการ: ทางพิเศษฉลองรัชส่วนต่อขยาย\nหลุมเจาะ: ${s.pileName}\n▶️ เวลาเริ่มงาน: ${state.startTime || '-'}\n🏁 เทเสร็จสิ้น: ${state.finishTime || 'ยังไม่จบงาน'}\n📊 *สรุปปริมาตร*\n- ทฤษฎี: ${theoVol.toFixed(1)} m³\n- ใช้จริง: ${actualVol.toFixed(1)} m³\n- คิดเป็น Yield: ${overbreak > 0 ? '+'+overbreak : overbreak}%`;
-            if (rejectedCount > 0) report += `\n- ❌ ตีกลับรถปูน: ${rejectedCount} คัน`;
-            if(state.notes) report += `\n📝 หมายเหตุ: ${state.notes}`;
-            navigator.clipboard.writeText(report).then(() => { alert('✅ คัดลอกแล้ว'); });
+            let overbreakText = overbreak > 0 ? `+${overbreak}% (Overbreak)` : `${overbreak}% (Necking)`;
+            let statusText = state.isFinished ? `เทเสร็จสิ้นเวลา ${state.finishTime}` : `กำลังดำเนินการ...`;
+            
+            let report = `📋 *สรุปงานเทคอนกรีต เสาเข็มเจาะ*\nโครงการ: ทางพิเศษฉลองรัชส่วนต่อขยาย\nหลุมเจาะ: ${s.pileName}\nขนาด: Ø${s.diameter.toFixed(2)}m x ลึก ${s.depth.toFixed(1)}m\nผู้ผลิต: ${s.supplier || '-'}\n\n▶️ เวลาเริ่มงาน: ${state.startTime || '-'}\n`;
+            if (state.isFinished) report += `🏁 เทเสร็จสิ้น: ${state.finishTime}\n\n`; else report += `⏳ สถานะ: ${statusText}\n\n`;
+            report += `📊 *สรุปปริมาตรคอนกรีต*\n- ทฤษฎี: ${theoVol.toFixed(1)} m³\n- ใช้จริง: ${actualVol.toFixed(1)} m³\n`;
+            if (state.isFinished) { report += `- คิดเป็น Yield: ${overbreakText}\n`; } else { let progress = theoVol > 0 ? ((actualVol / theoVol) * 100).toFixed(1) : 0; report += `- ความคืบหน้า (Progress): ${progress}%\n`; }
+            if (rejectedCount > 0) { report += `- ❌ ตีกลับรถปูน: ${rejectedCount} คัน\n`; }
+            report += `\n`;
+            if(state.notes) { report += `📝 หมายเหตุ:\n${state.notes}\n`; }
+            navigator.clipboard.writeText(report).then(() => { alert('✅ คัดลอกข้อความสรุปงานแล้ว\n\n💡 หากต้องการรูปกราฟไปแนบใน LINE ด้วย ให้ไปที่เมนู "ดูสถิติ" แล้วกด "บันทึกรูปภาพ" ครับ'); }).catch(err => { alert('เกิดข้อผิดพลาดในการคัดลอก: ' + err); });
         }
 
         function render() {
@@ -901,8 +845,7 @@
             const suppDisplay = document.getElementById('display-supplier');
             if (supplier && productCode) { suppDisplay.innerText = `${supplier} | ${productCode.split(' ')[0]}`; suppDisplay.classList.remove('hidden'); } else { suppDisplay.classList.add('hidden'); }
 
-            const logBody = document.getElementById('log-body'); const insertSelect = document.getElementById('insert-index'); 
-            const currentInsertVal = insertSelect.value;
+            const logBody = document.getElementById('log-body'); const insertSelect = document.getElementById('insert-index'); const currentInsertVal = insertSelect.value;
             logBody.innerHTML = ''; insertSelect.innerHTML = '<option value="-1">-- ตัดท่อล่าสุด (ต่อท้าย Timeline) --</option>';
 
             let predVol = 0; let predPipeLen = initTremie; let predConcLevelFromBottom = 0;
@@ -914,81 +857,303 @@
 
             state.events.forEach((ev, i) => {
                 const row = document.createElement('tr'); let rowHtml = "";
-                let moveBtns = `<div class="flex flex-col items-center justify-center text-[10px] gap-0.5"><button onclick="moveEventUp(${i})" class="text-slate-400 hover:text-blue-500 p-1" ${i === 0 ? 'disabled style="opacity:0.2;"' : ''}><i class="fas fa-chevron-up"></i></button><span class="font-bold">${i+1}</span><button onclick="moveEventDown(${i})" class="text-slate-400 hover:text-blue-500 p-1" ${i === state.events.length - 1 ? 'disabled style="opacity:0.2;"' : ''}><i class="fas fa-chevron-down"></i></button></div>`;
+                
+                let moveBtns = `
+                    <div class="flex flex-col items-center justify-center text-[10px] gap-0.5">
+                        <button onclick="moveEventUp(${i})" class="text-slate-400 hover:text-blue-500 transition-colors p-1" ${i === 0 ? 'disabled style="opacity:0.2; cursor:not-allowed;"' : ''} title="เลื่อนขึ้น"><i class="fas fa-chevron-up"></i></button>
+                        <span class="font-bold text-slate-600 dark:text-slate-300">${i+1}</span>
+                        <button onclick="moveEventDown(${i})" class="text-slate-400 hover:text-blue-500 transition-colors p-1" ${i === state.events.length - 1 ? 'disabled style="opacity:0.2; cursor:not-allowed;"' : ''} title="เลื่อนลง"><i class="fas fa-chevron-down"></i></button>
+                    </div>
+                `;
 
                 if (ev.type === 'pour') {
                     let isRej = ev.isRejected;
-                    let rejectBtn = `<button onclick="openRejectModal(${i})" class="${isRej ? 'text-red-500 bg-red-100 dark:bg-red-900/30' : 'text-slate-500 bg-slate-100 dark:bg-slate-800'} border px-2 py-1 rounded text-[9px] font-bold shadow-sm flex items-center" title="ตีกลับ"><i class="fas fa-ban mr-1"></i>${isRej ? 'แก้ไข' : 'Reject'}</button>`;
+                    let rejectBtn = `<button onclick="openRejectModal(${i})" class="${isRej ? 'text-red-500 hover:text-red-700 bg-red-100 dark:bg-red-900/30 border-red-200' : 'text-slate-500 hover:text-red-500 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'} border px-2 py-1 rounded transition-colors text-[9px] font-bold shadow-sm flex items-center" title="${isRej ? 'แก้ไข/ยกเลิกตีกลับ' : 'ตีกลับรถปูน'}"><i class="fas fa-ban mr-1"></i>${isRej ? 'แก้ไขตีกลับ' : 'ตีกลับ'}</button>`;
+
+                    let arrTimeDisplay = ev.arrivalTime ? ev.arrivalTime : '?';
                     let totalAgeMins = calculateAgeMinutes(ev.batchTime, ev.isCompleted ? ev.pourTime : nowTimeStr); 
                     let colorClass = getAgeColor(totalAgeMins); 
+                    let predDepthTop, predEmbed;
 
                     if (!isRej) {
                         predVol += ev.val; predConcLevelFromBottom = predVol / area; 
-                        let predDepthTop = depth - predConcLevelFromBottom; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
-                        let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b class="text-blue-500">${ev.arrivalTime||'?'}</b> | `;
-                        if (ev.isCompleted) { ageHTML += `เสร็จ: <b>${ev.pourTime||'?'}</b><br><span class="${colorClass} text-[10px]">รวม ${formatAgeString(totalAgeMins)}</span>`; actualVol += ev.val; actualConcLevelFromBottom = actualVol / area; lastPourTimeStr = ev.pourTime; hasCompletedPour = true; } 
-                        else { 
-                            ageHTML += `<span class="${colorClass} text-[10px] animate-pulse">ผ่านไป ${formatAgeString(totalAgeMins)}</span>`; 
-                            let agePct = Math.min(100, (totalAgeMins / state.thresholds.ageDanger) * 100);
-                            let barColor = totalAgeMins >= state.thresholds.ageDanger ? 'bg-red-500' : (totalAgeMins >= state.thresholds.ageWarn ? 'bg-orange-500' : 'bg-emerald-500');
-                            ageHTML += `<div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-1.5 overflow-hidden flex"><div class="${barColor} h-1 transition-all duration-1000" style="width: ${agePct}%"></div></div>`;
+                        predDepthTop = depth - predConcLevelFromBottom; predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
+                        
+                        let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b class="text-blue-500">${arrTimeDisplay}</b> | `;
+                        if (ev.isCompleted) { 
+                            ageHTML += `เสร็จ: <b>${ev.pourTime||'?'}</b><br><span class="text-[10px] ${colorClass} mt-0.5 inline-block"><i class="fas fa-clock"></i> รวม ${formatAgeString(totalAgeMins)}</span>`; 
+                            actualVol += ev.val; actualConcLevelFromBottom = actualVol / area; lastPourTimeStr = ev.pourTime; hasCompletedPour = true;
+                        } else { 
+                            ageHTML += `<span class="text-[10px] ${colorClass} mt-0.5 inline-block animate-pulse"><i class="fas fa-clock"></i> ผ่านไป ${formatAgeString(totalAgeMins)}</span>`; 
+                            if (ev.batchTime) {
+                                let agePct = Math.min(100, (totalAgeMins / 120) * 100);
+                                let barColor = totalAgeMins >= 120 ? 'bg-red-500' : (totalAgeMins >= 90 ? 'bg-orange-500' : 'bg-emerald-500');
+                                ageHTML += `
+                                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-1.5 overflow-hidden flex" title="อายุคอนกรีต ${formatAgeString(totalAgeMins)}">
+                                        <div class="${barColor} h-1 rounded-full transition-all duration-1000" style="width: ${agePct}%"></div>
+                                    </div>
+                                `;
+                            }
                         }
 
-                        row.className = ev.isCompleted ? "row-completed" : "row-pending";
-                        rowHtml = `<td class="px-2 py-1 align-middle w-10">${moveBtns}</td><td class="px-3 py-3"><div class="flex justify-between items-start gap-1"><div>เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500">+${ev.val.toFixed(1)} m³</span></div>${rejectBtn}</div><div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block">${ageHTML}</div></td><td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono opacity-60">${predPipeLen.toFixed(2)}</td><td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td><td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">${ev.isCompleted ? '✔️ เทแล้ว' : '⏳ เทเสร็จ'}</button></td>`;
+                        if (!ev.isCompleted) {
+                            row.className = "row-pending";
+                            rowHtml = `
+                                <td class="px-2 py-1 align-middle w-10">${moveBtns}</td>
+                                <td class="px-3 py-3">
+                                    <div class="flex justify-between items-start gap-1">
+                                        <div class="font-medium">เบอร์ <b>${ev.truck}</b> <span class="text-xs text-blue-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-200 dark:bg-slate-700 px-1 rounded ml-1">${ev.supplier || supplier}</span></div>
+                                        ${rejectBtn}
+                                    </div>
+                                    <div class="text-[10px] mt-1 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-300">${ageHTML}</div>
+                                </td>
+                                <td class="px-3 py-3 text-center font-mono opacity-60">${predDepthTop.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-mono opacity-60">${predPipeLen.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-mono font-bold opacity-60">${predEmbed.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-emerald-500 hover:text-white text-[10px] py-2 rounded font-bold shadow-sm transition">⏳ เทเสร็จ</button></td>
+                            `;
+                        } else {
+                            row.className = "row-completed";
+                            rowHtml = `
+                                <td class="px-2 py-1 align-middle w-10">${moveBtns}</td>
+                                <td class="px-3 py-3">
+                                    <div class="flex justify-between items-start gap-1">
+                                        <div class="font-bold">เบอร์ ${ev.truck} <span class="text-xs text-emerald-500 ml-1">+${ev.val.toFixed(1)} m³</span> <span class="text-[9px] bg-slate-100 dark:bg-slate-800 px-1 rounded ml-1 text-slate-500">${ev.supplier || supplier}</span></div>
+                                        ${rejectBtn}
+                                    </div>
+                                    <div class="text-[10px] mt-1 bg-emerald-50 dark:bg-slate-800 px-2 py-1 rounded border inline-block text-slate-600 dark:text-slate-400">${ageHTML}</div>
+                                </td>
+                                <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-mono text-blue-600 dark:text-blue-400">${predPipeLen.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                                <td class="px-3 py-3 text-center"><button onclick="togglePourStatus(${i})" class="w-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 text-[10px] py-2 rounded font-bold transition">✔️ เทแล้ว</button></td>
+                            `;
+                        }
                     } else {
+                        // isRejected == true
+                        let ageHTML = `ผลิต: <b>${ev.batchTime||'?'}</b> | ถึง: <b>${arrTimeDisplay}</b><br><span class="text-red-500 font-bold mt-0.5 inline-block"><i class="fas fa-times-circle"></i> ตีกลับคอนกรีต: ${ev.rejectReason || 'ไม่ระบุสาเหตุ'}</span>`;
                         row.className = "row-rejected";
-                        rowHtml = `<td class="px-2 py-1 align-middle w-10">${moveBtns}</td><td class="px-3 py-3 text-red-500"><div class="flex justify-between items-start"><s>เบอร์ ${ev.truck}</s> ${rejectBtn}</div><div class="text-[10px]">❌ ตีกลับ: ${ev.rejectReason || 'ไม่ระบุ'}</div></td><td colspan="4" class="text-center font-bold text-red-400">--- REJECTED ---</td>`;
+                        rowHtml = `
+                            <td class="px-2 py-1 align-middle w-10">${moveBtns}</td>
+                            <td class="px-3 py-3">
+                                <div class="flex justify-between items-start gap-1">
+                                    <div class="font-medium text-slate-500 dark:text-slate-400 line-through">เบอร์ <b>${ev.truck}</b> <span class="text-xs ml-1">+${ev.val.toFixed(1)} m³</span></div>
+                                    ${rejectBtn}
+                                </div>
+                                <div class="text-[10px] mt-1 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded border border-red-200 dark:border-red-800 inline-block text-red-700 dark:text-red-400">${ageHTML}</div>
+                            </td>
+                            <td class="px-3 py-3 text-center font-mono opacity-40">-</td>
+                            <td class="px-3 py-3 text-center font-mono opacity-40">-</td>
+                            <td class="px-3 py-3 text-center font-mono font-bold opacity-40">-</td>
+                            <td class="px-3 py-3 text-center"><span class="w-full inline-block bg-red-200 dark:bg-red-800/50 text-red-700 dark:text-red-300 text-[10px] py-2 rounded font-bold cursor-not-allowed">❌ ถูกตีกลับ</span></td>
+                        `;
                     }
+                    
+                    rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap">
+                        <button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-3 transition-colors text-base" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 transition-colors text-base" title="ลบ"><i class="fas fa-trash"></i></button>
+                    </td>`;
+                    
                     insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: รถ ${ev.truck}</option>`;
                 } else {
+                    if (ev.sounding > 0) { predConcLevelFromBottom = depth - ev.sounding; predVol = predConcLevelFromBottom * area; }
+                    predPipeLen -= ev.val; let predDepthTop = depth - predConcLevelFromBottom; let predEmbed = predConcLevelFromBottom - (depth - predPipeLen);
                     if (ev.sounding > 0) { actualConcLevelFromBottom = depth - ev.sounding; actualVol = actualConcLevelFromBottom * area; }
-                    actualPipeLen -= ev.val; predPipeLen -= ev.val;
+                    actualPipeLen -= ev.val;
+                    let pcsCut = 0; if (!isTopPieceRemoved) { pcsCut = 1 + (ev.val - topLen) / secLen; isTopPieceRemoved = true; } else { pcsCut = ev.val / secLen; }
                     row.className = "row-cut";
-                    rowHtml = `<td class="px-2 py-1 align-middle w-10">${moveBtns}</td><td class="px-3 py-3 font-bold"><i class="fas fa-cut mr-1 text-purple-500"></i>ตัดออก ${ev.val}m<br><span class="text-[10px] font-normal opacity-60">${ev.sounding > 0 ? `หย่อนเทป ${ev.sounding}m` : 'ไม่วัดเทป'}</span></td><td class="px-3 py-3 text-center font-mono">${(depth - actualConcLevelFromBottom).toFixed(2)}</td><td class="px-3 py-3 text-center font-mono text-blue-600">${actualPipeLen.toFixed(2)}</td><td class="px-3 py-3 text-center font-bold">${(actualConcLevelFromBottom - (depth - actualPipeLen)).toFixed(2)}</td><td class="px-3 py-3 text-center text-[10px] font-bold opacity-40">-- ตัดท่อ --</td>`;
+                    rowHtml = `
+                        <td class="px-2 py-1 align-middle w-10">${moveBtns}</td>
+                        <td class="px-3 py-3 font-bold"><i class="fas fa-cut mr-1"></i>ตัดออก ${ev.val}m<br><span class="text-[10px] opacity-80 font-normal bg-purple-100 dark:bg-purple-900/30 text-purple-700 px-1 rounded mr-1">≈ ${parseFloat(pcsCut.toFixed(1))} ท่อน</span><span class="text-[10px] opacity-80 font-normal border border-slate-300 dark:border-slate-600 px-1 rounded">${ev.sounding > 0 ? `เทป ${ev.sounding}m` : 'ไม่วัด'}</span></td>
+                        <td class="px-3 py-3 text-center font-mono">${predDepthTop.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-mono text-blue-600">${predPipeLen.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center font-bold">${predEmbed.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-center text-[10px] font-bold opacity-80">-- ตัดท่อ --</td>
+                    `;
+                    rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap">
+                        <button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-3 transition-colors text-base" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 transition-colors text-base" title="ลบ"><i class="fas fa-trash"></i></button>
+                    </td>`;
                     insertSelect.innerHTML += `<option value="${i}">แทรกหลัง: ตัดท่อ ${ev.val}m</option>`;
                 }
-                rowHtml += `<td class="px-3 py-3 text-center whitespace-nowrap"><button onclick="openEditModal(${i})" class="text-blue-500 hover:text-blue-700 mr-3 text-base"><i class="fas fa-edit"></i></button><button onclick="deleteEvent(${i})" class="text-red-400 hover:text-red-600 text-base"><i class="fas fa-trash"></i></button></td>`;
+                
                 row.innerHTML = rowHtml; logBody.appendChild(row);
             });
             insertSelect.value = currentInsertVal; if (insertSelect.selectedIndex === -1) insertSelect.value = "-1"; 
 
-            // Start Job UI
+            // Render Start Button UI
+            const startBtn = document.getElementById('start-job-btn');
             const startDisp = document.getElementById('start-time-display');
-            if (state.isStarted) { startDisp.innerHTML = `${state.startTime} <button onclick="editStartTime()" class="text-slate-400 hover:text-blue-500 ml-1"><i class="fas fa-edit"></i></button>`; startDisp.className = "text-2xl font-bold text-emerald-600 flex items-center justify-center"; } 
-            else { startDisp.innerText = "-"; startDisp.className = "text-2xl font-bold text-slate-300 flex items-center justify-center"; }
+            if (state.isStarted) {
+                startDisp.innerHTML = `${state.startTime} <button onclick="editStartTime()" class="text-slate-400 hover:text-blue-500 text-base ml-2 outline-none"><i class="fas fa-edit"></i></button>`;
+                startDisp.className = "text-2xl md:text-3xl font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center";
+                startBtn.className = "w-full bg-white dark:bg-slate-700 text-slate-500 border border-slate-300 dark:border-slate-600 py-1.5 mt-2 rounded-lg text-[10px] font-bold shadow-sm transition";
+                startBtn.innerHTML = '<i class="fas fa-undo mr-1"></i> ยกเลิกการเริ่มงาน';
+            } else {
+                startDisp.innerHTML = "-";
+                startDisp.className = "text-2xl md:text-3xl font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center";
+                startBtn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg shadow transition mt-2";
+                startBtn.innerHTML = '<i class="fas fa-play mr-1"></i> เริ่มงานเท';
+            }
 
-            // Idle Tracker V45: เชื่อมโยงสีกับ thresholds.idleWarn / thresholds.idleDanger
+            const theoTotalVol = depth * area; let yieldHtml = "";
+            if (actualVol === 0) { yieldHtml = `Progress: 0%`; } 
+            else if (state.isFinished) { let overbreak = ((actualVol - theoTotalVol) / theoTotalVol) * 100; if (overbreak > 0) yieldHtml = `OB: <span class="text-red-500 font-bold">+${overbreak.toFixed(1)}%</span>`; else yieldHtml = `Yield: <span class="text-orange-500 font-bold">${(100+overbreak).toFixed(1)}%</span>`; } 
+            else { let progress = (actualVol / theoTotalVol) * 100; yieldHtml = `Progress: <span class="text-blue-500 font-bold">${progress.toFixed(1)}%</span>`; }
+            document.getElementById('yield-status').innerHTML = yieldHtml;
+
             const idleCard = document.getElementById('idle-tracker-card'); const idleDisplay = document.getElementById('idle-time-display'); const idleStatus = document.getElementById('idle-status');
-            const finishBtnContainer = document.getElementById('finish-job-container');
+            const finishBtnContainer = document.getElementById('finish-job-container'); const finishBtn = document.getElementById('finish-job-btn');
+
             if (state.isFinished) {
-                idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 text-center flex flex-col justify-between"; 
-                idleDisplay.innerText = "จบงาน"; idleStatus.innerHTML = `เวลา ${state.finishTime} <button onclick="editFinishTime()" class="text-blue-400"><i class="fas fa-edit"></i></button>`;
-                finishBtnContainer.classList.remove('hidden');
+                idleCard.className = "bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-400 shadow-md text-center flex flex-col justify-between"; 
+                idleDisplay.className = "text-2xl md:text-3xl font-bold text-blue-600"; 
+                idleDisplay.innerText = "จบงาน"; 
+                idleStatus.innerHTML = `เสร็จสิ้นเวลา ${state.finishTime} <button onclick="editFinishTime()" class="text-blue-400 hover:text-blue-600 ml-1 outline-none text-[12px]"><i class="fas fa-edit"></i></button>`; 
+                idleStatus.className = "text-[10px] font-bold mt-1 uppercase leading-tight text-blue-600";
+                finishBtnContainer.classList.remove('hidden'); finishBtn.className = "w-full bg-white dark:bg-slate-700 text-slate-500 border border-slate-300 dark:border-slate-600 py-1.5 mt-2 rounded-lg text-[10px] font-bold shadow-sm transition"; finishBtn.innerHTML = '<i class="fas fa-undo mr-1"></i> ยกเลิกการจบงาน';
             } else if (hasCompletedPour && lastPourTimeStr) {
-                const [lH, lM] = lastPourTimeStr.split(':').map(Number); let lastPDate = new Date(); lastPDate.setHours(lH, lM, 0, 0);
-                let diffMins = Math.floor((now - lastPDate) / 60000); if (diffMins < -720) { lastPDate.setDate(lastPDate.getDate() - 1); diffMins = Math.floor((now - lastPDate) / 60000); }
-                idleDisplay.innerText = formatThaiDuration(diffMins);
-                if (diffMins >= state.thresholds.idleDanger) { idleCard.className = "bg-red-50 p-4 rounded-xl border border-red-400 animate-pulse text-center flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-red-600"; idleStatus.innerText = "อันตราย! รีบขยับท่อด่วน"; } 
-                else if (diffMins >= state.thresholds.idleWarn) { idleCard.className = "bg-orange-50 p-4 rounded-xl border border-orange-400 text-center flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-orange-600"; idleStatus.innerText = "พิจารณาขยับท่อเล็กน้อย"; } 
-                else { idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border text-center flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-emerald-600"; idleStatus.innerText = "ปกติ"; }
-                finishBtnContainer.classList.remove('hidden');
-            } else { idleDisplay.innerText = "- นาที"; idleStatus.innerText = "รอคันแรก"; finishBtnContainer.classList.add('hidden'); }
+                const [lH, lM] = lastPourTimeStr.split(':').map(Number); 
+                let lastPDate = new Date(); 
+                lastPDate.setHours(lH, lM, 0, 0);
+
+                let idleMins = 0;
+                let diffMins = Math.floor((now - lastPDate) / 60000);
+
+                if (diffMins < 0) {
+                    if (diffMins < -720) {
+                        lastPDate.setDate(lastPDate.getDate() - 1);
+                        idleMins = Math.max(0, Math.floor((now - lastPDate) / 60000));
+                    } else { idleMins = 0; }
+                } else { idleMins = diffMins; }
+
+                idleDisplay.innerText = formatThaiDuration(idleMins);
+                if (idleMins >= 45) { idleCard.className = "bg-red-50 p-4 rounded-xl border border-red-400 shadow-md text-center animate-pulse flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-red-600"; idleStatus.innerText = "อันตราย! รีบขยับท่อด่วน"; idleStatus.className = "text-[10px] font-bold mt-1 uppercase leading-tight text-red-600"; } 
+                else if (idleMins >= 30) { idleCard.className = "bg-orange-50 p-4 rounded-xl border border-orange-400 shadow-md text-center flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-orange-600"; idleStatus.innerText = "พิจารณาขยับท่อเล็กน้อย"; idleStatus.className = "text-[10px] font-bold mt-1 uppercase leading-tight text-orange-600"; } 
+                else { idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border shadow-sm text-center flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-emerald-600"; idleStatus.innerText = "ปกติ"; idleStatus.className = "text-[10px] font-bold mt-1 uppercase leading-tight text-slate-500"; }
+                finishBtnContainer.classList.remove('hidden'); finishBtn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 mt-2 rounded-lg text-xs font-bold shadow transition"; finishBtn.innerHTML = '<i class="fas fa-flag-checkered mr-1"></i> จบงาน';
+            } else {
+                idleDisplay.innerText = "- นาที"; idleCard.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border shadow-sm text-center opacity-50 flex flex-col justify-between"; idleDisplay.className = "text-3xl font-bold text-slate-400"; idleStatus.innerText = "รอคันแรก"; idleStatus.className = "text-[10px] font-bold mt-1 uppercase leading-tight text-slate-400"; finishBtnContainer.classList.add('hidden'); 
+            }
 
             let actualEmbed = actualConcLevelFromBottom - (depth - actualPipeLen);
             document.getElementById('actual-vol').innerHTML = `${actualVol.toFixed(1)} <span class="text-xs">m³</span>`; 
             document.getElementById('actual-pipe').innerHTML = `${actualPipeLen.toFixed(1)} <span class="text-xs">m</span>`; 
-            document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg opacity-50">m</span>`;
             
-            // Visualization
-            const scale = 500 / depth;
+            let remainingPcs = 0;
+            if (actualPipeLen > 0) {
+                if (!isTopPieceRemoved) { remainingPcs = 1 + Math.max(0, (actualPipeLen - topLen) / secLen); } 
+                else { remainingPcs = actualPipeLen / secLen; }
+            }
+            document.getElementById('actual-pipe-pcs').innerHTML = `เหลือ ≈ ${remainingPcs.toFixed(1)} ท่อน`;
+
+            document.getElementById('actual-embed').innerHTML = `${actualEmbed.toFixed(2)} <span class="text-lg opacity-50">m</span>`;
+            document.getElementById('viz-depth-label').innerText = `ก้นหลุม (${depth.toFixed(1)}m)`; const scale = 500 / depth;
             const concH = actualConcLevelFromBottom * scale; document.getElementById('viz-concrete').setAttribute('height', concH); document.getElementById('viz-concrete').setAttribute('y', 500 - concH);
             const tremieH = actualPipeLen * scale; document.getElementById('viz-tremie').setAttribute('height', tremieH);
             const tipPos = 500 - ((depth - actualPipeLen) * scale); document.getElementById('viz-tremie-tip').setAttribute('y1', tipPos); document.getElementById('viz-tremie-tip').setAttribute('y2', tipPos);
         }
 
+        function openAnalyticsModal() { document.getElementById('analytics-modal').classList.remove('hidden'); renderCharts(); }
+        function closeAnalyticsModal() { document.getElementById('analytics-modal').classList.add('hidden'); }
+        
+        function renderCharts() {
+            let validPours = state.events.filter(e => e.type === 'pour' && e.isCompleted && !e.isRejected && e.batchTime && e.arrivalTime && e.pourTime);
+            let chartData = validPours.map((e, index) => { let transitMins = getMinsDiff(e.batchTime, e.arrivalTime) || 0; let siteMins = getMinsDiff(e.arrivalTime, e.pourTime) || 0; let totalMins = transitMins + siteMins; let [bH, bM] = e.batchTime.split(':').map(Number); return { id: e.truck, no: `คันที่ ${index+1}`, supplier: e.supplier || 'Unk', batchTimeHour: bH + (bM/60), transit: transitMins, site: siteMins, total: totalMins }; });
+            
+            ['chart-stacked', 'chart-scatter', 'chart-bar'].forEach(id => { if (activeCharts[id]) activeCharts[id].destroy(); });
+            
+            document.getElementById('chart-pile-name').innerText = state.settings.pileName || 'ไม่ระบุ';
+            const today = new Date(); document.getElementById('chart-date').innerText = today.toLocaleDateString('th-TH');
+
+            if (chartData.length === 0) return; 
+            const labels = chartData.map(d => d.id); const supColorMap = { 'CPAC': '#10b981', 'M Concrete': '#a855f7', 'TPI': '#f97316', 'Qmix': '#3b82f6', 'INSEE': '#ef4444' }; const getColor = (sup) => supColorMap[sup] || '#94a3b8';
+            
+            activeCharts['chart-stacked'] = new Chart(document.getElementById('chart-stacked'), { 
+                type: 'bar', 
+                data: { 
+                    labels: labels, 
+                    datasets: [ 
+                        { label: 'เดินทาง', data: chartData.map(d => d.transit), backgroundColor: '#3b82f6' }, 
+                        { label: 'หน้างาน', data: chartData.map(d => d.site), backgroundColor: '#f59e0b' },
+                        { type: 'line', label: 'เกณฑ์ (120 นาที)', data: chartData.map(() => 120), borderColor: '#ef4444', borderDash: [5, 5], fill: false, pointRadius: 0, borderWidth: 2 }
+                    ] 
+                }, 
+                options: { 
+                    animation: false, 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true }, 
+                        y: { stacked: true, suggestedMax: 130 } 
+                    } 
+                } 
+            });
+            
+            let suppliers = [...new Set(chartData.map(d => d.supplier))];
+            
+            let datasetsScatter = suppliers.map(sup => { return { label: sup, data: chartData.filter(d => d.supplier === sup).map(d => ({ x: d.batchTimeHour, y: d.total })), backgroundColor: getColor(sup), pointRadius: 6 }; });
+            activeCharts['chart-scatter'] = new Chart(document.getElementById('chart-scatter'), { type: 'scatter', data: { datasets: datasetsScatter }, options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { title: {display: true, text: 'เวลาออกจากแพลนท์'}, ticks: {callback: val => val+':00'} }, y: { title: {display: true, text: 'นาทีรวม'} } } } });
+            
+            let avgLabels = []; let avgTransit = []; let avgSite = [];
+            suppliers.forEach(sup => { let supData = chartData.filter(d => d.supplier === sup); avgLabels.push(sup); avgTransit.push(supData.reduce((acc, d) => acc + d.transit, 0) / supData.length); avgSite.push(supData.reduce((acc, d) => acc + d.site, 0) / supData.length); });
+            
+            activeCharts['chart-bar'] = new Chart(document.getElementById('chart-bar'), { type: 'bar', data: { labels: avgLabels, datasets: [ { label: 'เฉลี่ยเดินทาง', data: avgTransit, backgroundColor: '#3b82f6' }, { label: 'เฉลี่ยเทหน้างาน', data: avgSite, backgroundColor: '#f59e0b' } ] }, options: { animation: false, responsive: true, maintainAspectRatio: false } });
+        }
+
+        function downloadAnalyticsImage() {
+            const captureArea = document.getElementById('analytics-capture-area');
+            const modalContainer = document.getElementById('analytics-modal-container');
+            const btn = document.getElementById('btn-save-img');
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            const originalScrollTop = captureArea.scrollTop;
+            const originalHeight = modalContainer.style.height;
+            const originalOverflow = modalContainer.style.overflow;
+            const captureOriginalOverflow = captureArea.style.overflow;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>กำลังประมวลผล...';
+            btn.disabled = true;
+
+            captureArea.scrollTop = 0;
+            modalContainer.style.height = 'auto';
+            modalContainer.style.overflow = 'visible';
+            captureArea.style.overflow = 'visible';
+
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    backgroundColor: isDark ? '#0f172a' : '#f8fafc', 
+                    scale: 2,
+                    windowHeight: captureArea.scrollHeight
+                }).then(canvas => {
+                    modalContainer.style.height = originalHeight;
+                    modalContainer.style.overflow = originalOverflow;
+                    captureArea.style.overflow = captureOriginalOverflow;
+                    captureArea.scrollTop = originalScrollTop;
+
+                    btn.innerHTML = '<i class="fas fa-camera mr-1"></i>บันทึกรูปภาพ';
+                    btn.disabled = false;
+
+                    let link = document.createElement('a');
+                    let pile = state.settings.pileName || 'Pile';
+                    const d = new Date(); const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+                    link.download = `Analytics_${pile}_${dateStr}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            }, 300);
+        }
+
         window.onload = init;
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+        
+        // ส่วน PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered!'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
