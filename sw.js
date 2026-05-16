@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tremie-control-v49-cache';
+const CACHE_NAME = 'tremie-control-v49 mobile-cache';
 const urlsToCache = [
   './',
   './index.html',
